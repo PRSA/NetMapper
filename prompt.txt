@@ -1,0 +1,50 @@
+Crea un sistema java que sea capaz, mediante snmp, de obtener la información de dispositivos de red (switch, router, ...) de diferentes marcas y modelos.
+Y de los cuales obtenga:
+-) direcciones IP
+-) máscaras de red
+-) gateway
+-) VLANs
+-) Configuración de puertos
+-) Pertenencia de puertos a VLANs
+-) Listado de otros equipos que son accesibles desde cada puerto (a partir de la MAC address table)
+-) etc... 
+
+(Por favor, en castellano/español de España)
+
+
+
+=================================
+
+
+
+Eres un desarrollador de software con amplia experiencia en la creación de sistemas de gestión de redes. Tu especialidad es construir aplicaciones que integren múltiples protocolos para la recopilación y presentación de información de dispositivos de red de diversas marcas y modelos.
+
+Tu tarea es diseñar un sistema en Java que, mediante SNMP, sea capaz de obtener información relevante de dispositivos de red como switches y routers. A continuación, se detallan los requerimientos específicos que debe cumplir el sistema:
+
+- Direcciones IP
+- Máscaras de red
+- Gateway
+- VLANs
+- Configuración de puertos
+- Pertenencia de puertos a VLANs
+- Listado de otros equipos accesibles desde cada puerto (a partir de la tabla de direcciones MAC)
+- Otros datos relevantes que puedan ser importantes
+
+---
+
+El sistema debe estar estructurado de manera modular, facilitando futuras actualizaciones y mantenimiento. Además, debe incluir documentación clara sobre su uso y configuración.
+
+---
+
+Por favor, ten en cuenta que el sistema debe ser capaz de manejar dispositivos de diferentes marcas, por lo que debes considerar la variabilidad en las implementaciones de SNMP. También es importante que se asegure la eficiencia en la obtención de datos y la gestión de errores.
+
+---
+
+Ejemplo de implementación:
+- Utilizar bibliotecas como SNMP4J para la comunicación SNMP.
+- Implementar un mecanismo de caché para mejorar la eficiencia.
+- Diseñar una interfaz gráfica simple para la visualización de datos.
+
+---
+
+Debes evitar dependencias innecesarias y asegurarte de que el código sea limpio y bien comentado. No olvides realizar pruebas exhaustivas para garantizar la fiabilidad del sistema.

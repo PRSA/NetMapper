@@ -1,0 +1,31 @@
+# Tareas de Desarrollo: NetMapper
+
+- [x] Planificación y Configuración Inicial
+    - [x] Crear estructura del proyecto Maven (pom.xml) <!-- id: 0 -->
+    - [x] Definir dependencias (SNMP4J, JUnit, SLF4J) <!-- id: 1 -->
+- [x] Núcleo SNMP y Modelado de Datos
+    - [x] Implementar cliente SNMP base (SNMP4J wrapper) <!-- id: 2 -->
+    - [x] Crear modelos de datos (Device: add Vendor/Model) <!-- id: 3 -->
+    - [x] Implementar descubrimiento de dispositivos básico (System Group MIB-II) <!-- id: 4 -->
+    - [x] Implementar lógica de detección de Marca/Modelo en Strategy <!-- id: 15 -->
+- [x] Recolección de Datos Específicos
+    - [x] Implementar obtención de Interfaces y Puertos (IF-MIB) <!-- id: 5 -->
+    - [x] Implementar obtención de Direcciones IP y Máscaras (IP-MIB) <!-- id: 6 -->
+    - [x] Implementar obtención de Tabla de Rutas/Gateway <!-- id: 7 -->
+    - [x] Implementar obtención de VLANs (Q-BRIDGE-MIB - Estructura modular) <!-- id: 8 -->
+    - [x] Implementar obtención de MAC Address Table (BRIDGE-MIB) <!-- id: 9 -->
+- [x] Capa de Servicio y Caché
+    - [x] Implementar servicio de escaneo y caché de datos <!-- id: 10 -->
+- [x] Interfaz Gráfica (GUI)
+    - [x] Actualizar GUI con Marca/Modelo <!-- id: 12 -->
+- [x] Mejoras y Correcciones
+    - [x] Aumentar timeout SNMP para evitar errores de conexión <!-- id: 19 -->
+    - [x] Ampliar modelo Interface (Speed, MTU, Type) <!-- id: 20 -->
+    - [x] Recolectar datos extendidos de puertos en Strategy <!-- id: 21 -->
+    - [x] Mostrar datos extendidos en GUI <!-- id: 22 -->
+- [x] Verificación y Documentación
+    - [x] Pruebas unitarias de parsing y conexión (Nuevo: Aruba) <!-- id: 13 -->
+    - [x] Documentación javadoc y README en español <!-- id: 14 -->
+    - [x] Verificar detección de Marca/Modelo <!-- id: 16 -->
+    - [x] Verificar detección 3Com/HP/Aruba <!-- id: 17 -->
+    - [x] Verificar detección D-Link/Extreme/Teldat/Tenda/Asus/EnGenius/Apple <!-- id: 18 -->
