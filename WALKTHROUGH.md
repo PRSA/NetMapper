@@ -26,9 +26,10 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
     ```
 
 ## Funcionalidades
-La aplicación permite introducir una dirección **IP** y una **Comunidad** (por defecto `public`). Al pulsar "Escanear":
+La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP/Máscara**, **Intervalo IP**, o una **Lista separada por comas** de cualquiera de los anteriores.
 
 1.  **Información del Sistema**: 
+    - Detección automática de **Marca y Modelo** (incluyendo Apple, Cisco, Huawei, etc.).
     - Detección automática de **Marca y Modelo** (incluyendo Apple, Cisco, Huawei, etc.).
     - Descripción, ubicación, contacto y tiempo de actividad.
 2.  **Interfaces**: 
@@ -36,14 +37,17 @@ La aplicación permite introducir una dirección **IP** y una **Comunidad** (por
     - **Configuración**: MTU, Velocidad (bps), Tipo de Interfaz.
     - **Estado**: Admin/Oper Status.
     - Direcciones Físicas (MAC) e IP/Máscara.
+    - **VLANs**: VLAN Nativa (PVID) y VLANs Etiquetadas asociadas.
 3.  **Equipos Conectados**: Direcciones MAC detectadas por puerto (BRIDGE-MIB).
 4.  **Tabla de Rutas**: Destinos y gateways.
 5.  **VLANs**: IDs y nombres de VLANs (Q-BRIDGE-MIB).
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.
-- **Compatibilidad**: MIB-II, BRIDGE-MIB, Q-BRIDGE-MIB.
-- **Datos de Puerto**: Se utilizan los OIDs estándar `ifSpeed`, `ifMtu`, `ifType` para enriquecer la información.
+- **Compatibilidad**: MIB-II, BRIDGE-MIB, Q-BRIDGE-MIB, IF-MIB HighSpeed.
+- **Datos de Puerto**: 
+    - Se utilizan los OIDs estándar `ifSpeed` y `ifHighSpeed` (para enlaces > 1Gbps).
+    - Lógica de fallback para dispositivos que no soportan mapeo de puertos estándar (BRIDGE-MIB).
 
 > [!NOTE]
 > Asegúrese de que no hay firewalls bloqueando el puerto UDP 161 entre la máquina que ejecuta NetMapper y los dispositivos de red.

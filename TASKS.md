@@ -29,3 +29,18 @@
     - [x] Verificar detección de Marca/Modelo <!-- id: 16 -->
     - [x] Verificar detección 3Com/HP/Aruba <!-- id: 17 -->
     - [x] Verificar detección D-Link/Extreme/Teldat/Tenda/Asus/EnGenius/Apple <!-- id: 18 -->
+- [x] Soporte Multi-VLAN por Interfaz
+    - [x] Refactorizar NetworkInterface (Untagged/Tagged) <!-- id: 23 -->
+    - [x] Implementar descubrimiento de VLANs por puerto (Q-BRIDGE-MIB PVID/Egress) <!-- id: 24 -->
+    - [x] Visualizar VLANs nativas y etiquetadas en GUI <!-- id: 25 -->
+- [x] Estabilización y Correcciones
+    - [x] Corregir errores de compilación (Clean build) <!-- id: 26 -->
+    - [x] Implementar soporte ifHighSpeed para enlaces > 1Gbps <!-- id: 27 -->
+    - [x] Implementar Fallback para mapeo Bridge-Port (VLANs/MACs sin tabla explícita) <!-- id: 28 -->
+- [x] Escaneo de Redes y Subredes
+    - [x] Implementar utilidad de cálculo de rangos IP (CIDR/Máscara) <!-- id: 30 -->
+    - [x] Soporte para formato IP/Máscara (e.g. 192.168.1.0/255.255.255.0) <!-- id: 33 -->
+    - [x] Soporte para Intervalos IP (e.g. 10.0.0.1 - 10.0.0.50) <!-- id: 34 -->
+    - [x] Soporte para Listas de formatos mixtos (e.g. IP, CIDR, Rango separados por comas) <!-- id: 35 -->
+    - [x] Actualizar NetworkScannerService para escaneo masivo <!-- id: 31 -->
+    - [x] Actualizar GUI para entrada de rangos <!-- id: 32 -->

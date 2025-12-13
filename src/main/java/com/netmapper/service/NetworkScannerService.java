@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import com.netmapper.util.SubnetUtils; // Import SubnetUtils
+import java.util.List;
+
 /**
  * Servicio principal para coordinar el escaneo de dispositivos.
  */
@@ -20,7 +23,25 @@ public class NetworkScannerService {
     private ExecutorService executorService;
 
     public NetworkScannerService() {
-        this.executorService = Executors.newFixedThreadPool(5); // Pool de 5 hilos
+        this.executorService = Executors.newFixedThreadPool(20); // Aumentado a 20 hilos para escaneos de red
+    }
+
+    /**
+     * Escanea un rango de red (CIDR o IP única).
+     */
+    public void scanNetwork(String cidrInput, String community, Consumer<NetworkDevice> onSuccess,
+            Consumer<String> onError) {
+        List<String> ips = SubnetUtils.getIpList(cidrInput);
+        if (ips.isEmpty()) {
+            onError.accept("Formato de red inválido: " + cidrInput);
+            return;
+        }
+
+        logger.info("Iniciando escaneo de red: {} IPs detectadas en rango {}", ips.size(), cidrInput);
+
+        for (String ip : ips) {
+            scanDevice(ip, community, onSuccess, onError);
+        }
     }
 
     /**
@@ -30,7 +51,7 @@ public class NetworkScannerService {
         executorService.submit(() -> {
             SnmpClient client = null;
             try {
-                logger.info("Iniciando escaneo de {}", ip);
+                // logger.info("Escaneando {}", ip); // Reducir ruido en log si son muchas
                 client = new SnmpClient(community);
 
                 // Crear dispositivo y estrategia
@@ -44,6 +65,12 @@ public class NetworkScannerService {
                 }
 
             } catch (Exception e) {
+                // En escaneo masivo, es normal que muchas IPs no respondan (timeout).
+                // Podríamos filtrar errores de timeout para no saturar la UI, o dejar que la UI
+                // decida.
+                // Para single scan (scanDevice invocado directamente) queremos ver el error.
+                // Para bulk, tal vez solo loguear.
+                // Decisión: propagar error. La UI puede ignorar timeouts si quiere.
                 logger.error("Error escaneando device {}", ip, e);
                 onError.accept("Error accediendo a " + ip + ": " + e.getMessage());
             } finally {

@@ -11,7 +11,8 @@ public class NetworkInterface {
     private String operStatus;
     private String ipAddress;
     private String subnetMask;
-    private int vlanId; // VLAN nativa o asignada
+    private int untaggedVlanId; // VLAN nativa o no etiquetada
+    private java.util.List<Integer> taggedVlans; // VLANs etiquetadas
     private int mtu;
     private String speed;
     private String type;
@@ -19,6 +20,7 @@ public class NetworkInterface {
     public NetworkInterface(int index, String description) {
         this.index = index;
         this.description = description;
+        this.taggedVlans = new java.util.ArrayList<>();
     }
 
     public int getIndex() {
@@ -73,12 +75,26 @@ public class NetworkInterface {
         this.subnetMask = subnetMask;
     }
 
-    public int getVlanId() {
-        return vlanId;
+    public int getUntaggedVlanId() {
+        return untaggedVlanId;
     }
 
-    public void setVlanId(int vlanId) {
-        this.vlanId = vlanId;
+    public void setUntaggedVlanId(int untaggedVlanId) {
+        this.untaggedVlanId = untaggedVlanId;
+    }
+
+    public java.util.List<Integer> getTaggedVlans() {
+        return taggedVlans;
+    }
+
+    public void setTaggedVlans(java.util.List<Integer> taggedVlans) {
+        this.taggedVlans = taggedVlans;
+    }
+
+    public void addTaggedVlan(int vlanId) {
+        if (!this.taggedVlans.contains(vlanId)) {
+            this.taggedVlans.add(vlanId);
+        }
     }
 
     public int getMtu() {

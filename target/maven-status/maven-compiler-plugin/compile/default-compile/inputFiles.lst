@@ -2,6 +2,7 @@
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/strategy/DiscoveryStrategy.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/Main.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/model/NetworkDevice.java
+/opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/util/SubnetUtils.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/gui/MainWindow.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/strategy/StandardMibStrategy.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/core/SnmpClient.java

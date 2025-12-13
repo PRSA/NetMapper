@@ -2,6 +2,7 @@ com/netmapper/model/NetworkInterface.class
 com/netmapper/gui/MainWindow.class
 com/netmapper/model/NetworkDevice.class
 com/netmapper/Main.class
+com/netmapper/util/SubnetUtils.class
 com/netmapper/core/SnmpClient.class
 com/netmapper/service/NetworkScannerService.class
 com/netmapper/strategy/StandardMibStrategy.class

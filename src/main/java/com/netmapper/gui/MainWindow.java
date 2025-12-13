@@ -33,8 +33,8 @@ public class MainWindow extends JFrame {
     private void initComponents() {
         // Panel Superior: Configuración
         JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        configPanel.add(new JLabel("IP Objetivo:"));
-        ipField = new JTextField("192.168.1.1", 15);
+        configPanel.add(new JLabel("IP Objetivo / CIDR:"));
+        ipField = new JTextField("192.168.1.0/24", 15);
         configPanel.add(ipField);
 
         configPanel.add(new JLabel("Comunidad:"));
@@ -69,11 +69,11 @@ public class MainWindow extends JFrame {
         String ip = ipField.getText().trim();
         String community = communityField.getText().trim();
 
-        logArea.append("Iniciando escaneo de " + ip + "...\n");
+        logArea.append("Iniciando escaneo de rango/IP: " + ip + "...\n");
 
-        scannerService.scanDevice(ip, community,
+        scannerService.scanNetwork(ip, community,
                 device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
-                error -> SwingUtilities.invokeLater(() -> logArea.append("ERROR: " + error + "\n")));
+                error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n"))); // Simplified error log
     }
 
     private void displayDevice(NetworkDevice device) {
@@ -112,6 +112,14 @@ public class MainWindow extends JFrame {
             if (ni.getIpAddress() != null) {
                 niNode.add(new DefaultMutableTreeNode("IP: " + ni.getIpAddress()));
                 niNode.add(new DefaultMutableTreeNode("Máscara: " + ni.getSubnetMask()));
+            }
+
+            if (ni.getUntaggedVlanId() > 0) {
+                niNode.add(new DefaultMutableTreeNode("VLAN Nativa: " + ni.getUntaggedVlanId()));
+            }
+
+            if (!ni.getTaggedVlans().isEmpty()) {
+                niNode.add(new DefaultMutableTreeNode("VLANs Etiquetadas: " + ni.getTaggedVlans()));
             }
 
             // MACs aprendidas en este puerto

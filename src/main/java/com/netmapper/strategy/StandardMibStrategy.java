@@ -78,6 +78,11 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         Map<String, String> ipIfIndex = snmp.walk(ip, OID_IP_AD_ENT_IF_INDEX);
         Map<String, String> ipNetMask = snmp.walk(ip, OID_IP_AD_ENT_NET_MASK);
 
+        // 2b. High Speed Interfaces (ifXTable)
+        // ifHighSpeed: 1.3.6.1.2.1.31.1.1.1.15 (Units: Mbps)
+        String oidIfHighSpeed = "1.3.6.1.2.1.31.1.1.1.15";
+        Map<String, String> ifHighSpeeds = snmp.walk(ip, oidIfHighSpeed);
+
         // Procesar interfaces
         for (Map.Entry<String, String> entry : ifDescrs.entrySet()) {
             String oid = entry.getKey();
@@ -93,7 +98,41 @@ public class StandardMibStrategy implements DiscoveryStrategy {
                 String mtuStr = ifMtus.get(OID_IF_MTU + "." + index);
                 if (mtuStr != null)
                     netIf.setMtu(Integer.parseInt(mtuStr));
-                netIf.setSpeed(ifSpeeds.get(OID_IF_SPEED + "." + index));
+
+                // Speed Logic: Prefer High Speed if available and > 0, otherwise normal speed
+                String highSpeedStr = ifHighSpeeds.get(oidIfHighSpeed + "." + index);
+                String speedStr = ifSpeeds.get(OID_IF_SPEED + "." + index);
+
+                long finalSpeed = 0;
+                if (highSpeedStr != null) {
+                    try {
+                        long highSpeedVal = Long.parseLong(highSpeedStr);
+                        // ifHighSpeed is in Mbps, convert to bps if you want uniform storage,
+                        // but model expects String. Let's format it nicely or store as bps string.
+                        // 0 usually means unknown or too small? RFC says 1 Mbps steps.
+                        if (highSpeedVal > 0) {
+                            finalSpeed = highSpeedVal * 1_000_000L;
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+
+                if (finalSpeed == 0 && speedStr != null) {
+                    try {
+                        finalSpeed = Long.parseLong(speedStr);
+                        // Case: ifSpeed reports max value (4.29Gbps) for faster links
+                        if (finalSpeed == 4294967295L) {
+                            // Indicate it's faster, but we don't know without HighSpeed
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+
+                if (finalSpeed > 0) {
+                    netIf.setSpeed(String.valueOf(finalSpeed));
+                } else {
+                    netIf.setSpeed(speedStr != null ? speedStr : "0");
+                }
 
                 // Asignar MAC Address
                 String rawMac = ifPhysAddr.get(OID_IF_PHYS_ADDRESS + "." + index);
@@ -152,24 +191,12 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         String oidMacAddress = "1.3.6.1.2.1.17.4.3.1.1";
         // dot1dTpFdbPort
         String oidMacPort = "1.3.6.1.2.1.17.4.3.1.2";
-        // dot1dBasePortIfIndex (Mapeo de Puerto Bridge -> ifIndex)
-        String oidBasePortIfIndex = "1.3.6.1.2.1.17.1.4.1.2";
+
+        Map<Integer, Integer> bridgePortMap = getBridgePortToIfIndexMap(snmp, ip);
+        boolean hasBridgeMap = !bridgePortMap.isEmpty();
 
         Map<String, String> macs = snmp.walk(ip, oidMacAddress);
         Map<String, String> ports = snmp.walk(ip, oidMacPort);
-        Map<String, String> bridgeToIfIndex = snmp.walk(ip, oidBasePortIfIndex);
-
-        // Mapa inverso: BridgePort -> ifIndex
-        Map<Integer, Integer> bridgePortMap = new HashMap<>();
-        for (Map.Entry<String, String> entry : bridgeToIfIndex.entrySet()) {
-            try {
-                int bridgePort = Integer.parseInt(entry.getKey().substring(oidBasePortIfIndex.length() + 1));
-                int ifIdx = Integer.parseInt(entry.getValue());
-                bridgePortMap.put(bridgePort, ifIdx);
-            } catch (Exception e) {
-                continue;
-            }
-        }
 
         for (Map.Entry<String, String> entry : macs.entrySet()) {
             try {
@@ -180,6 +207,11 @@ public class StandardMibStrategy implements DiscoveryStrategy {
                 if (portVal != null) {
                     int bridgePort = Integer.parseInt(portVal);
                     Integer ifIndex = bridgePortMap.get(bridgePort);
+
+                    if (ifIndex == null && !hasBridgeMap) {
+                        // Fallback: Si no hay mapa, asumimos que port bridge == ifIndex
+                        ifIndex = bridgePort;
+                    }
 
                     if (ifIndex != null) {
                         device.getMacAddressTable().computeIfAbsent(ifIndex, k -> new ArrayList<>()).add(mac);
@@ -192,13 +224,16 @@ public class StandardMibStrategy implements DiscoveryStrategy {
     }
 
     private void fetchVlans(SnmpClient snmp, String ip, NetworkDevice device) {
-        // dot1qVlanStaticName
+        // dot1qVlanStaticName: 1.3.6.1.2.1.17.7.1.4.3.1.1
         String oidVlanName = "1.3.6.1.2.1.17.7.1.4.3.1.1";
+        // dot1qVlanCurrentEgressPorts: 1.3.6.1.2.1.17.7.1.4.2.1.4
+        // Indexado por TimeFilter (0) y VlanIndex
+        String oidEgressPorts = "1.3.6.1.2.1.17.7.1.4.2.1.4";
 
+        // Primero obtenemos nombres para listar en el dispositivo (requisito original)
         Map<String, String> vlanNames = snmp.walk(ip, oidVlanName);
         for (Map.Entry<String, String> entry : vlanNames.entrySet()) {
             try {
-                // El último número del OID es el VLAN ID
                 String vlanIdStr = entry.getKey().substring(oidVlanName.length() + 1);
                 String name = entry.getValue();
                 device.getVlans().add("VLAN " + vlanIdStr + ": " + name);
@@ -206,6 +241,142 @@ public class StandardMibStrategy implements DiscoveryStrategy {
                 continue;
             }
         }
+
+        // Obtenemos el mapa de Puerto Bridge -> ifIndex
+        // Si falla (vacío), no podemos mapear puertos a interfaces, por lo que salimos
+        Map<Integer, Integer> bridgePortMap = getBridgePortToIfIndexMap(snmp, ip);
+        boolean hasBridgeMap = !bridgePortMap.isEmpty();
+
+        // 1. VLANs Nativas (PVID) - Untagged
+        // dot1qPvid: 1.3.6.1.2.1.17.7.1.4.5.1.1
+        // OID Key: .1.3.6.1.2.1.17.7.1.4.5.1.1.{dot1dBasePort}
+        String oidPvid = "1.3.6.1.2.1.17.7.1.4.5.1.1";
+        Map<String, String> pvids = snmp.walk(ip, oidPvid);
+
+        for (Map.Entry<String, String> entry : pvids.entrySet()) {
+            try {
+                String oid = entry.getKey();
+                int bridgePort = Integer.parseInt(oid.substring(oidPvid.length() + 1));
+                int vlanId = Integer.parseInt(entry.getValue());
+
+                Integer ifIndex = bridgePortMap.get(bridgePort);
+                if (ifIndex == null && !hasBridgeMap) {
+                    ifIndex = bridgePort;
+                }
+
+                if (ifIndex != null) {
+                    for (NetworkInterface ni : device.getInterfaces()) {
+                        if (ni.getIndex() == ifIndex) {
+                            ni.setUntaggedVlanId(vlanId);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignorar error de parsing
+            }
+        }
+
+        // 2. VLANs Etiquetadas (Egress Ports)
+        // Ahora procesamos puertos miembros (tagged + untagged teóricamente, pero
+        // filtramos)
+        Map<String, String> egressPorts = snmp.walk(ip, oidEgressPorts);
+        for (Map.Entry<String, String> entry : egressPorts.entrySet()) {
+            try {
+                String oid = entry.getKey();
+                // OID format: ...4.2.1.4.{timeMark}.{vlanId}
+                // Asumimos que los dos últimos componentes son TimeMark y VlanId
+                String[] parts = oid.split("\\.");
+                if (parts.length < 2)
+                    continue;
+
+                int vlanId = Integer.parseInt(parts[parts.length - 1]);
+                String portListHex = entry.getValue(); // String Hex (ej: "FF 00 ...")
+
+                List<Integer> memberBridgePorts = parsePortList(portListHex);
+
+                for (Integer bridgePort : memberBridgePorts) {
+                    Integer ifIndex = bridgePortMap.get(bridgePort);
+                    if (ifIndex == null && !hasBridgeMap) {
+                        ifIndex = bridgePort;
+                    }
+
+                    if (ifIndex != null) {
+                        for (NetworkInterface ni : device.getInterfaces()) {
+                            if (ni.getIndex() == ifIndex) {
+                                // Agregamos a taggedVlans solo si no es la nativa
+                                // (Opcional: La lógica de si Egress incluye untagged depende del switch,
+                                // pero generalmente sí. Lo agregamos y el consumidor decide,
+                                // O lo filtramos si coincide con untaggedVlanId)
+                                if (ni.getUntaggedVlanId() != vlanId) {
+                                    ni.addTaggedVlan(vlanId);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                continue;
+            }
+        }
+    }
+
+    private Map<Integer, Integer> getBridgePortToIfIndexMap(SnmpClient snmp, String ip) {
+        String oidBasePortIfIndex = "1.3.6.1.2.1.17.1.4.1.2";
+        Map<String, String> bridgeToIfIndex = snmp.walk(ip, oidBasePortIfIndex);
+        Map<Integer, Integer> bridgePortMap = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : bridgeToIfIndex.entrySet()) {
+            try {
+                int bridgePort = Integer.parseInt(entry.getKey().substring(oidBasePortIfIndex.length() + 1));
+                int ifIdx = Integer.parseInt(entry.getValue());
+                bridgePortMap.put(bridgePort, ifIdx);
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        return bridgePortMap;
+    }
+
+    /**
+     * Parsea un PortList (OCTET STRING) que representa un mapa de bits de puertos.
+     * formato snmp4j toString() usualmente "xx:xx:xx..." o "xx xx xx..."
+     */
+    private List<Integer> parsePortList(String hexString) {
+        List<Integer> ports = new ArrayList<>();
+        if (hexString == null || hexString.isEmpty())
+            return ports;
+
+        // Limpieza básica: quitar separadores comunes (: o espacio)
+        String cleanHex = hexString.replaceAll("[:\\s]", "");
+
+        // Si snmp4j devolvió caracteres ASCII imprimibles en vez de hex, esto fallará.
+        // Asumimos comportamiento estándar para OCTET STRING que contiene bytes no
+        // imprimibles.
+        // Si resultan ser imprimibles (poco probable para bitmap), habría que convertir
+        // chars a hex.
+
+        try {
+            byte[] bytes = new byte[cleanHex.length() / 2];
+            for (int i = 0; i < cleanHex.length(); i += 2) {
+                bytes[i / 2] = (byte) ((Character.digit(cleanHex.charAt(i), 16) << 4)
+                        + Character.digit(cleanHex.charAt(i + 1), 16));
+            }
+
+            for (int i = 0; i < bytes.length; i++) {
+                for (int bit = 0; bit < 8; bit++) {
+                    if ((bytes[i] & (0x80 >> bit)) != 0) {
+                        // Port numbers are 1-based
+                        ports.add(i * 8 + bit + 1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Fallback o log si el formato no era hex
+        }
+        return ports;
     }
 
     private String formatMacAddress(String raw) {
