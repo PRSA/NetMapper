@@ -1,6 +1,8 @@
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/service/NetworkScannerService.java
+/opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/util/MacVendorUtils.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/strategy/DiscoveryStrategy.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/Main.java
+/opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/model/DetectedEndpoint.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/model/NetworkDevice.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/util/SubnetUtils.java
 /opt/workspace/NetMapper/NetMapper/src/main/java/com/netmapper/gui/MainWindow.java

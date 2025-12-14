@@ -2,6 +2,7 @@ package com.netmapper.gui;
 
 import com.netmapper.model.NetworkDevice;
 import com.netmapper.model.NetworkInterface;
+import com.netmapper.model.DetectedEndpoint;
 import com.netmapper.service.NetworkScannerService;
 
 import javax.swing.*;
@@ -123,12 +124,12 @@ public class MainWindow extends JFrame {
             }
 
             // MACs aprendidas en este puerto
-            java.util.List<String> learnedMacs = device.getMacAddressTable().get(ni.getIndex());
-            if (learnedMacs != null && !learnedMacs.isEmpty()) {
+            java.util.List<DetectedEndpoint> learnedEndpoints = device.getMacAddressTable().get(ni.getIndex());
+            if (learnedEndpoints != null && !learnedEndpoints.isEmpty()) {
                 DefaultMutableTreeNode learnedNode = new DefaultMutableTreeNode(
-                        "Equipos Detectados (" + learnedMacs.size() + ")");
-                for (String mac : learnedMacs) {
-                    learnedNode.add(new DefaultMutableTreeNode(mac));
+                        "Equipos Detectados (" + learnedEndpoints.size() + ")");
+                for (DetectedEndpoint endpoint : learnedEndpoints) {
+                    learnedNode.add(new DefaultMutableTreeNode(endpoint.toString()));
                 }
                 niNode.add(learnedNode);
             }

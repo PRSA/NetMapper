@@ -24,8 +24,8 @@ public class NetworkDevice {
     private Map<String, String> routingTable; // Destino -> NextHop
     private List<String> vlans;
 
-    // Mapa: Puerto (Index) -> Lista de MACs aprendidas
-    private Map<Integer, List<String>> macAddressTable;
+    // Mapa: Puerto (Index) -> Lista de Endpoints detectados
+    private Map<Integer, List<DetectedEndpoint>> macAddressTable;
 
     public NetworkDevice(String ipAddress) {
         this.ipAddress = ipAddress;
@@ -128,11 +128,11 @@ public class NetworkDevice {
         this.vlans = vlans;
     }
 
-    public Map<Integer, List<String>> getMacAddressTable() {
+    public Map<Integer, List<DetectedEndpoint>> getMacAddressTable() {
         return macAddressTable;
     }
 
-    public void setMacAddressTable(Map<Integer, List<String>> macAddressTable) {
+    public void setMacAddressTable(Map<Integer, List<DetectedEndpoint>> macAddressTable) {
         this.macAddressTable = macAddressTable;
     }
 

@@ -3,6 +3,8 @@ package com.netmapper.strategy;
 import com.netmapper.core.SnmpClient;
 import com.netmapper.model.NetworkDevice;
 import com.netmapper.model.NetworkInterface;
+import com.netmapper.model.DetectedEndpoint;
+import com.netmapper.util.MacVendorUtils;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -184,6 +186,46 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         } catch (Exception e) {
             System.err.println("Error obteniendo VLANs: " + e.getMessage());
         }
+
+        // 7. ARP Table (ipNetToMediaTable) - Fallback/Supplement for L3 devices
+        try {
+            fetchIpNetToMediaTable(snmp, ip, device);
+        } catch (Exception e) {
+            System.err.println("Error obteniendo ARP Table: " + e.getMessage());
+        }
+    }
+
+    private void fetchIpNetToMediaTable(SnmpClient snmp, String ip, NetworkDevice device) {
+        // ipNetToMediaPhysAddress: 1.3.6.1.2.1.4.22.1.2
+        // Key format: .ifIndex.ip1.ip2.ip3.ip4
+        String oidArpPhysAddress = "1.3.6.1.2.1.4.22.1.2";
+
+        System.out.println("DEBUG: Fetching ARP Table (ipNetToMediaTable)...");
+
+        Map<String, String> arpEntries = snmp.walk(ip, oidArpPhysAddress);
+        System.out.println("DEBUG: ARP Table Size: " + arpEntries.size());
+
+        for (Map.Entry<String, String> entry : arpEntries.entrySet()) {
+            try {
+                String oidSuffix = entry.getKey().substring(oidArpPhysAddress.length() + 1);
+                // Suffix is ifIndex.ip.ip.ip.ip
+                String[] parts = oidSuffix.split("\\.");
+                if (parts.length < 5)
+                    continue;
+
+                int ifIndex = Integer.parseInt(parts[0]);
+                String mac = formatMacAddress(entry.getValue());
+                String vendor = MacVendorUtils.getVendor(mac);
+
+                String entryIp = parts[1] + "." + parts[2] + "." + parts[3] + "." + parts[4];
+
+                DetectedEndpoint endpoint = new DetectedEndpoint(mac, entryIp, vendor);
+                device.getMacAddressTable().computeIfAbsent(ifIndex, k -> new ArrayList<>()).add(endpoint);
+
+            } catch (Exception e) {
+                // Ignore parse errors for single entry
+            }
+        }
     }
 
     private void fetchMacAddressTable(SnmpClient snmp, String ip, NetworkDevice device) {
@@ -195,13 +237,24 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         Map<Integer, Integer> bridgePortMap = getBridgePortToIfIndexMap(snmp, ip);
         boolean hasBridgeMap = !bridgePortMap.isEmpty();
 
+        System.out.println("DEBUG: Bridge Port Map size: " + bridgePortMap.size());
+        if (!bridgePortMap.isEmpty()) {
+            System.out.println("DEBUG: Sample Mapping: " + bridgePortMap.entrySet().iterator().next());
+        }
+
         Map<String, String> macs = snmp.walk(ip, oidMacAddress);
         Map<String, String> ports = snmp.walk(ip, oidMacPort);
+
+        System.out.println("DEBUG: MAC Table Size: " + macs.size());
+        System.out.println("DEBUG: Port Table Size: " + ports.size());
+
+        int mappedCount = 0;
 
         for (Map.Entry<String, String> entry : macs.entrySet()) {
             try {
                 String suffix = entry.getKey().substring(oidMacAddress.length() + 1);
                 String mac = formatMacAddress(entry.getValue());
+                String vendor = MacVendorUtils.getVendor(mac);
 
                 String portVal = ports.get(oidMacPort + "." + suffix);
                 if (portVal != null) {
@@ -214,13 +267,19 @@ public class StandardMibStrategy implements DiscoveryStrategy {
                     }
 
                     if (ifIndex != null) {
-                        device.getMacAddressTable().computeIfAbsent(ifIndex, k -> new ArrayList<>()).add(mac);
+                        DetectedEndpoint endpoint = new DetectedEndpoint(mac, null, vendor);
+                        device.getMacAddressTable().computeIfAbsent(ifIndex, k -> new ArrayList<>()).add(endpoint);
+                        mappedCount++;
+                    } else {
+                        // System.out.println("DEBUG: Unmapped Bridge Port: " + bridgePort); // Verbose
                     }
                 }
             } catch (Exception e) {
+                System.err.println("Error processing MAC entry: " + e.getMessage());
                 continue;
             }
         }
+        System.out.println("DEBUG: Total Mapped MACs: " + mappedCount);
     }
 
     private void fetchVlans(SnmpClient snmp, String ip, NetworkDevice device) {

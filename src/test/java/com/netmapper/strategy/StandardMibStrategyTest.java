@@ -3,6 +3,7 @@ package com.netmapper.strategy;
 import com.netmapper.core.SnmpClient;
 import com.netmapper.model.NetworkDevice;
 import com.netmapper.model.NetworkInterface;
+import com.netmapper.model.DetectedEndpoint;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -117,5 +118,72 @@ public class StandardMibStrategyTest {
         assertEquals(2, vlans.size());
         assertTrue(vlans.contains("VLAN 1: default"));
         assertTrue(vlans.contains("VLAN 10: management"));
+    }
+
+    @Test
+    public void testMacAddressTableDiscovery() {
+        // Mock Interfaces first
+        Map<String, String> ifDescr = new HashMap<>();
+        ifDescr.put("1.3.6.1.2.1.2.2.1.2.1", "Port1");
+        ifDescr.put("1.3.6.1.2.1.2.2.1.2.2", "Port2");
+        when(snmpClient.walk(anyString(), eq("1.3.6.1.2.1.2.2.1.2"))).thenReturn(ifDescr);
+
+        // Mock Bridge Port to IfIndex Map
+        Map<String, String> bridgeMap = new HashMap<>();
+        bridgeMap.put("1.3.6.1.2.1.17.1.4.1.2.101", "1");
+        bridgeMap.put("1.3.6.1.2.1.17.1.4.1.2.102", "2");
+        when(snmpClient.walk(anyString(), eq("1.3.6.1.2.1.17.1.4.1.2"))).thenReturn(bridgeMap);
+
+        // Mock MAC Address Table
+        // MAC 1: 00:00:0C:00:00:01 (Cisco) on Port 101 (Index 1)
+        // MAC 2: 00:1B:63:00:00:02 (Apple) on Port 102 (Index 2)
+        Map<String, String> macs = new HashMap<>();
+        macs.put("1.3.6.1.2.1.17.4.3.1.1.1.2.3.4.5.6", "00:00:0C:00:00:01");
+        macs.put("1.3.6.1.2.1.17.4.3.1.1.6.5.4.3.2.1", "00:1B:63:00:00:02");
+
+        Map<String, String> ports = new HashMap<>();
+        ports.put("1.3.6.1.2.1.17.4.3.1.2.1.2.3.4.5.6", "101");
+        ports.put("1.3.6.1.2.1.17.4.3.1.2.6.5.4.3.2.1", "102");
+
+        when(snmpClient.walk(anyString(), eq("1.3.6.1.2.1.17.4.3.1.1"))).thenReturn(macs);
+        when(snmpClient.walk(anyString(), eq("1.3.6.1.2.1.17.4.3.1.2"))).thenReturn(ports);
+
+        strategy.discover(snmpClient, device);
+
+        // Verify
+        Map<Integer, List<DetectedEndpoint>> macTable = device.getMacAddressTable();
+
+        // Index 1 (Cisco)
+        assertTrue(macTable.containsKey(1));
+        DetectedEndpoint ep1 = macTable.get(1).get(0);
+        assertEquals("00:00:0C:00:00:01", ep1.getMacAddress());
+        assertEquals("Cisco", ep1.getVendor());
+        assertNull(ep1.getIpAddress()); // Bridge MIB no da IP
+
+        // Index 2 (Apple)
+        assertTrue(macTable.containsKey(2));
+        DetectedEndpoint ep2 = macTable.get(2).get(0);
+        assertEquals("00:1B:63:00:00:02", ep2.getMacAddress());
+        assertEquals("Apple", ep2.getVendor());
+    }
+
+    @Test
+    public void testArpTableDiscovery() {
+        // Mock ipNetToMediaPhysAddress. ifIndex 1, IP 10.0.0.5 -> MAC (Cisco)
+        Map<String, String> arpEntries = new HashMap<>();
+        arpEntries.put("1.3.6.1.2.1.4.22.1.2.1.10.0.0.5", "00:00:0C:11:22:33");
+
+        when(snmpClient.walk(anyString(), eq("1.3.6.1.2.1.4.22.1.2"))).thenReturn(arpEntries);
+
+        strategy.discover(snmpClient, device);
+
+        Map<Integer, List<DetectedEndpoint>> macTable = device.getMacAddressTable();
+
+        // Verify Index 1 has ARP entry
+        assertTrue(macTable.containsKey(1));
+        DetectedEndpoint ep = macTable.get(1).get(0);
+        assertEquals("00:00:0C:11:22:33", ep.getMacAddress());
+        assertEquals("10.0.0.5", ep.getIpAddress());
+        assertEquals("Cisco", ep.getVendor());
     }
 }

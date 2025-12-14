@@ -7,6 +7,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Descubrimiento Automático**: Obtiene información del sistema, interfaces, direcciones IP y máscaras.
 - **Soporte de VLANs**: Detecta VLANs configuradas (Q-BRIDGE-MIB).
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB).
+- **Identificación de Fabricantes**: Resolución automática de fabricantes por MAC (Offline + Online con Fallback).
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo.
 - **Interfaz Gráfica**: Visualización clara en árbol mediante Java Swing.
 

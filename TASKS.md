@@ -44,3 +44,8 @@
     - [x] Soporte para Listas de formatos mixtos (e.g. IP, CIDR, Rango separados por comas) <!-- id: 35 -->
     - [x] Actualizar NetworkScannerService para escaneo masivo <!-- id: 31 -->
     - [x] Actualizar GUI para entrada de rangos <!-- id: 32 -->
+- [x] Identificación Dinámica de Fabricantes
+    - [x] Persistencia de fabricantes MAC (mac_vendors.properties) <!-- id: 36 -->
+    - [x] Consulta online a api.macvendors.com <!-- id: 37 -->
+    - [x] Fallback a macvendorlookup.com en caso de fallo <!-- id: 38 -->
+    - [x] Sistema de guardado ordenado y sin duplicados <!-- id: 39 -->
