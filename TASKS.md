@@ -62,3 +62,12 @@
     - [x] Consulta online a api.macvendors.com <!-- id: 37 -->
     - [x] Fallback a macvendorlookup.com en caso de fallo <!-- id: 38 -->
     - [x] Sistema de guardado ordenado y sin duplicados <!-- id: 39 -->
+- [x] Visualización de Vendor en Todas las MACs
+    - [x] Mostrar vendor junto a MAC en interfaces de dispositivos <!-- id: 52 -->
+    - [x] Verificar vendor en endpoints detectados (ya implementado) <!-- id: 53 -->
+    - [x] Verificar vendor en etiquetas de mapa de red (ya implementado) <!-- id: 54 -->
+- [x] Detección de VLANs en Sistemas Linux
+    - [x] Implementar detección por nomenclatura de interfaces (eth0.100, wlp0s20f3.35) <!-- id: 55 -->
+    - [x] Integrar como fallback tras Q-BRIDGE-MIB <!-- id: 56 -->
+    - [x] Validar rango de VLAN ID (1-4094) <!-- id: 57 -->
+    - [x] Verificar funcionamiento en Linux (192.168.100.186) <!-- id: 58 -->

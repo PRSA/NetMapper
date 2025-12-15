@@ -36,7 +36,7 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
     - Lista detallada de interfaces.
     - **Configuración**: MTU, Velocidad (bps), Tipo de Interfaz.
     - **Estado**: Admin/Oper Status.
-    - Direcciones Físicas (MAC) e IP/Máscara.
+    - Direcciones Físicas (MAC con fabricante) e IP/Máscara.
     - **VLANs**: VLAN Nativa (PVID) y VLANs Etiquetadas asociadas.
 3.  **Equipos Conectados**: Direcciones MAC detectadas por puerto (BRIDGE-MIB).
 4.  **Tabla de Rutas**: Destinos y gateways.
@@ -52,6 +52,8 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
     - Fusión de arcos bidireccionales para mejor legibilidad
 11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
 12. **Internacionalización**: Soporte para múltiples idiomas (Español/English) basado en locale del sistema.
+13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible (interfaces, endpoints, mapa de red).
+14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux mediante análisis de nomenclatura de interfaces (ej: `wlp0s20f3.35` → VLAN 35).
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.

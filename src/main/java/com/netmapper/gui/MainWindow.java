@@ -221,7 +221,17 @@ public class MainWindow extends JFrame {
             // Detalles de configuración
             niNode.add(new DefaultMutableTreeNode("Estado Admin: " + ni.getAdminStatus()));
             niNode.add(new DefaultMutableTreeNode("Estado Oper: " + ni.getOperStatus()));
-            niNode.add(new DefaultMutableTreeNode("MAC: " + (ni.getMacAddress() != null ? ni.getMacAddress() : "N/A")));
+            // Display MAC address with vendor information
+            if (ni.getMacAddress() != null) {
+                String macDisplay = "MAC: " + ni.getMacAddress();
+                String vendor = com.netmapper.util.MacVendorUtils.getVendor(ni.getMacAddress());
+                if (vendor != null && !vendor.isEmpty() && !"Unknown".equals(vendor)) {
+                    macDisplay += " (" + vendor + ")";
+                }
+                niNode.add(new DefaultMutableTreeNode(macDisplay));
+            } else {
+                niNode.add(new DefaultMutableTreeNode("MAC: N/A"));
+            }
 
             if (ni.getType() != null)
                 niNode.add(new DefaultMutableTreeNode("Tipo: " + ni.getType()));

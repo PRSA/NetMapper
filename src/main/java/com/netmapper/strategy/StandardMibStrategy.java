@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * Estrategia estándar de descubrimiento usando MIB-II (RFC 1213).
@@ -187,12 +189,97 @@ public class StandardMibStrategy implements DiscoveryStrategy {
             System.err.println("Error obteniendo VLANs: " + e.getMessage());
         }
 
+        // 6b. Fallback: Detect VLANs from interface naming (Linux, etc.)
+        try {
+            detectVlansFromInterfaceNames(device);
+        } catch (Exception e) {
+            System.err.println("Error detecting VLANs from interface names: " + e.getMessage());
+        }
+
         // 7. ARP Table (ipNetToMediaTable) - Fallback/Supplement for L3 devices
         try {
             fetchIpNetToMediaTable(snmp, ip, device);
         } catch (Exception e) {
             System.err.println("Error obteniendo ARP Table: " + e.getMessage());
         }
+    }
+
+    /**
+     * Detects VLANs from Linux-style interface naming (e.g., eth0.100,
+     * wlp0s20f3.35)
+     * This is a fallback when Q-BRIDGE-MIB is not available.
+     */
+    private void detectVlansFromInterfaceNames(NetworkDevice device) {
+        // Define multiple patterns for different OS conventions
+        Pattern[] vlanPatterns = {
+                Pattern.compile("^(.+)\\.(\\d{1,4})$"), // Linux/macOS: eth0.100
+                Pattern.compile("^vlan(\\d{1,4})$"), // macOS: vlan100
+                Pattern.compile("VLAN[\\s:]*?(\\d{1,4})"), // Windows: VLAN 100, VLAN:100
+                Pattern.compile("\\(VLAN[\\s:]*?(\\d{1,4})\\)") // Windows Hyper-V: (VLAN 100)
+        };
+
+        for (NetworkInterface ni : device.getInterfaces()) {
+            String descr = ni.getDescription();
+            if (descr == null || descr.isEmpty())
+                continue;
+
+            // Skip if already has VLAN assigned (from Q-BRIDGE-MIB)
+            if (ni.getUntaggedVlanId() > 0)
+                continue;
+
+            // Try each pattern
+            for (int i = 0; i < vlanPatterns.length; i++) {
+                Matcher matcher = vlanPatterns[i].matcher(descr);
+                if (matcher.find()) {
+                    try {
+                        // Extract VLAN ID (group 1 for standalone, group 2 for dot notation)
+                        String vlanStr = matcher.group(matcher.groupCount());
+                        int vlanId = Integer.parseInt(vlanStr);
+
+                        // Validate VLAN ID range
+                        if (vlanId >= 1 && vlanId <= 4094) {
+                            ni.setUntaggedVlanId(vlanId);
+
+                            // Add to device VLAN list
+                            String detectionMethod = getDetectionMethod(i);
+                            String vlanEntry = "VLAN " + vlanId + " (detected from " + detectionMethod + ": " + descr
+                                    + ")";
+                            addVlanIfNotExists(device, vlanId, vlanEntry);
+
+                            System.out.println(
+                                    "DEBUG: Detected VLAN " + vlanId + " from " + detectionMethod + ": " + descr);
+                            break; // Stop after first match
+                        }
+                    } catch (NumberFormatException e) {
+                        // Invalid VLAN ID, try next pattern
+                    }
+                }
+            }
+        }
+    }
+
+    private String getDetectionMethod(int patternIndex) {
+        switch (patternIndex) {
+            case 0:
+                return "dot notation";
+            case 1:
+                return "vlan prefix";
+            case 2:
+                return "VLAN keyword";
+            case 3:
+                return "Hyper-V format";
+            default:
+                return "interface name";
+        }
+    }
+
+    private void addVlanIfNotExists(NetworkDevice device, int vlanId, String vlanEntry) {
+        for (String existingVlan : device.getVlans()) {
+            if (existingVlan.startsWith("VLAN " + vlanId)) {
+                return; // Already exists
+            }
+        }
+        device.getVlans().add(vlanEntry);
     }
 
     private void fetchIpNetToMediaTable(SnmpClient snmp, String ip, NetworkDevice device) {

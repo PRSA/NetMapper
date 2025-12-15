@@ -115,6 +115,26 @@ Se ha preparado la aplicación para soportar múltiples idiomas:
 -   **Componentes Traducidos**: Todos los elementos de UI principales (títulos, botones, etiquetas, tooltips, mensajes de validación).
 -   **Detección Automática**: Usa el locale del sistema por defecto, con capacidad de cambio manual.
 
+### 3.11 Visualización de Vendor en Todas las MACs
+Se ha completado la integración de información de fabricante en todas las ubicaciones donde se muestran direcciones MAC:
+-   **Interfaces de Dispositivos**: En el árbol de detalles, las MACs de interfaces ahora se muestran con formato "MAC: XX:XX:XX:XX:XX:XX (Vendor Name)".
+-   **Endpoints Detectados**: Los equipos detectados en puertos ya mostraban vendor desde su implementación inicial.
+-   **Mapa de Red**: Las etiquetas de arcos y nodos ya incluían información de vendor para interfaces y endpoints.
+-   **Mecanismo Unificado**: Todas las ubicaciones utilizan `MacVendorUtils.getVendor()` que implementa:
+    -   Cache local persistente en `mac_vendors.properties`.
+    -   Autodescubrimiento mediante APIs online (api.macvendors.com + fallback a macvendorlookup.com).
+    -   Actualización automática del cache con nuevos vendors descubiertos.
+
+### 3.12 Detección de VLANs en Sistemas Linux
+Se ha implementado un mecanismo de fallback para detectar VLANs en sistemas que no exponen Q-BRIDGE-MIB:
+-   **Problema**: Linux y otros sistemas crean interfaces lógicas con nomenclatura `interfaz.vlanid` (ej: `wlp0s20f3.35` para VLAN 35).
+-   **Solución**: Análisis de nombres de interfaces mediante expresión regular `^(.+)\.(\d{1,4})$`.
+-   **Validación**: Verifica que el VLAN ID esté en rango válido IEEE 802.1Q (1-4094).
+-   **Integración**: Se ejecuta como fallback después de intentar Q-BRIDGE-MIB, sin afectar switches estándar.
+-   **Atribución**: Las VLANs detectadas se marcan claramente indicando el método de detección.
+-   **Método**: `detectVlansFromInterfaceNames()` en `StandardMibStrategy`.
+
+
 ## 4. Estructura del Proyecto
 
 ```
