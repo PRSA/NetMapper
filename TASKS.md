@@ -18,6 +18,19 @@
     - [x] Implementar servicio de escaneo y caché de datos <!-- id: 10 -->
 - [x] Interfaz Gráfica (GUI)
     - [x] Actualizar GUI con Marca/Modelo <!-- id: 12 -->
+    - [x] Actualizar dispositivos existentes en lugar de duplicar en escaneo <!-- id: 40 -->
+    - [x] Ordenar dispositivos por dirección IP en el árbol de resultados <!-- id: 41 -->
+    - [x] Implementar botón de Reset/Borrar para limpiar estado y GUI <!-- id: 42 -->
+    - [x] Corregir visualización de árbol tras escaneo <!-- id: 43 -->
+    - [x] Mejorar etiquetas y añadir tooltips informativos <!-- id: 44 -->
+    - [x] Implementar visualización de mapa/grafo de red <!-- id: 45 -->
+    - [x] Mejorar etiquetas del mapa (nombre, vendor, modelo, IP) <!-- id: 46 -->
+    - [x] Corregir duplicación de nodos device/endpoint en mapa <!-- id: 47 -->
+    - [x] Fusionar arcos bidireccionales en el mapa <!-- id: 48 -->
+    - [x] Añadir vendor de interfaces a etiquetas de arcos <!-- id: 49 -->
+    - [x] Validar formato de entrada (IP/CIDR/Rango/Lista/Máscara) <!-- id: 50 -->
+    - [x] Implementar internacionalización (i18n) ES/EN <!-- id: 51 -->
+    - [x] Implementar visualización de mapa/grafo de red <!-- id: 45 -->
 - [x] Mejoras y Correcciones
     - [x] Aumentar timeout SNMP para evitar errores de conexión <!-- id: 19 -->
     - [x] Ampliar modelo Interface (Speed, MTU, Type) <!-- id: 20 -->

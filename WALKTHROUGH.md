@@ -41,6 +41,17 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
 3.  **Equipos Conectados**: Direcciones MAC detectadas por puerto (BRIDGE-MIB).
 4.  **Tabla de Rutas**: Destinos y gateways.
 5.  **VLANs**: IDs y nombres de VLANs (Q-BRIDGE-MIB).
+6.  **Actualización Dinámica**: Al re-escanear un dispositivo, la información se actualiza en el nodo existente sin crear duplicados.
+7.  **Ordenamiento**: Los dispositivos se muestran automáticamente ordenados por dirección IP de menor a mayor.
+8.  **Reseteo**: Botón "Borrar" para limpiar resultados y comenzar un nuevo escaneo desde cero.
+9.  **Tooltips**: Ayuda contextual mostrando formatos de entrada admitidos al pasar el ratón sobre el campo "Objetivo".
+10. **Mapa de Red**: Visualización gráfica de la topología detectada mostrando dispositivos y endpoints conectados.
+    - Etiquetas de nodos enriquecidas (nombre, modelo, vendor, IP)
+    - Etiquetas de arcos con información de interfaz (descripción, MAC, vendor)
+    - Prevención de nodos duplicados (device/endpoint)
+    - Fusión de arcos bidireccionales para mejor legibilidad
+11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
+12. **Internacionalización**: Soporte para múltiples idiomas (Español/English) basado en locale del sistema.
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.

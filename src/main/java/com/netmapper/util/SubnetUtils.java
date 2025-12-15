@@ -169,6 +169,17 @@ public class SubnetUtils {
         return ips;
     }
 
+    public static int compareIps(String ip1, String ip2) {
+        try {
+            long val1 = ipToLong(InetAddress.getByName(ip1));
+            long val2 = ipToLong(InetAddress.getByName(ip2));
+            return Long.compare(val1, val2);
+        } catch (Exception e) {
+            // Fallback to string comparison if not valid IPs
+            return ip1.compareTo(ip2);
+        }
+    }
+
     private static int netmaskToPrefix(String netmask) throws Exception {
         long mask = ipToLong(InetAddress.getByName(netmask));
         int prefix = 0;
