@@ -97,7 +97,7 @@ Se ha implementado una funcionalidad de mapa/grafo de red:
 -   **Modelo de Grafo**: `NetworkGraph` extrae nodos (dispositivos y endpoints) y aristas (conexiones) de los dispositivos escaneados.
 -   **Etiquetas Enriquecidas**: Los nodos muestran nombre de dispositivo, vendor, modelo e IP. Los endpoints muestran IP/MAC y vendor.
 -   **Etiquetas de Arcos**: Las conexiones muestran descripción de interfaz, MAC address y fabricante de la interfaz.
--   **Prevención de Duplicados**: Los dispositivos que aparecen como endpoints en otros dispositivos solo se muestran como nodos device, con conexiones device-to-device directas.
+-   **Prevención de Duplicados**: Se ha implementado un mecanismo robusto de unificación de nodos en `NetworkGraph` utilizando tanto direcciones IP como MAC. Esto asegura que los dispositivos escaneados que aparecen como endpoints en otros dispositivos se muestren como un único nodo "device", con conexiones directas. El emparejamiento por MAC es insensible a mayúsculas y garantiza una topología limpia.
 -   **Fusión Bidireccional**: Las conexiones bidireccionales se fusionan en un solo arco con etiquetas combinadas mostrando la información de ambos dispositivos.
 -   **Visualización**: `NetworkMapDialog` muestra un grafo circular con nodos coloreados (azul para dispositivos, verde para endpoints) y líneas de conexión.
 -   **Botón "Mapa"**: Permite al usuario ver la topología de red detectada en cualquier momento tras un escaneo.

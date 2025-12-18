@@ -204,6 +204,7 @@ public class MainWindow extends JFrame {
         DefaultMutableTreeNode sysInfoNode = new DefaultMutableTreeNode(Messages.getString("tree.system_info"));
         sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.vendor") + ": " + device.getVendor()));
         sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.model") + ": " + device.getModel()));
+        sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.type") + ": " + device.getDeviceType()));
         sysInfoNode
                 .add(new DefaultMutableTreeNode(Messages.getString("info.description") + ": " + device.getSysDescr()));
         sysInfoNode

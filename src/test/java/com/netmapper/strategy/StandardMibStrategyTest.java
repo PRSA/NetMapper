@@ -157,14 +157,14 @@ public class StandardMibStrategyTest {
         assertTrue(macTable.containsKey(1));
         DetectedEndpoint ep1 = macTable.get(1).get(0);
         assertEquals("00:00:0C:00:00:01", ep1.getMacAddress());
-        assertEquals("Cisco", ep1.getVendor());
+        assertEquals("Cisco Systems, Inc", ep1.getVendor());
         assertNull(ep1.getIpAddress()); // Bridge MIB no da IP
 
         // Index 2 (Apple)
         assertTrue(macTable.containsKey(2));
         DetectedEndpoint ep2 = macTable.get(2).get(0);
         assertEquals("00:1B:63:00:00:02", ep2.getMacAddress());
-        assertEquals("Apple", ep2.getVendor());
+        assertEquals("Apple, Inc.", ep2.getVendor());
     }
 
     @Test
@@ -184,6 +184,6 @@ public class StandardMibStrategyTest {
         DetectedEndpoint ep = macTable.get(1).get(0);
         assertEquals("00:00:0C:11:22:33", ep.getMacAddress());
         assertEquals("10.0.0.5", ep.getIpAddress());
-        assertEquals("Cisco", ep.getVendor());
+        assertEquals("Cisco Systems, Inc", ep.getVendor());
     }
 }

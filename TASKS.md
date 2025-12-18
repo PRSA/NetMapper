@@ -71,3 +71,7 @@
     - [x] Integrar como fallback tras Q-BRIDGE-MIB <!-- id: 56 -->
     - [x] Validar rango de VLAN ID (1-4094) <!-- id: 57 -->
     - [x] Verificar funcionamiento en Linux (192.168.100.186) <!-- id: 58 -->
+- [x] Personalización Visual del Mapa de Red
+    - [x] Asignar iconos representativos (Unicode) por tipo de dispositivo <!-- id: 59 -->
+    - [x] Asignar colores diferenciales por tipo de dispositivo <!-- id: 60 -->
+    - [x] Mantener colores originales para dispositivos/endpoints desconocidos <!-- id: 61 -->

@@ -48,8 +48,9 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
 10. **Mapa de Red**: Visualización gráfica de la topología detectada mostrando dispositivos y endpoints conectados.
     - Etiquetas de nodos enriquecidas (nombre, modelo, vendor, IP)
     - Etiquetas de arcos con información de interfaz (descripción, MAC, vendor)
-    - Prevención de nodos duplicados (device/endpoint)
-    - Fusión de arcos bidireccionales para mejor legibilidad
+    - Prevención de nodos duplicados mediante unificación inteligente de IP y MAC (insensible a mayúsculas)
+    - Fusionar arcos bidireccionales para mejor legibilidad
+    - Iconos representativos y colores específicos según el tipo de dispositivo (Router, Switch, Firewall, Impresora, etc.)
 11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
 12. **Internacionalización**: Soporte para múltiples idiomas (Español/English) basado en locale del sistema.
 13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible (interfaces, endpoints, mapa de red).

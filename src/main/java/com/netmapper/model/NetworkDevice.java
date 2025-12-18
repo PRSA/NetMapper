@@ -19,6 +19,7 @@ public class NetworkDevice {
 
     private String vendor;
     private String model;
+    private String deviceType;
 
     private List<NetworkInterface> interfaces;
     private Map<String, String> routingTable; // Destino -> NextHop
@@ -33,6 +34,7 @@ public class NetworkDevice {
         this.routingTable = new HashMap<>();
         this.vlans = new ArrayList<>();
         this.macAddressTable = new HashMap<>();
+        this.deviceType = "Desconocido";
     }
 
     // Getters y Setters
@@ -134,6 +136,14 @@ public class NetworkDevice {
 
     public void setMacAddressTable(Map<Integer, List<DetectedEndpoint>> macAddressTable) {
         this.macAddressTable = macAddressTable;
+    }
+
+    public String getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
     }
 
     @Override

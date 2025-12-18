@@ -29,7 +29,8 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - Nodos con información detallada (nombre, vendor, modelo, IP)
   - Arcos con información de interfaces (descripción, MAC, fabricante)
   - Fusión automática de conexiones bidireccionales
-  - Prevención de nodos duplicados
+  - Iconos y colores diferenciales por tipo de dispositivo (Router, Switch, PC, Servidor, Impresora, etc.)
+  - Prevención de nodos duplicados mediante unificación inteligente de IP/MAC
 - **Tooltips Informativos**: Ayuda contextual en campos de entrada
 - **Reseteo de Estado**: Botón para limpiar resultados y comenzar nuevo escaneo
 

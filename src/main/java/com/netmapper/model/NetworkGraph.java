@@ -40,11 +40,20 @@ public class NetworkGraph {
         NetworkGraph graph = new NetworkGraph();
         Map<String, GraphNode> nodeMap = new HashMap<>();
 
-        // First pass: Create nodes for each device and store device IPs
+        // First pass: Create nodes for each device and store device IPs and MACs
         Map<String, String> ipToDeviceId = new HashMap<>();
+        Map<String, String> macToDeviceId = new HashMap<>();
+
         for (Map.Entry<String, NetworkDevice> entry : deviceMap.entrySet()) {
             NetworkDevice device = entry.getValue();
             String deviceId = "device_" + device.getIpAddress();
+
+            // Track MACs of this device to avoid duplicates later
+            for (NetworkInterface ni : device.getInterfaces()) {
+                if (ni.getMacAddress() != null && !ni.getMacAddress().isEmpty()) {
+                    macToDeviceId.put(ni.getMacAddress().toLowerCase(), deviceId);
+                }
+            }
 
             // Build detailed label for device
             StringBuilder label = new StringBuilder();
@@ -60,7 +69,7 @@ public class NetworkGraph {
             }
             label.append(device.getIpAddress());
 
-            GraphNode deviceNode = new GraphNode(deviceId, label.toString(), NodeType.DEVICE);
+            GraphNode deviceNode = new GraphNode(deviceId, label.toString(), device.getDeviceType(), NodeType.DEVICE);
             graph.addNode(deviceNode);
             nodeMap.put(deviceId, deviceNode);
             ipToDeviceId.put(device.getIpAddress(), deviceId);
@@ -100,9 +109,17 @@ public class NetworkGraph {
 
                     // Check if endpoint IP corresponds to a scanned device
                     String endpointIp = endpoint.getIpAddress();
+                    String endpointMac = endpoint.getMacAddress() != null ? endpoint.getMacAddress().toLowerCase() : "";
+
+                    String targetDeviceId = null;
                     if (endpointIp != null && !endpointIp.isEmpty() && ipToDeviceId.containsKey(endpointIp)) {
+                        targetDeviceId = ipToDeviceId.get(endpointIp);
+                    } else if (!endpointMac.isEmpty() && macToDeviceId.containsKey(endpointMac)) {
+                        targetDeviceId = macToDeviceId.get(endpointMac);
+                    }
+
+                    if (targetDeviceId != null) {
                         // Endpoint is a device - create device-to-device edge
-                        String targetDeviceId = ipToDeviceId.get(endpointIp);
                         if (!sourceDeviceId.equals(targetDeviceId)) { // Avoid self-loops
                             graph.addEdge(new GraphEdge(sourceDeviceId, targetDeviceId, edgeLabel));
                         }
@@ -122,7 +139,8 @@ public class NetworkGraph {
 
                         // Only add if not already exists
                         if (!nodeMap.containsKey(endpointId)) {
-                            GraphNode endpointNode = new GraphNode(endpointId, endpointLabel, NodeType.ENDPOINT);
+                            GraphNode endpointNode = new GraphNode(endpointId, endpointLabel, "Desconocido",
+                                    NodeType.ENDPOINT);
                             graph.addNode(endpointNode);
                             nodeMap.put(endpointId, endpointNode);
                         }
@@ -206,13 +224,15 @@ public class NetworkGraph {
     public static class GraphNode {
         private String id;
         private String label;
+        private String typeLabel;
         private NodeType type;
         private double x; // Position for rendering
         private double y;
 
-        public GraphNode(String id, String label, NodeType type) {
+        public GraphNode(String id, String label, String typeLabel, NodeType type) {
             this.id = id;
             this.label = label;
+            this.typeLabel = typeLabel;
             this.type = type;
         }
 
@@ -222,6 +242,10 @@ public class NetworkGraph {
 
         public String getLabel() {
             return label;
+        }
+
+        public String getTypeLabel() {
+            return typeLabel;
         }
 
         public NodeType getType() {

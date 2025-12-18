@@ -26,6 +26,7 @@ public class StandardMibStrategy implements DiscoveryStrategy {
     private static final String OID_SYS_CONTACT = "1.3.6.1.2.1.1.4.0";
     private static final String OID_SYS_NAME = "1.3.6.1.2.1.1.5.0";
     private static final String OID_SYS_LOCATION = "1.3.6.1.2.1.1.6.0";
+    private static final String OID_SYS_SERVICES = "1.3.6.1.2.1.1.7.0";
 
     // OIDs Interfaces
     private static final String OID_IF_DESCR = "1.3.6.1.2.1.2.2.1.2";
@@ -64,10 +65,20 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         device.setSysContact(snmp.get(ip, OID_SYS_CONTACT));
         device.setSysUpTime(snmp.get(ip, OID_SYS_UPTIME));
 
-        // 1b. Identificación de Marca/Modelo
+        // 1b. Identificación de Marca/Modelo y Tipo
         String sysObjectIdVal = snmp.get(ip, OID_SYS_OBJECT_ID);
         device.setSysObjectId(sysObjectIdVal);
+
+        String sysServicesStr = snmp.get(ip, OID_SYS_SERVICES);
+        int sysServices = 0;
+        try {
+            if (sysServicesStr != null)
+                sysServices = Integer.parseInt(sysServicesStr);
+        } catch (NumberFormatException ignored) {
+        }
+
         detectVendorAndModel(device);
+        detectDeviceType(device, sysServices);
 
         // 2. Interfaces
         Map<String, String> ifDescrs = snmp.walk(ip, OID_IF_DESCR);
@@ -636,5 +647,61 @@ public class StandardMibStrategy implements DiscoveryStrategy {
 
         device.setVendor(vendor);
         device.setModel(model);
+    }
+
+    private void detectDeviceType(NetworkDevice device, int sysServices) {
+        String descr = device.getSysDescr() != null ? device.getSysDescr().toLowerCase() : "";
+        String vendor = device.getVendor() != null ? device.getVendor().toLowerCase() : "";
+        String model = device.getModel() != null ? device.getModel().toLowerCase() : "";
+        String oid = device.getSysObjectId() != null ? device.getSysObjectId() : "";
+
+        // Default
+        String type = "Desconocido";
+
+        // Heurística por sysServices (RFC 1213)
+        // bit 1: physical, 2: datalink, 3: internet (router), 4: end-to-end, 7:
+        // applications
+        boolean isRouter = (sysServices & 4) != 0;
+        boolean isL2 = (sysServices & 2) != 0;
+
+        if (isRouter) {
+            type = "Router";
+        } else if (isL2) {
+            type = "Switch";
+        }
+
+        // Refinamiento por descripción y palabras clave
+        if (descr.contains("windows")) {
+            type = "PC (Windows)";
+        } else if (descr.contains("linux") || vendor.contains("linux")) {
+            if (type.equals("Desconocido"))
+                type = "Servidor/PC (Linux)";
+        } else if (descr.contains("iphone") || descr.contains("ipad") || descr.contains("android")) {
+            type = "Móvil";
+        } else if (descr.contains("jetdirect") || descr.contains("hp laserjet") || descr.contains("epson")
+                || descr.contains("printer") || descr.contains("impresora")) {
+            type = "Impresora";
+        } else if (descr.contains("firewall") || descr.contains("asa ") || descr.contains("fortigate")
+                || descr.contains("checkpoint")) {
+            type = "Firewall";
+        } else if (vendor.contains("cisco") || vendor.contains("juniper") || vendor.contains("huawei")) {
+            if (descr.contains("switch") || model.contains("catalyst") || model.contains("nexus")) {
+                type = "Switch";
+            } else if (descr.contains("router")) {
+                type = "Router";
+            }
+        } else if (vendor.contains("vmware") || descr.contains("esxi")) {
+            type = "Servidor (Virtual)";
+        }
+
+        // Si sigue siendo desconocido pero tenemos vendor conocido de cliente (Apple,
+        // Samsung, etc.)
+        if (type.equals("Desconocido")) {
+            if (vendor.contains("apple") || vendor.contains("samsung") || vendor.contains("google")) {
+                type = "PC/Móvil";
+            }
+        }
+
+        device.setDeviceType(type);
     }
 }
