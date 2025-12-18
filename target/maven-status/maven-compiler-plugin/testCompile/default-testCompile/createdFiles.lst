@@ -1,3 +1,3 @@
-com\netmapper\util\SubnetUtilsTest.class
-com\netmapper\test\TestLinuxVlanDetection.class
-com\netmapper\strategy\StandardMibStrategyTest.class
+prsa/egosoft/netmapper/test/TestLinuxVlanDetection.class
+prsa/egosoft/netmapper/strategy/StandardMibStrategyTest.class
+prsa/egosoft/netmapper/util/SubnetUtilsTest.class

@@ -18,19 +18,19 @@ El proyecto sigue un patrón de diseño **MVC (Modelo-Vista-Controlador)** simpl
 
 ### Componentes Principales
 
-1.  **Modelo (`com.netmapper.model`)**:
+1.  **Modelo (`prsa.egosoft.netmapper.model`)**:
     -   `NetworkDevice`: Representa un dispositivo (Router/Switch). Contiene información de sistema, lista de interfaces, tablas de enrutamiento y VLANs.
     -   `NetworkInterface`: Representa un puerto o interfaz física/lógica. Almacena IP, máscara, MAC, estado, velocidad, MTU y VLANs asociadas (nativa y etiquetadas).
 
-2.  **Núcleo y Servicios (`com.netmapper.core`, `com.netmapper.service`)**:
+2.  **Núcleo y Servicios (`prsa.egosoft.netmapper.core`, `prsa.egosoft.netmapper.service`)**:
     -   `SnmpClient`: Wrapper sobre SNMP4J. Maneja la complejidad de sesiones UDP, retries (3), timeouts (3000ms) y operaciones PDU (`GET`, `WALK`).
     -   `NetworkScannerService`: Orquestador que inicia el escaneo. Utiliza una estrategia definida para poblar el modelo `NetworkDevice`.
 
-3.  **Estrategias de Descubrimiento (`com.netmapper.strategy`)**:
+3.  **Estrategias de Descubrimiento (`prsa.egosoft.netmapper.strategy`)**:
     -   `DiscoveryStrategy`: Interfaz para definir algoritmos de descubrimiento.
     -   `StandardMibStrategy`: Implementación principal. Utiliza MIBs estándar soportados por la gran mayoría de fabricantes (Cisco, HP, Huawei, D-Link, etc.).
 
-4.  **Interfaz Gráfica (`com.netmapper.gui`)**:
+4.  **Interfaz Gráfica (`prsa.egosoft.netmapper.gui`)**:
     -   `MainWindow`: Ventana principal Swing. Muestra un árbol jerárquico (`JTree`) con los dispositivos y sus detalles, y un panel de logs.
 
 ## 3. Implementación de Funcionalidades
@@ -139,7 +139,7 @@ Se ha implementado un mecanismo de fallback para detectar VLANs en sistemas que 
 
 ```
 /opt/workspace/NetMapper/NetMapper/
-├── src/main/java/com/netmapper/
+├── src/main/java/prsa/egosoft/netmapper/
 │   ├── Main.java                 # Punto de entrada
 │   ├── core/SnmpClient.java      # Wrapper SNMP de bajo nivel
 │   ├── model/                    # POJOs (Device, Interface)

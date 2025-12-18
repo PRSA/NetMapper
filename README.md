@@ -51,10 +51,10 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 mvn clean compile test
 
 # Ejecutar aplicación
-mvn exec:java -Dexec.mainClass="com.netmapper.Main"
+mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main"
 
 # Para ejecutar en inglés
-mvn exec:java -Dexec.mainClass="com.netmapper.Main" -Duser.language=en
+mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 ```
 
 ## Uso
@@ -75,7 +75,7 @@ mvn exec:java -Dexec.mainClass="com.netmapper.Main" -Duser.language=en
 ## Estructura del Proyecto
 
 ```
-src/main/java/com/netmapper/
+src/main/java/prsa/egosoft/netmapper/
 ├── core/           # Cliente SNMP (SNMP4J wrapper)
 ├── model/          # Modelos de datos (Device, Interface, NetworkGraph)
 ├── strategy/       # Estrategias de recolección (MIB-II, Bridge, Q-Bridge)

@@ -18,11 +18,11 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
 
 2.  **Ejecutar la aplicación:**
     ```bash
-    mvn exec:java -Dexec.mainClass="com.netmapper.Main"
+    mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main"
     ```
     O usando el classpath generado:
     ```bash
-    java -cp target/classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]' | tail -1) com.netmapper.Main
+    java -cp target/classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]' | tail -1) prsa.egosoft.netmapper.Main
     ```
 
 ## Funcionalidades
