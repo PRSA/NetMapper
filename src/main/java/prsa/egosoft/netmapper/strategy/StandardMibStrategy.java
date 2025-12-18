@@ -253,7 +253,9 @@ public class StandardMibStrategy implements DiscoveryStrategy {
 
                             // Add to device VLAN list
                             String detectionMethod = getDetectionMethod(i);
-                            String vlanEntry = "VLAN " + vlanId + " (detected from " + detectionMethod + ": " + descr
+                            String vlanEntry = "VLAN " + vlanId + " ("
+                                    + prsa.egosoft.netmapper.i18n.Messages.getString("vlan.detected_from",
+                                            detectionMethod, descr)
                                     + ")";
                             addVlanIfNotExists(device, vlanId, vlanEntry);
 
@@ -272,15 +274,15 @@ public class StandardMibStrategy implements DiscoveryStrategy {
     private String getDetectionMethod(int patternIndex) {
         switch (patternIndex) {
             case 0:
-                return "dot notation";
+                return prsa.egosoft.netmapper.i18n.Messages.getString("vlan.dot_notation");
             case 1:
-                return "vlan prefix";
+                return prsa.egosoft.netmapper.i18n.Messages.getString("vlan.prefix");
             case 2:
-                return "VLAN keyword";
+                return prsa.egosoft.netmapper.i18n.Messages.getString("vlan.keyword");
             case 3:
-                return "Hyper-V format";
+                return prsa.egosoft.netmapper.i18n.Messages.getString("vlan.hyperv");
             default:
-                return "interface name";
+                return prsa.egosoft.netmapper.i18n.Messages.getString("vlan.interface_name");
         }
     }
 
@@ -547,20 +549,20 @@ public class StandardMibStrategy implements DiscoveryStrategy {
 
     private String mapStatus(String status) {
         if ("1".equals(status))
-            return "UP";
+            return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.up");
         if ("2".equals(status))
-            return "DOWN";
+            return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.down");
         if ("3".equals(status))
-            return "TESTING";
-        return "UNKNOWN (" + status + ")";
+            return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.testing");
+        return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.unknown", status);
     }
 
     private void detectVendorAndModel(NetworkDevice device) {
         String oid = device.getSysObjectId();
         String descr = device.getSysDescr();
 
-        String vendor = "Desconocido";
-        String model = "Desconocido";
+        String vendor = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown");
+        String model = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown");
 
         if (oid != null) {
             if (oid.contains(".1.3.6.1.4.1.9.")) {
@@ -595,7 +597,7 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         }
 
         // Si no detectamos por OID, intentamos buscar en la descripción
-        if ("Desconocido".equals(vendor) && descr != null) {
+        if (prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown").equals(vendor) && descr != null) {
             String lowerDescr = descr.toLowerCase();
             if (lowerDescr.contains("cisco"))
                 vendor = "Cisco";
@@ -656,7 +658,7 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         String oid = device.getSysObjectId() != null ? device.getSysObjectId() : "";
 
         // Default
-        String type = "Desconocido";
+        String type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown");
 
         // Heurística por sysServices (RFC 1213)
         // bit 1: physical, 2: datalink, 3: internet (router), 4: end-to-end, 7:
@@ -665,40 +667,43 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         boolean isL2 = (sysServices & 2) != 0;
 
         if (isRouter) {
-            type = "Router";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.router");
         } else if (isL2) {
-            type = "Switch";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.switch");
         }
 
         // Refinamiento por descripción y palabras clave
         if (descr.contains("windows")) {
-            type = "PC (Windows)";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.pc_windows");
         } else if (descr.contains("linux") || vendor.contains("linux")) {
-            if (type.equals("Desconocido"))
-                type = "Servidor/PC (Linux)";
+            if (type.equals(prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown")))
+                type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.pc_linux");
         } else if (descr.contains("iphone") || descr.contains("ipad") || descr.contains("android")) {
-            type = "Móvil";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.mobile");
         } else if (descr.contains("jetdirect") || descr.contains("hp laserjet") || descr.contains("epson")
                 || descr.contains("printer") || descr.contains("impresora")) {
-            type = "Impresora";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.printer");
         } else if (descr.contains("firewall") || descr.contains("asa ") || descr.contains("fortigate")
                 || descr.contains("checkpoint")) {
-            type = "Firewall";
-        } else if (vendor.contains("cisco") || vendor.contains("juniper") || vendor.contains("huawei")) {
-            if (descr.contains("switch") || model.contains("catalyst") || model.contains("nexus")) {
-                type = "Switch";
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.firewall");
+        } else if (vendor.toLowerCase().contains("cisco") || vendor.toLowerCase().contains("juniper")
+                || vendor.toLowerCase().contains("huawei")) {
+            if (descr.contains("switch") || model.toLowerCase().contains("catalyst")
+                    || model.toLowerCase().contains("nexus")) {
+                type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.switch");
             } else if (descr.contains("router")) {
-                type = "Router";
+                type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.router");
             }
-        } else if (vendor.contains("vmware") || descr.contains("esxi")) {
-            type = "Servidor (Virtual)";
+        } else if (vendor.toLowerCase().contains("vmware") || descr.contains("esxi")) {
+            type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.server_virtual");
         }
 
         // Si sigue siendo desconocido pero tenemos vendor conocido de cliente (Apple,
         // Samsung, etc.)
-        if (type.equals("Desconocido")) {
-            if (vendor.contains("apple") || vendor.contains("samsung") || vendor.contains("google")) {
-                type = "PC/Móvil";
+        if (type.equals(prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown"))) {
+            if (vendor.toLowerCase().contains("apple") || vendor.toLowerCase().contains("samsung")
+                    || vendor.toLowerCase().contains("google")) {
+                type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.pc_mobile");
             }
         }
 

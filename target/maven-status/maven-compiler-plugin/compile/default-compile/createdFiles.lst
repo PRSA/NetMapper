@@ -6,7 +6,9 @@ prsa/egosoft/netmapper/core/SnmpClient.class
 prsa/egosoft/netmapper/model/DetectedEndpoint.class
 prsa/egosoft/netmapper/Main.class
 prsa/egosoft/netmapper/model/NetworkDevice.class
+prsa/egosoft/netmapper/util/NetworkDiscoveryUtils$NetworkInfo.class
 prsa/egosoft/netmapper/model/NetworkGraph$NodeType.class
+prsa/egosoft/netmapper/util/NetworkDiscoveryUtils.class
 prsa/egosoft/netmapper/gui/NetworkMapDialog.class
 prsa/egosoft/netmapper/service/NetworkScannerService.class
 prsa/egosoft/netmapper/gui/MainWindow.class

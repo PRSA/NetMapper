@@ -52,9 +52,12 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
     - Fusionar arcos bidireccionales para mejor legibilidad
     - Iconos representativos y colores específicos según el tipo de dispositivo (Router, Switch, Firewall, Impresora, etc.)
 11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
-12. **Internacionalización**: Soporte para múltiples idiomas (Español/English) basado en locale del sistema.
-13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible (interfaces, endpoints, mapa de red).
-14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux mediante análisis de nomenclatura de interfaces (ej: `wlp0s20f3.35` → VLAN 35).
+12. **Internacionalización**: Soporte dinámico para múltiples idiomas (Español/English) con selector en tiempo real.
+13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible.
+14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux.
+15. **Descubrimiento Automático de Redes**: Botón "Descubrimiento Automático" que detecta interfaces y subredes locales.
+16. **Selector de Idioma**: Permite cambiar el idioma de toda la interfaz sin reiniciar la aplicación.
+
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.

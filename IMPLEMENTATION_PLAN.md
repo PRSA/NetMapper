@@ -134,6 +134,29 @@ Se ha implementado un mecanismo de fallback para detectar VLANs en sistemas que 
 -   **Atribución**: Las VLANs detectadas se marcan claramente indicando el método de detección.
 -   **Método**: `detectVlansFromInterfaceNames()` en `StandardMibStrategy`.
 
+### 3.13 Descubrimiento Automático de Redes Locales [NUEVO]
+
+Para facilitar el uso sin conocimiento previo de la red, se ha implementado un sistema de descubrimiento automático.
+
+- **Componente**: `NetworkDiscoveryUtils`.
+- **Lógica**:
+    - Enumeración de todas las `NetworkInterface` del sistema.
+    - Filtrado de interfaces (solo IPv4, activas, no loopback).
+    - **Algoritmo de Unificación**: Si se detectan múltiples subredes, se analizan solapamientos. Si una red engloba a otra (ej. `/16` que contiene una `/24`), se prioriza la de mayor rango para evitar escaneos duplicados.
+- **Integración GUI**: Nuevo botón que invoca el descubrimiento y lanza escaneos concurrentes para cada red detectada.
+
+### 3.14 Refactorización de Idiomas y Selector Dinámico [NUEVO]
+
+Se ha rediseñado el sistema de internacionalización para permitir cambios en caliente.
+
+- **Consolidación de Recursos**: Eliminación de `messages.properties` para usar solo `_es` y `_en`.
+- **Lógica de Fallback**: Si el locale del sistema no es ES o EN, `Messages.java` fuerza el uso de Español.
+- **Placeholder Standard**: Se ha migrado del formato `%s/%d` al formato `{0}` de `MessageFormat` para asegurar la compatibilidad con diferentes idiomas y orden de argumentos.
+- **Patrón de Observador**: `Messages` permite registrar `Runnable` que se ejecutan al cambiar el idioma.
+- **Refresco Dinámico**: `MainWindow` implementa un método `updateUITexts()` que se registra como observador y re-asocia todos los textos de labels, botones y tooltips al cambiar la selección en el `JComboBox` de idiomas.
+- **Internacionalización Integral**: Se han localizado también todas las alertas (`JOptionPane`), mensajes de error técnicos, unidades (bps), estados de interfaces y categorías de dispositivos, eliminando cualquier cadena de texto dependiente del código.
+
+
 
 ## 4. Estructura del Proyecto
 

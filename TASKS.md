@@ -75,3 +75,21 @@
     - [x] Asignar iconos representativos (Unicode) por tipo de dispositivo <!-- id: 59 -->
     - [x] Asignar colores diferenciales por tipo de dispositivo <!-- id: 60 -->
     - [x] Mantener colores originales para dispositivos/endpoints desconocidos <!-- id: 61 -->
+- [x] Descubrimiento Automático de Redes
+    - [x] Implementar detección de interfaces locales y subredes <!-- id: 62 -->
+    - [x] Filtrar redes redundantes o solapadas (priorizar rangos mayores) <!-- id: 63 -->
+    - [x] Añadir botón "Descubrimiento Automático" en GUI <!-- id: 64 -->
+    - [x] Integrar con el servicio de escaneo concurrente <!-- id: 65 -->
+- [x] Refactorización de Idiomas y Selector Dinámico
+    - [x] Eliminar bundle por defecto y consolidar en ES/EN <!-- id: 66 -->
+    - [x] Implementar sistema de fallback a Español <!-- id: 67 -->
+    - [x] Añadir selector de idioma (JComboBox) en GUI <!-- id: 68 -->
+    - [x] Implementar refresco dinámico de textos mediante observador <!-- id: 69 -->
+    - [x] Estandarizar placeholders a formato MessageFormat ({0}) <!-- id: 70 -->
+- [x] Internacionalización Completa (Alertas y Etiquetas)
+    - [x] Localizar alertas JOptionPane y mensajes de error <!-- id: 71 -->
+    - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
+    - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
+    - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
+
+

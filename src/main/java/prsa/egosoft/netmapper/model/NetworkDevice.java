@@ -34,7 +34,7 @@ public class NetworkDevice {
         this.routingTable = new HashMap<>();
         this.vlans = new ArrayList<>();
         this.macAddressTable = new HashMap<>();
-        this.deviceType = "Desconocido";
+        this.deviceType = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown");
     }
 
     // Getters y Setters

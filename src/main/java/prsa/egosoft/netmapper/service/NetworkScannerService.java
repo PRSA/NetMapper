@@ -33,7 +33,7 @@ public class NetworkScannerService {
             Consumer<String> onError) {
         List<String> ips = SubnetUtils.getIpList(cidrInput);
         if (ips.isEmpty()) {
-            onError.accept("Formato de red inválido: " + cidrInput);
+            onError.accept(prsa.egosoft.netmapper.i18n.Messages.getString("message.error_invalid_format", cidrInput));
             return;
         }
 
@@ -72,7 +72,8 @@ public class NetworkScannerService {
                 // Para bulk, tal vez solo loguear.
                 // Decisión: propagar error. La UI puede ignorar timeouts si quiere.
                 logger.error("Error escaneando device {}", ip, e);
-                onError.accept("Error accediendo a " + ip + ": " + e.getMessage());
+                onError.accept(
+                        prsa.egosoft.netmapper.i18n.Messages.getString("message.error_accessing", ip, e.getMessage()));
             } finally {
                 if (client != null) {
                     try {

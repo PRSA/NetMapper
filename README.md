@@ -20,8 +20,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - Rango IP: `192.168.1.1-192.168.1.50`
   - Lista separada por comas de cualquiera de los anteriores
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
-- **Gestión de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
+- **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
 - **Ordenamiento**: Dispositivos ordenados automáticamente por dirección IP
+- **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces y subnets locales del equipo e iniciar su escaneo.
 
 ### Visualización
 - **Interfaz Gráfica**: Visualización clara en árbol mediante Java Swing
@@ -35,8 +36,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Reseteo de Estado**: Botón para limpiar resultados y comenzar nuevo escaneo
 
 ### Internacionalización
-- **Soporte Multiidioma**: Interfaz disponible en Español e Inglés
-- **Detección Automática**: Usa el locale del sistema por defecto
+- **Soporte Dinámico Integro**: Toda la interfaz, incluyendo alertas (`JOptionPane`), mensajes de log, errores técnicos y etiquetas del árbol, están disponibles en Español e Inglés.
+- **Selector de Idioma**: Selector desplegable en la UI para cambiar el idioma en tiempo real sin reiniciar.
+- **Detección y Fallback**: Usa el locale del sistema al inicio (si es ES o EN), de lo contrario usa Español por defecto.
 
 ## Requisitos
 
@@ -67,10 +69,12 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
    - Un rango de IPs
    - Una lista separada por comas
 3. Ingrese la comunidad SNMP (por defecto `public`)
-4. Haga clic en "Escanear"
-5. Explore los resultados en el árbol de la izquierda
-6. Haga clic en "Mapa" para visualizar la topología de red
-7. Use "Borrar" para limpiar y comenzar de nuevo
+4. Haga clic en "Escanear" para el objetivo manual
+5. **Opcional**: Use "Descubrimiento Automático" para encontrar y escanear subredes locales automáticamente
+6. Explore los resultados en el árbol de la izquierda
+7. Haga clic en "Ver Mapa" para visualizar la topología de red
+8. Use el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente
+9. Use "Limpiar" para limpiar y comenzar de nuevo
 
 ## Estructura del Proyecto
 
@@ -85,8 +89,7 @@ src/main/java/prsa/egosoft/netmapper/
 └── i18n/           # Internacionalización (Messages, resource bundles)
 
 src/main/resources/
-├── messages.properties       # Recursos por defecto (Español)
-├── messages_es.properties    # Recursos en Español
+├── messages_es.properties    # Recursos en Español (por defecto)
 └── messages_en.properties    # Recursos en Inglés
 ```
 

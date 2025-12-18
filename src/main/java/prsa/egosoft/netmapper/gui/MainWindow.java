@@ -5,6 +5,8 @@ import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.model.NetworkInterface;
 import prsa.egosoft.netmapper.model.DetectedEndpoint;
 import prsa.egosoft.netmapper.service.NetworkScannerService;
+import prsa.egosoft.netmapper.util.NetworkDiscoveryUtils;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -23,6 +25,17 @@ public class MainWindow extends JFrame {
 
     private Map<String, DefaultMutableTreeNode> deviceNodeMap;
 
+    // Componentes que necesitan actualización de idioma
+    private JLabel ipLabel;
+    private JLabel communityLabel;
+    private JButton scanButton;
+    private JButton autoButton;
+    private JButton clearButton;
+    private JButton mapButton;
+    private JComboBox<String> languageSelector;
+    private String[] languages = { "Español", "English" };
+    private java.util.Locale[] locales = { new java.util.Locale("es"), java.util.Locale.ENGLISH };
+
     public MainWindow() {
         super(Messages.getString("window.title"));
         this.scannerService = new NetworkScannerService();
@@ -33,36 +46,55 @@ public class MainWindow extends JFrame {
         setLocationRelativeTo(null);
 
         initComponents();
+        Messages.addLocaleListener(this::updateUITexts);
+        updateUITexts(); // Inicializar textos
     }
 
     private void initComponents() {
         // Panel Superior: Configuración
         JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JLabel ipLabel = new JLabel(Messages.getString("label.target") + ":");
-        String tooltipText = Messages.getString("tooltip.target.formats");
-        ipLabel.setToolTipText(tooltipText);
+        ipLabel = new JLabel();
         configPanel.add(ipLabel);
 
         ipField = new JTextField("192.168.1.0/24", 15);
-        ipField.setToolTipText(tooltipText);
         configPanel.add(ipField);
 
-        configPanel.add(new JLabel(Messages.getString("label.community") + ":"));
+        communityLabel = new JLabel();
+        configPanel.add(communityLabel);
+
         communityField = new JTextField("public", 10);
         configPanel.add(communityField);
 
-        JButton scanButton = new JButton(Messages.getString("button.scan"));
+        scanButton = new JButton();
         scanButton.addActionListener(e -> startScan());
         configPanel.add(scanButton);
 
-        JButton clearButton = new JButton(Messages.getString("button.clear"));
+        autoButton = new JButton();
+        autoButton.addActionListener(e -> startAutoDiscovery());
+        configPanel.add(autoButton);
+
+        clearButton = new JButton();
         clearButton.addActionListener(e -> resetApp());
         configPanel.add(clearButton);
 
-        JButton mapButton = new JButton(Messages.getString("button.map"));
+        mapButton = new JButton();
         mapButton.addActionListener(e -> showNetworkMap());
         configPanel.add(mapButton);
+
+        // Selector de Idioma
+        languageSelector = new JComboBox<>(languages);
+        // Seleccionar el idioma actual
+        if (Messages.getLocale().getLanguage().equals("en")) {
+            languageSelector.setSelectedIndex(1);
+        } else {
+            languageSelector.setSelectedIndex(0);
+        }
+        languageSelector.addActionListener(e -> {
+            int index = languageSelector.getSelectedIndex();
+            Messages.setLocale(locales[index]);
+        });
+        configPanel.add(languageSelector);
 
         // Panel Central: Árbol de resultados y Detalles
         rootNode = new DefaultMutableTreeNode(Messages.getString("tree.root"));
@@ -82,6 +114,51 @@ public class MainWindow extends JFrame {
         add(configPanel, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
         add(logScroll, BorderLayout.SOUTH);
+    }
+
+    private void updateUITexts() {
+        setTitle(Messages.getString("window.title"));
+        ipLabel.setText(Messages.getString("label.target") + ":");
+        communityLabel.setText(Messages.getString("label.community") + ":");
+        scanButton.setText(Messages.getString("button.scan"));
+        autoButton.setText(Messages.getString("button.autodiscover"));
+        clearButton.setText(Messages.getString("button.clear"));
+        mapButton.setText(Messages.getString("button.map"));
+
+        String tooltipText = Messages.getString("tooltip.target.formats");
+        ipLabel.setToolTipText(tooltipText);
+        ipField.setToolTipText(tooltipText);
+
+        if (rootNode != null) {
+            rootNode.setUserObject(Messages.getString("tree.root"));
+            treeModel.nodeChanged(rootNode);
+        }
+
+        // Re-display existing devices to update their group labels if necessary
+        // (though model objects won't change strings magically,
+        // static parts of the tree like "Interfaces (3)" are generated in
+        // displayDevice)
+        // For simplicity, we only update the root here.
+    }
+
+    private void startAutoDiscovery() {
+        logArea.append(Messages.getString("message.autodiscover_start") + "\n");
+        List<String> networks = NetworkDiscoveryUtils.discoverLocalNetworks();
+
+        if (networks.isEmpty()) {
+            logArea.append(Messages.getString("message.error_no_networks") + "\n");
+            return;
+        }
+
+        logArea.append(Messages.getString("message.networks_found", networks.toString()) + "\n");
+
+        String community = communityField.getText().trim();
+        for (String network : networks) {
+            logArea.append(Messages.getString("message.scan_start", network) + "\n");
+            scannerService.scanNetwork(network, community,
+                    device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
+                    error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")));
+        }
     }
 
     private void startScan() {
@@ -220,45 +297,51 @@ public class MainWindow extends JFrame {
             DefaultMutableTreeNode niNode = new DefaultMutableTreeNode(ni.toString());
 
             // Detalles de configuración
-            niNode.add(new DefaultMutableTreeNode("Estado Admin: " + ni.getAdminStatus()));
-            niNode.add(new DefaultMutableTreeNode("Estado Oper: " + ni.getOperStatus()));
+            niNode.add(new DefaultMutableTreeNode(
+                    Messages.getString("interface.admin_status") + ": " + ni.getAdminStatus()));
+            niNode.add(new DefaultMutableTreeNode(
+                    Messages.getString("interface.oper_status") + ": " + ni.getOperStatus()));
             // Display MAC address with vendor information
             if (ni.getMacAddress() != null) {
-                String macDisplay = "MAC: " + ni.getMacAddress();
+                String macDisplay = Messages.getString("interface.mac") + ": " + ni.getMacAddress();
                 String vendor = prsa.egosoft.netmapper.util.MacVendorUtils.getVendor(ni.getMacAddress());
                 if (vendor != null && !vendor.isEmpty() && !"Unknown".equals(vendor)) {
                     macDisplay += " (" + vendor + ")";
                 }
                 niNode.add(new DefaultMutableTreeNode(macDisplay));
             } else {
-                niNode.add(new DefaultMutableTreeNode("MAC: N/A"));
+                niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.mac_na")));
             }
 
             if (ni.getType() != null)
-                niNode.add(new DefaultMutableTreeNode("Tipo: " + ni.getType()));
+                niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.type") + ": " + ni.getType()));
             if (ni.getMtu() > 0)
-                niNode.add(new DefaultMutableTreeNode("MTU: " + ni.getMtu()));
+                niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.mtu") + ": " + ni.getMtu()));
             if (ni.getSpeed() != null)
-                niNode.add(new DefaultMutableTreeNode("Velocidad: " + ni.getSpeed() + " bps"));
+                niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.speed") + ": " + ni.getSpeed() + " "
+                        + Messages.getString("interface.speed_unit")));
 
             if (ni.getIpAddress() != null) {
-                niNode.add(new DefaultMutableTreeNode("IP: " + ni.getIpAddress()));
-                niNode.add(new DefaultMutableTreeNode("Máscara: " + ni.getSubnetMask()));
+                niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.ip") + ": " + ni.getIpAddress()));
+                niNode.add(
+                        new DefaultMutableTreeNode(Messages.getString("interface.mask") + ": " + ni.getSubnetMask()));
             }
 
             if (ni.getUntaggedVlanId() > 0) {
-                niNode.add(new DefaultMutableTreeNode("VLAN Nativa: " + ni.getUntaggedVlanId()));
+                niNode.add(new DefaultMutableTreeNode(
+                        Messages.getString("interface.vlan_native_label") + ": " + ni.getUntaggedVlanId()));
             }
 
             if (!ni.getTaggedVlans().isEmpty()) {
-                niNode.add(new DefaultMutableTreeNode("VLANs Etiquetadas: " + ni.getTaggedVlans()));
+                niNode.add(new DefaultMutableTreeNode(
+                        Messages.getString("interface.vlans_tagged_label") + ": " + ni.getTaggedVlans()));
             }
 
             // MACs aprendidas en este puerto
             java.util.List<DetectedEndpoint> learnedEndpoints = device.getMacAddressTable().get(ni.getIndex());
             if (learnedEndpoints != null && !learnedEndpoints.isEmpty()) {
                 DefaultMutableTreeNode learnedNode = new DefaultMutableTreeNode(
-                        "Equipos Detectados (" + learnedEndpoints.size() + ")");
+                        Messages.getString("interface.learned_endpoints", learnedEndpoints.size()));
                 for (DetectedEndpoint endpoint : learnedEndpoints) {
                     learnedNode.add(new DefaultMutableTreeNode(endpoint.toString()));
                 }
@@ -271,16 +354,19 @@ public class MainWindow extends JFrame {
 
         // Routing Node
         if (!device.getRoutingTable().isEmpty()) {
-            DefaultMutableTreeNode routeNode = new DefaultMutableTreeNode("Tabla de Rutas");
+            DefaultMutableTreeNode routeNode = new DefaultMutableTreeNode(Messages.getString("tree.routes"));
             for (Map.Entry<String, String> route : device.getRoutingTable().entrySet()) {
-                routeNode.add(new DefaultMutableTreeNode("Dest: " + route.getKey() + " -> Gw: " + route.getValue()));
+                routeNode.add(new DefaultMutableTreeNode(
+                        Messages.getString("route.destination_label") + ": " + route.getKey() + " -> " +
+                                Messages.getString("route.gateway_label") + ": " + route.getValue()));
             }
             deviceNode.add(routeNode);
         }
 
         // VLANs Node
         if (!device.getVlans().isEmpty()) {
-            DefaultMutableTreeNode vlanNode = new DefaultMutableTreeNode("VLANs (" + device.getVlans().size() + ")");
+            DefaultMutableTreeNode vlanNode = new DefaultMutableTreeNode(
+                    Messages.getString("tree.vlans", device.getVlans().size()));
             for (String vlan : device.getVlans()) {
                 vlanNode.add(new DefaultMutableTreeNode(vlan));
             }
@@ -316,14 +402,14 @@ public class MainWindow extends JFrame {
         deviceNodeMap.clear();
         ipField.setText("");
         logArea.setText("");
-        logArea.append("Estado reseteado.\n");
+        logArea.append(Messages.getString("message.reset_complete") + "\n");
     }
 
     private void showNetworkMap() {
         if (deviceNodeMap.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "No hay dispositivos escaneados para mostrar en el mapa.",
-                    "Mapa Vacío",
+                    Messages.getString("message.map_empty"),
+                    Messages.getString("message.map_empty_title"),
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }

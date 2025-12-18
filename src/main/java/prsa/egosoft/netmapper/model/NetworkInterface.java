@@ -123,6 +123,8 @@ public class NetworkInterface {
 
     @Override
     public String toString() {
-        return description + " [" + (ipAddress != null ? ipAddress : "No IP") + "]";
+        return description + " ["
+                + (ipAddress != null ? ipAddress : prsa.egosoft.netmapper.i18n.Messages.getString("interface.no_ip"))
+                + "]";
     }
 }
