@@ -91,5 +91,11 @@
     - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
     - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
     - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
+- [ ] Exportación e Impresión del Mapa de Red
+    - [ ] Añadir botones PNG, PDF e Imprimir en la ventana del mapa <!-- id: 75 -->
+    - [ ] Implementar exportación a formato PNG <!-- id: 76 -->
+    - [ ] Implementar exportación a PDF (PDFA/1b) con Apache PDFBox <!-- id: 77 -->
+    - [ ] Implementar funcionalidad de impresión del mapa <!-- id: 78 -->
+    - [ ] Localizar botones y mensajes de exportación <!-- id: 79 -->
 
 

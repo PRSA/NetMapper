@@ -158,6 +158,17 @@ Se ha rediseñado el sistema de internacionalización para permitir cambios en c
 
 
 
+### 3.15 Exportación e Impresión del Mapa de Red [NUEVO]
+
+Se añadirá la capacidad de exportar el estado actual del mapa de red a formatos digitales y soporte para impresión física.
+
+- **Componente**: `NetworkMapDialog` y un nuevo `JToolBar`.
+- **Formatos de Exportación**:
+    - **PNG**: Captura de pantalla del `GraphPanel` como imagen rasterizada.
+    - **PDF (PDFA/1b)**: Generación de documento PDF compatible con el estándar de preservación a largo plazo. Se utiliza **Apache PDFBox** junto con un bridge de `Graphics2D` para renderizar los componentes Swing directamente en el PDF como vectores, manteniendo la calidad y permitiendo la búsqueda de texto.
+- **Impresión**: Integración con el sistema de impresión de Java (`java.awt.print.PrinterJob`) para enviar el grafo directamente a la impresora predeterminada.
+- **Interfaz**: Se añade una barra de herramientas en la parte superior del diálogo del mapa con botones "PNG", "PDF" e "Imprimir", totalmente localizados.
+
 ## 4. Estructura del Proyecto
 
 ```

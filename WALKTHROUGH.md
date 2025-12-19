@@ -57,6 +57,10 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
 14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux.
 15. **Descubrimiento Automático de Redes**: Botón "Descubrimiento Automático" que detecta interfaces y subredes locales.
 16. **Selector de Idioma**: Permite cambiar el idioma de toda la interfaz sin reiniciar la aplicación.
+17. **Exportación e Impresión del Mapa**: Botones dedicados en la ventana del mapa:
+    - **PNG**: Exporta el estado actual del mapa como una imagen `.png`.
+    - **PDF**: Genera un documento PDF (PDFA/1b) con el mapa en formato vectorial.
+    - **Imprimir**: Envía el mapa directamente a la impresora configurada en el sistema.
 
 
 ## Notas de Implementación

@@ -1,16 +1,31 @@
 package prsa.egosoft.netmapper.gui;
 
+import prsa.egosoft.netmapper.i18n.Messages;
 import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.model.NetworkGraph;
 import prsa.egosoft.netmapper.model.NetworkGraph.GraphNode;
 import prsa.egosoft.netmapper.model.NetworkGraph.GraphEdge;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 
 /**
  * Dialog displaying a network topology graph.
@@ -20,14 +35,128 @@ public class NetworkMapDialog extends JDialog {
     private GraphPanel graphPanel;
 
     public NetworkMapDialog(JFrame parent, Map<String, NetworkDevice> deviceMap) {
-        super(parent, "Mapa de Red", true);
+        super(parent, Messages.getString("window.title") + " - " + Messages.getString("button.map"), true);
 
         this.graph = NetworkGraph.buildFromDevices(deviceMap);
         this.graphPanel = new GraphPanel(graph);
 
         setSize(800, 600);
         setLocationRelativeTo(parent);
-        add(new JScrollPane(graphPanel));
+        setLayout(new BorderLayout());
+
+        // Toolbar for Actions
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+
+        JButton pngButton = new JButton(Messages.getString("button.png"));
+        pngButton.addActionListener(e -> exportToPNG());
+        toolBar.add(pngButton);
+
+        JButton pdfButton = new JButton(Messages.getString("button.pdf"));
+        pdfButton.addActionListener(e -> exportToPDF());
+        toolBar.add(pdfButton);
+
+        toolBar.addSeparator();
+
+        JButton printButton = new JButton(Messages.getString("button.print"));
+        printButton.addActionListener(e -> printMap());
+        toolBar.add(printButton);
+
+        add(toolBar, BorderLayout.NORTH);
+        add(new JScrollPane(graphPanel), BorderLayout.CENTER);
+    }
+
+    private void exportToPNG() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("network_map.png"));
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            BufferedImage image = new BufferedImage(graphPanel.getWidth(), graphPanel.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = image.createGraphics();
+            graphPanel.paint(g2);
+            g2.dispose();
+            try {
+                ImageIO.write(image, "png", file);
+                JOptionPane.showMessageDialog(this, Messages.getString("message.export_success", file.getName()));
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                        Messages.getString("message.export_error", ex.getMessage()),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void exportToPDF() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("network_map.pdf"));
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            try (PDDocument document = new PDDocument()) {
+                // Determine page size from panel size
+                float width = graphPanel.getWidth();
+                float height = graphPanel.getHeight();
+                PDRectangle pageSize = new PDRectangle(width, height);
+                PDPage page = new PDPage(pageSize);
+                document.addPage(page);
+
+                PdfBoxGraphics2D pdfBoxGraphics2D = new PdfBoxGraphics2D(document, width, height);
+                try {
+                    graphPanel.paint(pdfBoxGraphics2D);
+                } finally {
+                    pdfBoxGraphics2D.dispose();
+                }
+
+                try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                    contentStream.drawForm(pdfBoxGraphics2D.getXFormObject());
+                }
+
+                document.save(file);
+                JOptionPane.showMessageDialog(this, Messages.getString("message.export_success", file.getName()));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        Messages.getString("message.export_error", ex.getMessage()),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void printMap() {
+        PrinterJob job = PrinterJob.getPrinterJob();
+        job.setJobName("NetMapper - " + Messages.getString("button.map"));
+
+        job.setPrintable(new Printable() {
+            @Override
+            public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                if (pageIndex > 0) {
+                    return NO_SUCH_PAGE;
+                }
+
+                Graphics2D g2d = (Graphics2D) graphics;
+                g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+                // Scale to fit page
+                double scaleX = pageFormat.getImageableWidth() / graphPanel.getWidth();
+                double scaleY = pageFormat.getImageableHeight() / graphPanel.getHeight();
+                double scale = Math.min(scaleX, scaleY);
+                g2d.scale(scale, scale);
+
+                graphPanel.paint(g2d);
+
+                return PAGE_EXISTS;
+            }
+        });
+
+        if (job.printDialog()) {
+            try {
+                job.print();
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(this,
+                        Messages.getString("message.export_error", ex.getMessage()),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     private class GraphPanel extends JPanel {

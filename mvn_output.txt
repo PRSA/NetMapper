@@ -1,0 +1,24 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< prsa.egosoft.netmapper:netmapper >------------------
+[INFO] Building netmapper 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ netmapper ---
+[INFO] Deleting E:\workspace\NetMapper\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ netmapper ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ netmapper ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 15 source files with javac [debug release 11] to target\classes
+[INFO] /E:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/core/SnmpClient.java: E:\workspace\NetMapper\src\main\java\prsa\egosoft\netmapper\core\SnmpClient.java uses unchecked or unsafe operations.
+[INFO] /E:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/core/SnmpClient.java: Recompile with -Xlint:unchecked for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.388 s
+[INFO] Finished at: 2025-12-19T12:39:43+01:00
+[INFO] ------------------------------------------------------------------------
