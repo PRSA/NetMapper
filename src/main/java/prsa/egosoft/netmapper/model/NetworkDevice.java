@@ -20,6 +20,8 @@ public class NetworkDevice {
     private String vendor;
     private String model;
     private String deviceType;
+    private int sysServices;
+    private String formattedServices;
 
     private List<NetworkInterface> interfaces;
     private Map<String, String> routingTable; // Destino -> NextHop
@@ -144,6 +146,22 @@ public class NetworkDevice {
 
     public void setDeviceType(String deviceType) {
         this.deviceType = deviceType;
+    }
+
+    public int getSysServices() {
+        return sysServices;
+    }
+
+    public void setSysServices(int sysServices) {
+        this.sysServices = sysServices;
+    }
+
+    public String getFormattedServices() {
+        return formattedServices;
+    }
+
+    public void setFormattedServices(String formattedServices) {
+        this.formattedServices = formattedServices;
     }
 
     @Override

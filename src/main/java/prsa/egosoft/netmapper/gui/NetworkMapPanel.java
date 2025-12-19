@@ -31,21 +31,16 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 
 /**
- * Dialog displaying a network topology graph.
+ * Panel displaying a network topology graph with export and print capabilities.
  */
-public class NetworkMapDialog extends JDialog {
+public class NetworkMapPanel extends JPanel {
     private NetworkGraph graph;
     private GraphPanel graphPanel;
 
-    public NetworkMapDialog(JFrame parent, Map<String, NetworkDevice> deviceMap) {
-        super(parent, Messages.getString("window.title") + " - " + Messages.getString("button.map"), true);
-
-        this.graph = NetworkGraph.buildFromDevices(deviceMap);
-        this.graphPanel = new GraphPanel(graph);
-
-        setSize(800, 600);
-        setLocationRelativeTo(parent);
+    public NetworkMapPanel() {
         setLayout(new BorderLayout());
+        this.graph = new NetworkGraph(); // Empty initial graph
+        this.graphPanel = new GraphPanel(graph);
 
         // Toolbar for Actions
         JToolBar toolBar = new JToolBar();
@@ -67,6 +62,16 @@ public class NetworkMapDialog extends JDialog {
 
         add(toolBar, BorderLayout.NORTH);
         add(new JScrollPane(graphPanel), BorderLayout.CENTER);
+    }
+
+    public void updateMap(Map<String, NetworkDevice> deviceMap) {
+        if (deviceMap == null || deviceMap.isEmpty()) {
+            this.graph = new NetworkGraph();
+        } else {
+            this.graph = NetworkGraph.buildFromDevices(deviceMap);
+        }
+        this.graphPanel.setGraph(this.graph);
+        this.graphPanel.repaint();
     }
 
     private void exportToPNG() {
@@ -96,7 +101,6 @@ public class NetworkMapDialog extends JDialog {
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
             try (PDDocument document = new PDDocument()) {
-                // Determine page size from panel size
                 float width = graphPanel.getWidth();
                 float height = graphPanel.getHeight();
                 PDRectangle pageSize = new PDRectangle(width, height);
@@ -120,7 +124,6 @@ public class NetworkMapDialog extends JDialog {
                 JOptionPane.showMessageDialog(this,
                         Messages.getString("message.export_error", ex.getMessage()),
                         "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
             }
         }
     }
@@ -139,7 +142,6 @@ public class NetworkMapDialog extends JDialog {
                 Graphics2D g2d = (Graphics2D) graphics;
                 g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-                // Scale to fit page
                 double scaleX = pageFormat.getImageableWidth() / graphPanel.getWidth();
                 double scaleY = pageFormat.getImageableHeight() / graphPanel.getHeight();
                 double scale = Math.min(scaleX, scaleY);
@@ -173,12 +175,12 @@ public class NetworkMapDialog extends JDialog {
             this.graph = graph;
             setPreferredSize(new Dimension(800, 600));
             setBackground(Color.WHITE);
-            calculateLayout();
+            // No initial calculateLayout here, will be called by first updateMap
 
             MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    for (GraphNode node : graph.getNodes()) {
+                    for (GraphNode node : GraphPanel.this.graph.getNodes()) {
                         double dist = Math
                                 .sqrt(Math.pow(e.getX() - node.getX(), 2) + Math.pow(e.getY() - node.getY(), 2));
                         if (dist <= NODE_RADIUS) {
@@ -216,7 +218,7 @@ public class NetworkMapDialog extends JDialog {
                         return;
 
                     boolean overNode = false;
-                    for (GraphNode node : graph.getNodes()) {
+                    for (GraphNode node : GraphPanel.this.graph.getNodes()) {
                         double dist = Math
                                 .sqrt(Math.pow(p.getX() - node.getX(), 2) + Math.pow(p.getY() - node.getY(), 2));
                         if (dist <= NODE_RADIUS) {
@@ -234,6 +236,30 @@ public class NetworkMapDialog extends JDialog {
 
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
+        }
+
+        public void setGraph(NetworkGraph newGraph) {
+            // Save current positions to preserve them if nodes still exist
+            Map<String, Point.Double> oldPositions = new HashMap<>();
+            if (this.graph != null) {
+                for (GraphNode node : this.graph.getNodes()) {
+                    oldPositions.put(node.getId(), new Point.Double(node.getX(), node.getY()));
+                }
+            }
+
+            this.graph = newGraph;
+            calculateLayout();
+
+            // Restore positions for existing nodes
+            for (GraphNode node : this.graph.getNodes()) {
+                if (oldPositions.containsKey(node.getId())) {
+                    Point.Double pos = oldPositions.get(node.getId());
+                    if (pos.x != 0 || pos.y != 0) {
+                        node.setX(pos.x);
+                        node.setY(pos.y);
+                    }
+                }
+            }
         }
 
         private void calculateLayout() {
@@ -258,7 +284,6 @@ public class NetworkMapDialog extends JDialog {
             if (centerY <= 0)
                 centerY = 300;
 
-            // 1. Arrange devices in a circle
             double deviceRadius = Math.min(centerX, centerY) * 0.7;
             if (devices.size() == 1) {
                 devices.get(0).setX(centerX);
@@ -272,14 +297,12 @@ public class NetworkMapDialog extends JDialog {
                 }
             }
 
-            // 2. Arrange endpoints around their connected devices
             Map<String, List<GraphNode>> deviceToEndpoints = new HashMap<>();
             for (GraphNode device : devices) {
                 deviceToEndpoints.put(device.getId(), new ArrayList<>());
             }
 
             List<GraphNode> orphanEndpoints = new ArrayList<>();
-
             for (GraphNode endpoint : endpoints) {
                 boolean connected = false;
                 for (NetworkGraph.GraphEdge edge : graph.getEdges()) {
@@ -302,7 +325,6 @@ public class NetworkMapDialog extends JDialog {
                 }
             }
 
-            // Position connected endpoints
             double endpointOrbitRadius = 100;
             for (GraphNode device : devices) {
                 List<GraphNode> children = deviceToEndpoints.get(device.getId());
@@ -318,7 +340,6 @@ public class NetworkMapDialog extends JDialog {
                 }
             }
 
-            // Position orphans in a small central circle if any
             if (!orphanEndpoints.isEmpty()) {
                 double orphanRadius = 50;
                 for (int i = 0; i < orphanEndpoints.size(); i++) {
@@ -336,7 +357,6 @@ public class NetworkMapDialog extends JDialog {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Draw edges first
             g2.setColor(Color.GRAY);
             g2.setStroke(new BasicStroke(2));
             g2.setFont(new Font("Arial", Font.PLAIN, 9));
@@ -347,7 +367,6 @@ public class NetworkMapDialog extends JDialog {
                     g2.drawLine((int) source.getX(), (int) source.getY(),
                             (int) target.getX(), (int) target.getY());
 
-                    // Draw edge label if present
                     if (edge.getLabel() != null && !edge.getLabel().isEmpty()) {
                         int midX = (int) ((source.getX() + target.getX()) / 2);
                         int midY = (int) ((source.getY() + target.getY()) / 2);
@@ -365,9 +384,7 @@ public class NetworkMapDialog extends JDialog {
                 }
             }
 
-            // Draw nodes
             for (GraphNode node : graph.getNodes()) {
-                // Choose color and icon based on type
                 Color nodeColor = getNodeColor(node);
                 String icon = getNodeIcon(node.getTypeLabel());
 
@@ -382,7 +399,6 @@ public class NetworkMapDialog extends JDialog {
                 g2.setColor(Color.BLACK);
                 g2.draw(circle);
 
-                // Draw icon
                 if (!icon.isEmpty()) {
                     g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
                     FontMetrics ifm = g2.getFontMetrics();
@@ -391,7 +407,6 @@ public class NetworkMapDialog extends JDialog {
                             (int) (node.getY() + ifm.getAscent() / 2 - 2));
                 }
 
-                // Draw multi-line label
                 g2.setFont(new Font("Arial", Font.PLAIN, 10));
                 FontMetrics fm = g2.getFontMetrics();
                 String[] lines = node.getLabel().split("\n");
@@ -423,25 +438,24 @@ public class NetworkMapDialog extends JDialog {
 
             type = type.toLowerCase();
             if (type.contains("router"))
-                return new Color(255, 165, 0); // Orange
+                return new Color(255, 165, 0);
             if (type.contains("switch"))
-                return new Color(70, 130, 180); // Dark Blue (SteelBlue)
+                return new Color(70, 130, 180);
             if (type.contains("firewall"))
-                return new Color(220, 20, 60); // Red (Crimson)
+                return new Color(220, 20, 60);
             if (type.contains("impresora"))
-                return new Color(46, 139, 87); // Green (SeaGreen)
+                return new Color(46, 139, 87);
             if (type.contains("móvil") || type.contains("movil"))
-                return new Color(255, 140, 0); // DarkOrange
+                return new Color(255, 140, 0);
             if (type.contains("servidor"))
-                return new Color(138, 43, 226); // Purple (BlueViolet)
+                return new Color(138, 43, 226);
             if (type.contains("pc"))
-                return new Color(0, 191, 255); // Sky Blue (DeepSkyBlue)
+                return new Color(0, 191, 255);
 
-            // Default colors if type not explicitly recognized but known as device/endpoint
             if (node.getType() == NetworkGraph.NodeType.DEVICE) {
-                return new Color(100, 150, 255); // Original Light Blue
+                return new Color(100, 150, 255);
             } else {
-                return new Color(150, 255, 150); // Original Light Green
+                return new Color(150, 255, 150);
             }
         }
 
@@ -450,19 +464,19 @@ public class NetworkMapDialog extends JDialog {
                 return "";
             type = type.toLowerCase();
             if (type.contains("router"))
-                return "\uD83C\uDF10"; // 🌐
+                return "\uD83C\uDF10";
             if (type.contains("switch"))
-                return "\u21C4"; // ⇄
+                return "\u21C4";
             if (type.contains("firewall"))
-                return "\uD83D\uDD25"; // 🔥
+                return "\uD83D\uDD25";
             if (type.contains("impresora"))
-                return "\uD83D\uDDA8"; // 🖨️
+                return "\uD83D\uDDA8";
             if (type.contains("móvil") || type.contains("movil"))
-                return "\uD83D\uDCF1"; // 📱
+                return "\uD83D\uDCF1";
             if (type.contains("servidor"))
-                return "\uD83D\uDDA5"; // 🖥️
+                return "\uD83D\uDDA5";
             if (type.contains("pc"))
-                return "\uD83D\uDCBB"; // 💻
+                return "\uD83D\uDCBB";
             return "";
         }
     }

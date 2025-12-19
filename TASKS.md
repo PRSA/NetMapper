@@ -91,11 +91,21 @@
     - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
     - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
     - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
-- [ ] Exportación e Impresión del Mapa de Red
-    - [ ] Añadir botones PNG, PDF e Imprimir en la ventana del mapa <!-- id: 75 -->
-    - [ ] Implementar exportación a formato PNG <!-- id: 76 -->
-    - [ ] Implementar exportación a PDF (PDFA/1b) con Apache PDFBox <!-- id: 77 -->
-    - [ ] Implementar funcionalidad de impresión del mapa <!-- id: 78 -->
-    - [ ] Localizar botones y mensajes de exportación <!-- id: 79 -->
+- [x] Mejora de Layout y Usabilidad
+    - [x] Hacer que el panel de dispositivos ocupe todo el ancho de la ventana <!-- id: 80 -->
+    - [x] Implementar interfaz de pestañas (Tabs) para dispositivos y mapa <!-- id: 81 -->
+    - [x] Refactorizar panel de configuración a GridBagLayout para diseño multilínea <!-- id: 84 -->
+    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->
+- [x] Visualización de Servicios de Red (sysServices)
+    - [x] Implementar recolección de sysServices según RFC 1213 <!-- id: 86 -->
+    - [x] Decodificar capas de red (Física, Enlace, Internet, etc.) <!-- id: 87 -->
+    - [x] Mostrar servicios entre paréntesis en el tipo de dispositivo <!-- id: 88 -->
+- [x] Exportación e Impresión del Mapa de Red
+    - [x] Añadir botones PNG, PDF e Imprimir en el panel del mapa <!-- id: 75 -->
+    - [x] Implementar exportación a formato PNG <!-- id: 76 -->
+    - [x] Implementar exportación a PDF (PDFA/1b) con Apache PDFBox <!-- id: 77 -->
+    - [x] Implementar funcionalidad de impresión del mapa <!-- id: 78 -->
+    - [x] Corregir Drag & Drop y añadir persistencia de posiciones en el mapa <!-- id: 82 -->
+    - [x] Actualizar ficheros .md globales tras cambios recientes <!-- id: 83 -->
 
 

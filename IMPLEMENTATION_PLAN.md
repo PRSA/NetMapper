@@ -97,10 +97,9 @@ Se ha implementado una funcionalidad de mapa/grafo de red:
 -   **Modelo de Grafo**: `NetworkGraph` extrae nodos (dispositivos y endpoints) y aristas (conexiones) de los dispositivos escaneados.
 -   **Etiquetas Enriquecidas**: Los nodos muestran nombre de dispositivo, vendor, modelo e IP. Los endpoints muestran IP/MAC y vendor.
 -   **Etiquetas de Arcos**: Las conexiones muestran descripción de interfaz, MAC address y fabricante de la interfaz.
--   **Prevención de Duplicados**: Se ha implementado un mecanismo robusto de unificación de nodos en `NetworkGraph` utilizando tanto direcciones IP como MAC. Esto asegura que los dispositivos escaneados que aparecen como endpoints en otros dispositivos se muestren como un único nodo "device", con conexiones directas. El emparejamiento por MAC es insensible a mayúsculas y garantiza una topología limpia.
--   **Fusión Bidireccional**: Las conexiones bidireccionales se fusionan en un solo arco con etiquetas combinadas mostrando la información de ambos dispositivos.
--   **Visualización**: `NetworkMapDialog` muestra un grafo circular con nodos coloreados (azul para dispositivos, verde para endpoints) y líneas de conexión.
--   **Botón "Mapa"**: Permite al usuario ver la topología de red detectada en cualquier momento tras un escaneo.
+-   **Prevención de Duplicados**: Se ha implementado un mecanismo robusto de unificación de nodos en `NetworkGraph` utilizando tanto direcciones IP como MAC.
+-   **Fusión Bidireccional**: Las conexiones bidireccionales se fusionan en un solo arco con etiquetas combinadas.
+-   **Visualización**: El mapa se visualiza en una pestaña dedicada siempre disponible, permitiendo ver la evolución de la red conforme se escanea.
 
 ### 3.9 Validación de Entrada
 Se ha implementado validación completa del campo "Objetivo" antes de iniciar escaneos:
@@ -158,16 +157,31 @@ Se ha rediseñado el sistema de internacionalización para permitir cambios en c
 
 
 
-### 3.15 Exportación e Impresión del Mapa de Red [NUEVO]
-
-Se añadirá la capacidad de exportar el estado actual del mapa de red a formatos digitales y soporte para impresión física.
-
-- **Componente**: `NetworkMapDialog` y un nuevo `JToolBar`.
+### 3.15 Exportación e Impresión del Mapa de Red
+Se ha implementado la capacidad de exportar el estado actual del mapa de red a formatos digitales y soporte para impresión física.
+- **Componente**: `NetworkMapPanel` con una barra de herramientas `JToolBar` integrada.
 - **Formatos de Exportación**:
-    - **PNG**: Captura de pantalla del `GraphPanel` como imagen rasterizada.
-    - **PDF (PDFA/1b)**: Generación de documento PDF compatible con el estándar de preservación a largo plazo. Se utiliza **Apache PDFBox** junto con un bridge de `Graphics2D` para renderizar los componentes Swing directamente en el PDF como vectores, manteniendo la calidad y permitiendo la búsqueda de texto.
-- **Impresión**: Integración con el sistema de impresión de Java (`java.awt.print.PrinterJob`) para enviar el grafo directamente a la impresora predeterminada.
-- **Interfaz**: Se añade una barra de herramientas en la parte superior del diálogo del mapa con botones "PNG", "PDF" e "Imprimir", totalmente localizados.
+    - **PNG**: Captura de pantalla del grafo como imagen rasterizada.
+    - **PDF**: Generación de documento PDF vectorial usando **Apache PDFBox** y `PdfBoxGraphics2D`.
+- **Impresión**: Integración con `java.awt.print.PrinterJob` para enviar el grafo a la impresora.
+- **Interfaz**: Barra de herramientas con botones totalmente localizados.
+
+### 3.16 Layout de Pestañas e Interfaz Integrada
+Se ha optimizado la navegación y el uso del espacio mediante un diseño basado en pestañas.
+- **JTabbedPane**: Reemplaza el diseño estático por uno dinámico que separa los datos tabulares del árbol de la visualización gráfica del mapa.
+- **Pestaña "Dispositivos"**: Ofrece la vista detallada en árbol a ancho completo.
+- **Pestaña "Mapa"**: Muestra el grafo de topología, eliminando la necesidad de ventanas emergentes y permitiendo monitorizar el progreso del mapa en tiempo real.
+- **Persistencia de Posiciones**: El mapa guarda las coordenadas de los nodos movidos manualmente para mantener el layout personalizado tras actualizaciones de escaneo.
+
+### 3.17 Refactorización de Panel de Configuración
+Se ha rediseñado el panel superior para mejorar la ergonomía:
+- **GridBagLayout**: Permite una distribución flexible de componentes en múltiples filas.
+- **Reubicación de Botones**: El botón "Auto Descubrimiento" se sitúa en una segunda línea para no saturar la primera fila y mejorar la jerarquía visual debajo de la etiqueta de objetivo.
+
+### 3.18 Visualización de sysServices
+Se ha implementado el soporte para mostrar los servicios de red activos según RFC 1213:
+- **Lógica**: Decodificación de los bits del campo `sysServices` para identificar capas (Physical, Datalink, Internet, End-to-End, Applications).
+- **Visualización**: Se añaden entre paréntesis al tipo de dispositivo en el árbol de resultados.
 
 ## 4. Estructura del Proyecto
 
@@ -187,7 +201,7 @@ Se añadirá la capacidad de exportar el estado actual del mapa de red a formato
 ```
 
 ## 5. Próximos Pasos / Mejoras Futuras
--   Exportación de resultados a formatos CSV/JSON.
--   Mapa de topología visual (dibujo de grafo de red).
+-   Exportación de resultados del árbol a formatos CSV/JSON.
 -   Soporte para SNMP v3 (Autenticación y Cifrado).
--   Persistencia de datos en base de datos local (SQLite).
+-   Persistencia de datos del historial de escaneos en base de datos local (SQLite).
+-   Detección de tipología de red más allá de SNMP (ej. LLDP/CDP si están disponibles).

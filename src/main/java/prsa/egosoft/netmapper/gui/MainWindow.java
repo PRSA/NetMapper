@@ -22,6 +22,8 @@ public class MainWindow extends JFrame {
     private JTree resultsTree;
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode rootNode;
+    private JTabbedPane tabbedPane;
+    private NetworkMapPanel mapPanel;
 
     private Map<String, DefaultMutableTreeNode> deviceNodeMap;
 
@@ -31,7 +33,6 @@ public class MainWindow extends JFrame {
     private JButton scanButton;
     private JButton autoButton;
     private JButton clearButton;
-    private JButton mapButton;
     private JComboBox<String> languageSelector;
     private String[] languages = { "Español", "English" };
     private java.util.Locale[] locales = { new java.util.Locale("es"), java.util.Locale.ENGLISH };
@@ -51,40 +52,45 @@ public class MainWindow extends JFrame {
     }
 
     private void initComponents() {
-        // Panel Superior: Configuración
-        JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Panel Superior: Configuración usando GridBagLayout para mejor control
+        JPanel configPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
 
+        // Fila 0
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         ipLabel = new JLabel();
-        configPanel.add(ipLabel);
+        configPanel.add(ipLabel, gbc);
 
+        gbc.gridx = 1;
         ipField = new JTextField("192.168.1.0/24", 15);
-        configPanel.add(ipField);
+        configPanel.add(ipField, gbc);
 
+        gbc.gridx = 2;
         communityLabel = new JLabel();
-        configPanel.add(communityLabel);
+        configPanel.add(communityLabel, gbc);
 
+        gbc.gridx = 3;
         communityField = new JTextField("public", 10);
-        configPanel.add(communityField);
+        configPanel.add(communityField, gbc);
 
+        gbc.gridx = 4;
         scanButton = new JButton();
         scanButton.addActionListener(e -> startScan());
-        configPanel.add(scanButton);
+        configPanel.add(scanButton, gbc);
 
-        autoButton = new JButton();
-        autoButton.addActionListener(e -> startAutoDiscovery());
-        configPanel.add(autoButton);
-
+        gbc.gridx = 5;
         clearButton = new JButton();
         clearButton.addActionListener(e -> resetApp());
-        configPanel.add(clearButton);
+        configPanel.add(clearButton, gbc);
 
-        mapButton = new JButton();
-        mapButton.addActionListener(e -> showNetworkMap());
-        configPanel.add(mapButton);
-
-        // Selector de Idioma
+        // Selector de Idioma (fianl de la fila 0)
+        gbc.gridx = 6;
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.EAST;
         languageSelector = new JComboBox<>(languages);
-        // Seleccionar el idioma actual
         if (Messages.getLocale().getLanguage().equals("en")) {
             languageSelector.setSelectedIndex(1);
         } else {
@@ -94,15 +100,32 @@ public class MainWindow extends JFrame {
             int index = languageSelector.getSelectedIndex();
             Messages.setLocale(locales[index]);
         });
-        configPanel.add(languageSelector);
+        configPanel.add(languageSelector, gbc);
 
-        // Panel Central: Árbol de resultados y Detalles
+        // Fila 1: Botón Auto Descubrimiento debajo del objetivo
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        autoButton = new JButton();
+        autoButton.addActionListener(e -> startAutoDiscovery());
+        configPanel.add(autoButton, gbc);
+
+        // Panel Central: Árbol de resultados
         rootNode = new DefaultMutableTreeNode(Messages.getString("tree.root"));
         treeModel = new DefaultTreeModel(rootNode);
         resultsTree = new JTree(treeModel);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(resultsTree), new JPanel());
-        splitPane.setDividerLocation(300);
+        JScrollPane treeScroll = new JScrollPane(resultsTree);
+
+        // Panel de Mapa
+        mapPanel = new NetworkMapPanel();
+
+        // JTabbedPane
+        tabbedPane = new JTabbedPane();
+        tabbedPane.addTab(Messages.getString("tab.devices"), treeScroll);
+        tabbedPane.addTab(Messages.getString("tab.map"), mapPanel);
 
         // Panel Inferior: Logs
         logArea = new JTextArea(5, 50);
@@ -112,7 +135,7 @@ public class MainWindow extends JFrame {
         // Layout Principal
         setLayout(new BorderLayout());
         add(configPanel, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
         add(logScroll, BorderLayout.SOUTH);
     }
 
@@ -123,7 +146,11 @@ public class MainWindow extends JFrame {
         scanButton.setText(Messages.getString("button.scan"));
         autoButton.setText(Messages.getString("button.autodiscover"));
         clearButton.setText(Messages.getString("button.clear"));
-        mapButton.setText(Messages.getString("button.map"));
+
+        if (tabbedPane != null) {
+            tabbedPane.setTitleAt(0, Messages.getString("tab.devices"));
+            tabbedPane.setTitleAt(1, Messages.getString("tab.map"));
+        }
 
         String tooltipText = Messages.getString("tooltip.target.formats");
         ipLabel.setToolTipText(tooltipText);
@@ -281,7 +308,11 @@ public class MainWindow extends JFrame {
         DefaultMutableTreeNode sysInfoNode = new DefaultMutableTreeNode(Messages.getString("tree.system_info"));
         sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.vendor") + ": " + device.getVendor()));
         sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.model") + ": " + device.getModel()));
-        sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.type") + ": " + device.getDeviceType()));
+        String typeDisplay = device.getDeviceType();
+        if (device.getFormattedServices() != null && !device.getFormattedServices().isEmpty()) {
+            typeDisplay += " (" + device.getFormattedServices() + ")";
+        }
+        sysInfoNode.add(new DefaultMutableTreeNode(Messages.getString("info.type") + ": " + typeDisplay));
         sysInfoNode
                 .add(new DefaultMutableTreeNode(Messages.getString("info.description") + ": " + device.getSysDescr()));
         sysInfoNode
@@ -394,6 +425,16 @@ public class MainWindow extends JFrame {
         } else {
             treeModel.nodeStructureChanged(deviceNode);
         }
+
+        // Update map panel
+        Map<String, NetworkDevice> devices = new java.util.HashMap<>();
+        for (Map.Entry<String, DefaultMutableTreeNode> entry : deviceNodeMap.entrySet()) {
+            Object userObj = entry.getValue().getUserObject();
+            if (userObj instanceof NetworkDevice) {
+                devices.put(entry.getKey(), (NetworkDevice) userObj);
+            }
+        }
+        mapPanel.updateMap(devices);
     }
 
     private void resetApp() {
@@ -402,28 +443,7 @@ public class MainWindow extends JFrame {
         deviceNodeMap.clear();
         ipField.setText("");
         logArea.setText("");
+        mapPanel.updateMap(new java.util.HashMap<>());
         logArea.append(Messages.getString("message.reset_complete") + "\n");
-    }
-
-    private void showNetworkMap() {
-        if (deviceNodeMap.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    Messages.getString("message.map_empty"),
-                    Messages.getString("message.map_empty_title"),
-                    JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        // Extract NetworkDevice objects from tree nodes
-        Map<String, NetworkDevice> devices = new java.util.HashMap<>();
-        for (Map.Entry<String, DefaultMutableTreeNode> entry : deviceNodeMap.entrySet()) {
-            Object userObj = entry.getValue().getUserObject();
-            if (userObj instanceof NetworkDevice) {
-                devices.put(entry.getKey(), (NetworkDevice) userObj);
-            }
-        }
-
-        NetworkMapDialog dialog = new NetworkMapDialog(this, devices);
-        dialog.setVisible(true);
     }
 }

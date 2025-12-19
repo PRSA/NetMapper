@@ -7,17 +7,11 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
 - Maven 3.x para compilar.
 - Acceso de red a dispositivos con agente SNMP habilitado (v2c).
 
-## Compilación y Pruebas
+## Uso de la Interfaz
 
-1.  **Compilar y Ejecutar Tests:**
-    ```bash
-    mvn clean test
-    ```
-    Resultados esperados:
-    > Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
-
-2.  **Ejecutar la aplicación:**
-    ```bash
+1.  **Escaneo**: Introduce una IP o rango en el campo superior y pulsa Enter o el botón de escaneo.
+2.  **Visualización**: Navega entre las pestañas **Dispositivos** (árbol) y **Mapa** (grafo).
+3.  **Configuración**: Utiliza el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente.
     mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main"
     ```
     O usando el classpath generado:
@@ -45,22 +39,27 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
 7.  **Ordenamiento**: Los dispositivos se muestran automáticamente ordenados por dirección IP de menor a mayor.
 8.  **Reseteo**: Botón "Borrar" para limpiar resultados y comenzar un nuevo escaneo desde cero.
 9.  **Tooltips**: Ayuda contextual mostrando formatos de entrada admitidos al pasar el ratón sobre el campo "Objetivo".
-10. **Mapa de Red**: Visualización gráfica de la topología detectada mostrando dispositivos y endpoints conectados.
+10. **Mapa de Red (Pestaña)**: Visualización gráfica integrada y siempre disponible de la topología detectada.
     - Etiquetas de nodos enriquecidas (nombre, modelo, vendor, IP)
     - Etiquetas de arcos con información de interfaz (descripción, MAC, vendor)
     - Prevención de nodos duplicados mediante unificación inteligente de IP y MAC (insensible a mayúsculas)
     - Fusionar arcos bidireccionales para mejor legibilidad
     - Iconos representativos y colores específicos según el tipo de dispositivo (Router, Switch, Firewall, Impresora, etc.)
+    - **Persistencia de Posiciones**: El mapa recuerda dónde has colocado cada nodo, incluso si realizas un nuevo escaneo o se encuentran nuevos dispositivos.
 11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
 12. **Internacionalización**: Soporte dinámico para múltiples idiomas (Español/English) con selector en tiempo real.
 13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible.
 14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux.
 15. **Descubrimiento Automático de Redes**: Botón "Descubrimiento Automático" que detecta interfaces y subredes locales.
 16. **Selector de Idioma**: Permite cambiar el idioma de toda la interfaz sin reiniciar la aplicación.
-17. **Exportación e Impresión del Mapa**: Botones dedicados en la ventana del mapa:
+17. **Exportación e Impresión del Mapa**: Botones dedicados en la barra de herramientas del mapa:
     - **PNG**: Exporta el estado actual del mapa como una imagen `.png`.
-    - **PDF**: Genera un documento PDF (PDFA/1b) con el mapa en formato vectorial.
-    - **Imprimir**: Envía el mapa directamente a la impresora configurada en el sistema.
+    - **PDF**: Generas un documento PDF con el mapa.
+    - **Imprimir**: Envía el mapa directamente a la impresora configurada.
+18. **Layout de Pestañas e Interfaz Multilínea**:
+    - Organización en pestañas para separar datos jerárquicos de la visualización gráfica.
+    - Panel de configuración distribuido en dos filas para mayor claridad; el botón "Auto Descubrimiento" se encuentra debajo de la etiqueta de objetivo.
+19. **Servicios de Red**: El tipo de dispositivo incluye ahora los servicios y capas activas detectadas (ej: Internet, Enlace, Aplicaciones).
 
 
 ## Notas de Implementación

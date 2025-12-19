@@ -78,6 +78,8 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         }
 
         detectVendorAndModel(device);
+        device.setSysServices(sysServices);
+        device.setFormattedServices(formatSysServices(sysServices));
         detectDeviceType(device, sysServices);
 
         // 2. Interfaces
@@ -655,7 +657,6 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         String descr = device.getSysDescr() != null ? device.getSysDescr().toLowerCase() : "";
         String vendor = device.getVendor() != null ? device.getVendor().toLowerCase() : "";
         String model = device.getModel() != null ? device.getModel().toLowerCase() : "";
-        String oid = device.getSysObjectId() != null ? device.getSysObjectId() : "";
 
         // Default
         String type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown");
@@ -708,5 +709,21 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         }
 
         device.setDeviceType(type);
+    }
+
+    private String formatSysServices(int sysServices) {
+        List<String> services = new ArrayList<>();
+        if ((sysServices & 1) != 0)
+            services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.physical"));
+        if ((sysServices & 2) != 0)
+            services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.datalink"));
+        if ((sysServices & 4) != 0)
+            services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.internet"));
+        if ((sysServices & 8) != 0)
+            services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.endtoend"));
+        if ((sysServices & 64) != 0)
+            services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.applications"));
+
+        return String.join(", ", services);
     }
 }

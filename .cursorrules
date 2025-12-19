@@ -1,0 +1,14 @@
+# Reglas de Sincronización de Documentación
+
+Siempre que realices cambios en el desarrollo o diseño del proyecto NetMapper, debes actualizar obligatoriamente los siguientes 4 ficheros globales si los cambios realizados les afectan:
+
+1.  **README.md**: Actualizar características, arquitectura o instrucciones de uso si cambian.
+2.  **TASKS.md**: Marcar tareas completadas o añadir nuevas tareas/correcciones realizadas.
+3.  **WALKTHROUGH.md**: Actualizar los pasos de verificación o el manual de usuario si la funcionalidad cambia.
+4.  **IMPLEMENTATION_PLAN.md**: Reflejar cambios en la arquitectura o en las decisiones de diseño a largo plazo.
+
+**Procedimiento:**
+- Al finalizar un bloque de cambios, revisa cada uno de estos 4 ficheros.
+- Asegúrate de que la información sea coherente con el estado actual del código.
+- Si un cambio de diseño afecta a la arquitectura, actualiza el `IMPLEMENTATION_PLAN.md`.
+- Si se añade una nueva funcionalidad, actualiza el `README.md` y añade las pruebas en `WALKTHROUGH.md`.

@@ -11,6 +11,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC en todas las visualizaciones (interfaces, endpoints, mapa de red) usando cache local + lookup online con fallback
+- **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
 
 ### Escaneo Avanzado
 - **Escaneo de Redes**: Soporte para múltiples formatos de entrada:
@@ -18,6 +19,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - CIDR: `192.168.1.0/24`
   - IP/Máscara: `192.168.1.0/255.255.255.0`
   - Rango IP: `192.168.1.1-192.168.1.50`
+- **Internacionalización (i18n)**: Soporte completo para Español e Inglés con cambio dinámico de idioma en la interfaz.
+- **Interfaz mediante Pestañas**: Organización del árbol de dispositivos y el mapa de red en pestañas siempre accesibles.
+- **Interfaz Adaptativa**: Panel de dispositivos optimizado para ocupar todo el ancho disponible y visualización clara de jerarquías de red.
   - Lista separada por comas de cualquiera de los anteriores
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
@@ -25,8 +29,8 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces y subnets locales del equipo e iniciar su escaneo.
 
 ### Visualización
-- **Interfaz Gráfica**: Visualización clara en árbol mediante Java Swing
-- **Mapa de Red Topológico**: Visualización gráfica de la topología de red detectada
+- **Interfaz Gráfica**: Visualización clara mediante pestañas (Swing JTabbedPane)
+- **Mapa de Red Topológico**: Visualización gráfica integrada siempre disponible
   - Nodos con información detallada (nombre, vendor, modelo, IP)
   - Arcos con información de interfaces (descripción, MAC, fabricante)
   - Fusión automática de conexiones bidireccionales
@@ -34,6 +38,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - Prevención de nodos duplicados mediante unificación inteligente de IP/MAC
 - **Tooltips Informativos**: Ayuda contextual en campos de entrada
 - **Reseteo de Estado**: Botón para limpiar resultados y comenzar nuevo escaneo
+- **Layout Optimizada**: Interfaz organizada en pestañas con panel de configuración multilínea para una navegación más cómoda y eficiente.
 
 ### Internacionalización
 - **Soporte Dinámico Integro**: Toda la interfaz, incluyendo alertas (`JOptionPane`), mensajes de log, errores técnicos y etiquetas del árbol, están disponibles en Español e Inglés.
@@ -71,10 +76,10 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 3. Ingrese la comunidad SNMP (por defecto `public`)
 4. Haga clic en "Escanear" para el objetivo manual
 5. **Opcional**: Use "Descubrimiento Automático" para encontrar y escanear subredes locales automáticamente
-6. Explore los resultados en el árbol de la izquierda
-7. Haga clic en "Ver Mapa" para visualizar la topología de red
+6. Explore los resultados en la pestaña **Dispositivos**
+7. Cambie a la pestaña **Mapa** para visualizar la topología de red en tiempo real
 8. Use el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente
-9. Use "Limpiar" para limpiar y comenzar de nuevo
+9. Use "Borrar" para resetear el estado y comenzar de nuevo
 
 ## Estructura del Proyecto
 
