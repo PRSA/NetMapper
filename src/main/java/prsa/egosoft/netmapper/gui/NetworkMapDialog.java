@@ -19,6 +19,9 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -234,20 +237,96 @@ public class NetworkMapDialog extends JDialog {
         }
 
         private void calculateLayout() {
-            // Simple circular layout
-            int nodeCount = graph.getNodes().size();
-            if (nodeCount == 0)
+            List<GraphNode> devices = new ArrayList<>();
+            List<GraphNode> endpoints = new ArrayList<>();
+
+            for (GraphNode node : graph.getNodes()) {
+                if (node.getType() == NetworkGraph.NodeType.DEVICE) {
+                    devices.add(node);
+                } else {
+                    endpoints.add(node);
+                }
+            }
+
+            if (devices.isEmpty() && endpoints.isEmpty())
                 return;
 
-            double centerX = 400;
-            double centerY = 300;
-            double radius = 200;
+            double centerX = getWidth() / 2.0;
+            double centerY = getHeight() / 2.0;
+            if (centerX <= 0)
+                centerX = 400;
+            if (centerY <= 0)
+                centerY = 300;
 
-            for (int i = 0; i < nodeCount; i++) {
-                GraphNode node = graph.getNodes().get(i);
-                double angle = 2 * Math.PI * i / nodeCount;
-                node.setX(centerX + radius * Math.cos(angle));
-                node.setY(centerY + radius * Math.sin(angle));
+            // 1. Arrange devices in a circle
+            double deviceRadius = Math.min(centerX, centerY) * 0.7;
+            if (devices.size() == 1) {
+                devices.get(0).setX(centerX);
+                devices.get(0).setY(centerY);
+            } else {
+                for (int i = 0; i < devices.size(); i++) {
+                    GraphNode device = devices.get(i);
+                    double angle = 2 * Math.PI * i / devices.size();
+                    device.setX(centerX + deviceRadius * Math.cos(angle));
+                    device.setY(centerY + deviceRadius * Math.sin(angle));
+                }
+            }
+
+            // 2. Arrange endpoints around their connected devices
+            Map<String, List<GraphNode>> deviceToEndpoints = new HashMap<>();
+            for (GraphNode device : devices) {
+                deviceToEndpoints.put(device.getId(), new ArrayList<>());
+            }
+
+            List<GraphNode> orphanEndpoints = new ArrayList<>();
+
+            for (GraphNode endpoint : endpoints) {
+                boolean connected = false;
+                for (NetworkGraph.GraphEdge edge : graph.getEdges()) {
+                    if (edge.getTargetId().equals(endpoint.getId())) {
+                        if (deviceToEndpoints.containsKey(edge.getSourceId())) {
+                            deviceToEndpoints.get(edge.getSourceId()).add(endpoint);
+                            connected = true;
+                            break;
+                        }
+                    } else if (edge.getSourceId().equals(endpoint.getId())) {
+                        if (deviceToEndpoints.containsKey(edge.getTargetId())) {
+                            deviceToEndpoints.get(edge.getTargetId()).add(endpoint);
+                            connected = true;
+                            break;
+                        }
+                    }
+                }
+                if (!connected) {
+                    orphanEndpoints.add(endpoint);
+                }
+            }
+
+            // Position connected endpoints
+            double endpointOrbitRadius = 100;
+            for (GraphNode device : devices) {
+                List<GraphNode> children = deviceToEndpoints.get(device.getId());
+                int count = children.size();
+                if (count == 0)
+                    continue;
+
+                for (int i = 0; i < count; i++) {
+                    GraphNode child = children.get(i);
+                    double angle = 2 * Math.PI * i / count;
+                    child.setX(device.getX() + endpointOrbitRadius * Math.cos(angle));
+                    child.setY(device.getY() + endpointOrbitRadius * Math.sin(angle));
+                }
+            }
+
+            // Position orphans in a small central circle if any
+            if (!orphanEndpoints.isEmpty()) {
+                double orphanRadius = 50;
+                for (int i = 0; i < orphanEndpoints.size(); i++) {
+                    GraphNode orphan = orphanEndpoints.get(i);
+                    double angle = 2 * Math.PI * i / orphanEndpoints.size();
+                    orphan.setX(centerX + orphanRadius * Math.cos(angle));
+                    orphan.setY(centerY + orphanRadius * Math.sin(angle));
+                }
             }
         }
 
