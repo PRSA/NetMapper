@@ -58,7 +58,11 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         String ip = device.getIpAddress();
 
         // 1. Información del Sistema
-        device.setSysDescr(snmp.get(ip, OID_SYS_DESCR));
+        String sysDescr = snmp.get(ip, OID_SYS_DESCR);
+        if (sysDescr == null) {
+            return; // Early departure: Device is not responding to SNMP
+        }
+        device.setSysDescr(sysDescr);
         device.setSysName(snmp.get(ip, OID_SYS_NAME));
         device.setSysLocation(snmp.get(ip, OID_SYS_LOCATION));
         device.setSysContact(snmp.get(ip, OID_SYS_CONTACT));

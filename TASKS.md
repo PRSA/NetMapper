@@ -106,6 +106,11 @@
     - [x] Implementar exportación a PDF (PDFA/1b) con Apache PDFBox <!-- id: 77 -->
     - [x] Implementar funcionalidad de impresión del mapa <!-- id: 78 -->
     - [x] Corregir Drag & Drop y añadir persistencia de posiciones en el mapa <!-- id: 82 -->
-    - [x] Actualizar ficheros .md globales tras cambios recientes <!-- id: 83 -->
+- [x] Estabilidad y Robustez en el Descubrimiento
+    - [x] Validar respuesta del dispositivo antes de añadirlo a la UI (evitar duplicados vacíos) <!-- id: 89 -->
+- [x] Optimización de Rendimiento de Escaneo
+    - [x] Reducir timeouts y reintentos SNMP para redes locales <!-- id: 90 -->
+    - [x] Aumentar paralelismo con mayor pool de hilos (100 threads) <!-- id: 91 -->
+    - [x] Implementar salida temprana (early departure) para dispositivos no responsivos <!-- id: 92 -->
 
 

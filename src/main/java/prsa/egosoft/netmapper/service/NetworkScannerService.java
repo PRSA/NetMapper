@@ -23,7 +23,7 @@ public class NetworkScannerService {
     private ExecutorService executorService;
 
     public NetworkScannerService() {
-        this.executorService = Executors.newFixedThreadPool(20); // Aumentado a 20 hilos para escaneos de red
+        this.executorService = Executors.newFixedThreadPool(100); // Aumentado a 100 hilos para escaneos de red rápidos
     }
 
     /**
@@ -61,7 +61,14 @@ public class NetworkScannerService {
                 // Validar conectividad básica
                 if (strategy.isApplicable(null, null)) {
                     strategy.discover(client, device);
-                    onSuccess.accept(device);
+
+                    // Solo reportar éxito si el dispositivo respondió a algo (ej: tiene descripción
+                    // o interfaces)
+                    if (device.getSysDescr() != null || !device.getInterfaces().isEmpty()) {
+                        onSuccess.accept(device);
+                    } else {
+                        logger.debug("Dispositivo {} no respondió a SNMP o no devolvió información útil.", ip);
+                    }
                 }
 
             } catch (Exception e) {

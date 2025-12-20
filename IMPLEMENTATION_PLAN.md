@@ -30,6 +30,15 @@ El proyecto sigue un patrón de diseño **MVC (Modelo-Vista-Controlador)** simpl
     -   `DiscoveryStrategy`: Interfaz para definir algoritmos de descubrimiento.
     -   `StandardMibStrategy`: Implementación principal. Utiliza MIBs estándar soportados por la gran mayoría de fabricantes (Cisco, HP, Huawei, D-Link, etc.).
 
+### 3.19 Robustez en el Descubrimiento [NUEVO]
+Se ha implementado una validación de seguridad en `NetworkScannerService` para asegurar que solo los dispositivos que responden satisfactoriamente a las consultas SNMP sean reportados a la interfaz de usuario. Esto previene que el árbol de dispositivos se llene de entradas vacías o no funcionales durante escaneos de rangos extensos.
+
+### 3.20 Optimización de Velocidad [NUEVO]
+Se han realizado ajustes de rendimiento críticos para acelerar el escaneo masivo:
+- **Parámetros SNMP**: Reducción de timeout a 1000ms y reintentos a 1.
+- **Paralelismo**: Aumento del pool de hilos de 20 a 100 en `NetworkScannerService`.
+- **Early Exit**: La estrategia de descubrimiento aborta inmediatamente si el primer probe (sysDescr) falla, ahorrando tiempo de espera en IPs vacías.
+
 4.  **Interfaz Gráfica (`prsa.egosoft.netmapper.gui`)**:
     -   `MainWindow`: Ventana principal Swing. Muestra un árbol jerárquico (`JTree`) con los dispositivos y sus detalles, y un panel de logs.
 

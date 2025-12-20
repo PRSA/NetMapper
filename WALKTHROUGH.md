@@ -22,11 +22,11 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
 ## Funcionalidades
 La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP/Máscara**, **Intervalo IP**, o una **Lista separada por comas** de cualquiera de los anteriores.
 
-1.  **Información del Sistema**: 
+1.  **Información del Sistema**:
     - Detección automática de **Marca y Modelo** (incluyendo Apple, Cisco, Huawei, etc.).
     - Detección automática de **Marca y Modelo** (incluyendo Apple, Cisco, Huawei, etc.).
     - Descripción, ubicación, contacto y tiempo de actividad.
-2.  **Interfaces**: 
+2.  **Interfaces**:
     - Lista detallada de interfaces.
     - **Configuración**: MTU, Velocidad (bps), Tipo de Interfaz.
     - **Estado**: Admin/Oper Status.
@@ -60,12 +60,25 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
     - Organización en pestañas para separar datos jerárquicos de la visualización gráfica.
     - Panel de configuración distribuido en dos filas para mayor claridad; el botón "Auto Descubrimiento" se encuentra debajo de la etiqueta de objetivo.
 19. **Servicios de Red**: El tipo de dispositivo incluye ahora los servicios y capas activas detectadas (ej: Internet, Enlace, Aplicaciones).
+### 3.19 Robustez en el Descubrimiento [NUEVO]
+Se ha implementado una validación de seguridad en `NetworkScannerService` para asegurar que solo los dispositivos que responden satisfactoriamente a las consultas SNMP sean reportados a la interfaz de usuario. Esto previene que el árbol de dispositivos se llene de entradas vacías o no funcionales durante escaneos de rangos extensos.
+
+### 3.20 Optimización de Velocidad [NUEVO]
+Se han realizado ajustes de rendimiento críticos para acelerar el escaneo masivo:
+- **Parámetros SNMP**: Reducción de timeout a 1000ms y reintentos a 1.
+- **Paralelismo**: Aumento del pool de hilos de 20 a 100 en `NetworkScannerService`.
+- **Early Exit**: La estrategia de descubrimiento aborta inmediatamente si el primer probe (sysDescr) falla, ahorrando tiempo de espera en IPs vacías.
+20. **Validación de Respuesta**: El sistema verifica que el dispositivo responda realmente a SNMP antes de añadirlo al árbol, evitando mostrar IPs "fantasma" que no proporcionan información técnica.
+21. **Escaneo Optimizado**: Mejoras de rendimiento que permiten escanear una subred /24 en segundos mediante:
+    - Reducción de timeouts y reintentos.
+    - Alta concurrencia (100 hilos).
+    - Descarte inmediato de IPs no responsivas.
 
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.
 - **Compatibilidad**: MIB-II, BRIDGE-MIB, Q-BRIDGE-MIB, IF-MIB HighSpeed.
-- **Datos de Puerto**: 
+- **Datos de Puerto**:
     - Se utilizan los OIDs estándar `ifSpeed` y `ifHighSpeed` (para enlaces > 1Gbps).
     - Lógica de fallback para dispositivos que no soportan mapeo de puertos estándar (BRIDGE-MIB).
 

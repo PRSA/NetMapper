@@ -29,8 +29,8 @@ public class SnmpClient {
 
     private Snmp snmp;
     private String community;
-    private static final int RETRIES = 3;
-    private static final int TIMEOUT = 3000;
+    private static final int RETRIES = 1;
+    private static final int TIMEOUT = 1000;
 
     public SnmpClient(String community) throws IOException {
         this.community = community;
