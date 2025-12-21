@@ -6,6 +6,9 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
 - Java JDK 11 o superior.
 - Maven 3.x para compilar.
 - Acceso de red a dispositivos con agente SNMP habilitado (v2c).
+- **Librerías de Captura** (para Escaneo Activo ARP):
+    - Linux: `libpcap` (`sudo apt install libpcap-dev`).
+    - Windows: `Npcap` o `WinPcap`.
 
 ## Uso de la Interfaz
 
@@ -74,6 +77,20 @@ Se han realizado ajustes de rendimiento críticos para acelerar el escaneo masiv
     - Alta concurrencia (100 hilos).
     - Descarte inmediato de IPs no responsivas.
 
+### 3.21 Escaneo ARP Multiplataforma [NUEVO]
+Se ha añadido una etapa de descubrimiento ARP previa al escaneo SNMP. Esto permite:
+- **Detección Inmediata**: Identifica cualquier dispositivo con trafico IP reciente en la red local.
+- **Identificación sin SNMP**: Obtiene MAC y Fabricante incluso si el dispositivo no tiene agente SNMP (ej: PCs, móviles, IoT).
+- **Compatibilidad Total**: Utiliza `/proc/net/arp` en Linux y `arp -a` en Windows para máxima fiabilidad.
+
+
+### 3.22 Escaneo Activo (Pcap4J) [NUEVO]
+
+Para poblar la tabla ARP del sistema antes de la lectura, NetMapper realiza ahora un escaneo activo:
+- **Tecnología**: Pcap4J (libpcap/Npcap).
+- **Proceso**: Envía paquetes ARP Request a todas las IPs del rango objetivo.
+- **Captura**: Escucha las respuestas ARP Reply para identificar inmediatamente direcciones MAC y fabricantes.
+- **Ventaja**: Detecta dispositivos silenciosos que no generan tráfico espontáneamente.
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.

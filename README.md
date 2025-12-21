@@ -11,6 +11,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC en todas las visualizaciones (interfaces, endpoints, mapa de red) usando cache local + lookup online con fallback
+- **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
 
 ### Escaneo Avanzado
@@ -50,6 +51,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - Java 11 o superior
 - Maven 3.x
 - Acceso a dispositivos con SNMP v2c habilitado
+- **Captura de Paquetes (ARP Scan)**:
+  - **Linux**: Librería `libpcap` instalada (`sudo apt install libpcap-dev`) y permisos de root/admin para ejecutar el escaneo activo (o `setcap`).
+  - **Windows**: [Npcap](https://npcap.com/) o WinPcap instalado.
 
 ## Compilación y Ejecución
 

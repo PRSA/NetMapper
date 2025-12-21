@@ -190,7 +190,17 @@ Se ha rediseñado el panel superior para mejorar la ergonomía:
 ### 3.18 Visualización de sysServices
 Se ha implementado el soporte para mostrar los servicios de red activos según RFC 1213:
 - **Lógica**: Decodificación de los bits del campo `sysServices` para identificar capas (Physical, Datalink, Internet, End-to-End, Applications).
-- **Visualización**: Se añaden entre paréntesis al tipo de dispositivo en el árbol de resultados.
+### 3.21 Escaneo ARP Multiplataforma [NUEVO]
+
+Se ha añadido la capacidad de realizar un descubrimiento rápido basado en ARP:
+
+- **Estrategia**: `ArpDiscoveryStrategy` implementa `DiscoveryStrategy`.
+- **Lógica**:
+    -   **Fase 1**: Lee la tabla ARP del sistema para encontrar MACs asociadas a IPs.
+    -   **Fase 2 (Linux)**: Parsea `/proc/net/arp`.
+    -   **Fase 2 (Windows)**: Ejecuta y parsea `arp -a`.
+    -   **Fase 3**: Asocia MAC y Vendor al dispositivo antes de iniciar SNMP.
+-   **Beneficio**: Detecta equipos no gestionables (sin SNMP) y acelera el inventariado inicial.
 
 ## 4. Estructura del Proyecto
 

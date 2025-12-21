@@ -6,12 +6,15 @@ import prsa.egosoft.netmapper.model.NetworkInterface;
 import prsa.egosoft.netmapper.model.DetectedEndpoint;
 import prsa.egosoft.netmapper.service.NetworkScannerService;
 import prsa.egosoft.netmapper.util.NetworkDiscoveryUtils;
+import prsa.egosoft.netmapper.Main;
 import java.util.List;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 public class MainWindow extends JFrame {
@@ -38,7 +41,8 @@ public class MainWindow extends JFrame {
     private java.util.Locale[] locales = { new java.util.Locale("es"), java.util.Locale.ENGLISH };
 
     public MainWindow() {
-        super(Messages.getString("window.title"));
+        super(Messages.getString("window.title",
+                Messages.getString(Main.isAdmin() ? "window.adminmode" : "window.usermode")));
         this.scannerService = new NetworkScannerService();
         this.deviceNodeMap = new java.util.HashMap<>();
 
@@ -140,7 +144,8 @@ public class MainWindow extends JFrame {
     }
 
     private void updateUITexts() {
-        setTitle(Messages.getString("window.title"));
+        setTitle(Messages.getString("window.title",
+                Messages.getString(Main.isAdmin() ? "window.adminmode" : "window.usermode")));
         ipLabel.setText(Messages.getString("label.target") + ":");
         communityLabel.setText(Messages.getString("label.community") + ":");
         scanButton.setText(Messages.getString("button.scan"));

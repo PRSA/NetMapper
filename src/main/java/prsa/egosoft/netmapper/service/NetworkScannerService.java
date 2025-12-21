@@ -1,5 +1,6 @@
 package prsa.egosoft.netmapper.service;
 
+import prsa.egosoft.netmapper.Main;
 import prsa.egosoft.netmapper.core.SnmpClient;
 import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.strategy.DiscoveryStrategy;
@@ -14,6 +15,11 @@ import java.util.function.Consumer;
 
 import prsa.egosoft.netmapper.util.SubnetUtils; // Import SubnetUtils
 import java.util.List;
+
+import prsa.egosoft.netmapper.scan.ArpScanner;
+import prsa.egosoft.netmapper.scan.PcapArpScanner;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * Servicio principal para coordinar el escaneo de dispositivos.
@@ -39,36 +45,78 @@ public class NetworkScannerService {
 
         logger.info("Iniciando escaneo de red: {} IPs detectadas en rango {}", ips.size(), cidrInput);
 
-        for (String ip : ips) {
-            scanDevice(ip, community, onSuccess, onError);
+        // 0. Active ARP Scan (Pcap4J)
+        boolean isPrivileged = Main.isAdmin();
+        Map<String, String> activeArpMap = Collections.emptyMap();
+        if (isPrivileged) {
+            try {
+                ArpScanner scanner = new PcapArpScanner();
+                activeArpMap = scanner.scan(ips);
+                logger.info("Active ARP Scan detectó {} dispositivos.", activeArpMap.size());
+            } catch (Throwable t) {
+                logger.warn("No se pudo realizar escaneo activo ARP (Pcap4J): {}", t.getMessage());
+            }
+        } else {
+            logger.info("Ejecutando sin privilegios. Se omitirá el escaneo ARP activo.");
         }
+
+        for (String ip : ips) {
+            String knownMac = activeArpMap.get(ip);
+            scanDevice(ip, community, onSuccess, onError, knownMac, isPrivileged);
+        }
+    }
+
+    public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError,
+            boolean isPrivileged) {
+        scanDevice(ip, community, onSuccess, onError, null, isPrivileged);
     }
 
     /**
      * Escanea un único dispositivo IP de forma asíncrona.
      */
-    public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError) {
+    public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError,
+            String knownMac, boolean isPrivileged) {
         executorService.submit(() -> {
             SnmpClient client = null;
             try {
                 // logger.info("Escaneando {}", ip); // Reducir ruido en log si son muchas
                 client = new SnmpClient(community);
 
-                // Crear dispositivo y estrategia
+                // Crear dispositivo
                 NetworkDevice device = new NetworkDevice(ip);
-                DiscoveryStrategy strategy = new StandardMibStrategy(); // Por defecto
 
-                // Validar conectividad básica
-                if (strategy.isApplicable(null, null)) {
-                    strategy.discover(client, device);
+                // Si tenemos MAC del escaneo activo, la asignamos directamente
+                if (knownMac != null) {
+                    device.setVendor(prsa.egosoft.netmapper.util.MacVendorUtils.getVendor(knownMac));
+                    prsa.egosoft.netmapper.model.NetworkInterface ni = new prsa.egosoft.netmapper.model.NetworkInterface(
+                            0, "Active ARP");
+                    ni.setMacAddress(knownMac);
+                    ni.setIpAddress(ip);
+                    device.addInterface(ni);
+                }
 
-                    // Solo reportar éxito si el dispositivo respondió a algo (ej: tiene descripción
-                    // o interfaces)
-                    if (device.getSysDescr() != null || !device.getInterfaces().isEmpty()) {
-                        onSuccess.accept(device);
-                    } else {
-                        logger.debug("Dispositivo {} no respondió a SNMP o no devolvió información útil.", ip);
+                // Cadena de estrategias: ARP primero (rápido), luego SNMP (detallado)
+                DiscoveryStrategy arpStrategy = new prsa.egosoft.netmapper.strategy.ArpDiscoveryStrategy();
+                DiscoveryStrategy snmpStrategy = new StandardMibStrategy();
+
+                // 1. ARP Discovery (rápido)
+                if (isPrivileged) {
+                    if (arpStrategy.isApplicable(null, null)) {
+                        arpStrategy.discover(client, device);
                     }
+                }
+
+                // 2. SNMP Discovery (detallado)
+                // Usamos client para SNMP
+                if (snmpStrategy.isApplicable(device.getSysDescr(), device.getSysObjectId())) {
+                    snmpStrategy.discover(client, device);
+                }
+
+                // Solo reportar éxito si el dispositivo respondió a algo (ARP o SNMP)
+                if (device.getSysDescr() != null || !device.getInterfaces().isEmpty() || device.getVendor() != null) {
+                    onSuccess.accept(device);
+                } else {
+                    logger.debug("Dispositivo {} no respondió ni a ARP ni a SNMP.", ip);
                 }
 
             } catch (Exception e) {

@@ -112,5 +112,11 @@
     - [x] Reducir timeouts y reintentos SNMP para redes locales <!-- id: 90 -->
     - [x] Aumentar paralelismo con mayor pool de hilos (100 threads) <!-- id: 91 -->
     - [x] Implementar salida temprana (early departure) para dispositivos no responsivos <!-- id: 92 -->
+- [x] Estrategia de Descubrimiento ARP (Multiplataforma)
+    - [x] Crear ArpDiscoveryStrategy para detección sin SNMP <!-- id: 93 -->
+    - [x] Implementar lectura de /proc/net/arp para Linux <!-- id: 94 -->
+    - [x] Implementar soporte para Windows (arp -a) <!-- id: 95 -->
+    - [x] Normalizar formato de MAC Address <!-- id: 96 -->
+    - [x] Integrar como paso prioritario (antes de SNMP) en NetworkScannerService <!-- id: 97 -->
 
 
