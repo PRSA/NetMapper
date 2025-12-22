@@ -46,9 +46,8 @@ public class NetworkScannerService {
         logger.info("Iniciando escaneo de red: {} IPs detectadas en rango {}", ips.size(), cidrInput);
 
         // 0. Active ARP Scan (Pcap4J)
-        boolean isPrivileged = Main.isAdmin();
         Map<String, String> activeArpMap = Collections.emptyMap();
-        if (isPrivileged) {
+        if (Main.IS_ADMIN) {
             try {
                 ArpScanner scanner = new PcapArpScanner();
                 activeArpMap = scanner.scan(ips);
@@ -62,20 +61,19 @@ public class NetworkScannerService {
 
         for (String ip : ips) {
             String knownMac = activeArpMap.get(ip);
-            scanDevice(ip, community, onSuccess, onError, knownMac, isPrivileged);
+            scanDevice(ip, community, onSuccess, onError, knownMac);
         }
     }
 
-    public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError,
-            boolean isPrivileged) {
-        scanDevice(ip, community, onSuccess, onError, null, isPrivileged);
+    public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError) {
+        scanDevice(ip, community, onSuccess, onError, null);
     }
 
     /**
      * Escanea un único dispositivo IP de forma asíncrona.
      */
     public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError,
-            String knownMac, boolean isPrivileged) {
+            String knownMac) {
         executorService.submit(() -> {
             SnmpClient client = null;
             try {
@@ -100,7 +98,7 @@ public class NetworkScannerService {
                 DiscoveryStrategy snmpStrategy = new StandardMibStrategy();
 
                 // 1. ARP Discovery (rápido)
-                if (isPrivileged) {
+                if (Main.IS_ADMIN) {
                     if (arpStrategy.isApplicable(null, null)) {
                         arpStrategy.discover(client, device);
                     }

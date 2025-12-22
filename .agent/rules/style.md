@@ -1,0 +1,1 @@
+Sigue estrictamente las reglas de formateo del archivo Eclipse XML adjunto. Prioriza el uso de [espacios/tabs] y la posición de las llaves definida en la configuración
