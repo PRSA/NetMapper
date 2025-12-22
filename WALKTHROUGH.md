@@ -92,6 +92,13 @@ Para poblar la tabla ARP del sistema antes de la lectura, NetMapper realiza ahor
 - **Captura**: Escucha las respuestas ARP Reply para identificar inmediatamente direcciones MAC y fabricantes.
 - **Ventaja**: Detecta dispositivos silenciosos que no generan tráfico espontáneamente.
 
+### 3.23 Corrección de Formato de Texto SNMP [NUEVO]
+
+Se ha corregido el manejo de valores `OctetString` en SNMP para mostrar texto legible:
+- **Problema**: Los campos de texto como `sysContact`, `sysLocation` y `sysName` se mostraban en formato hexadecimal (ej: `48:65:6C:6C:6F` en lugar de `Hello`).
+- **Solución**: El cliente SNMP detecta ahora valores `OctetString` y los convierte correctamente a cadenas de caracteres legibles.
+- **Impacto**: Toda la información de contacto, ubicación y nombres del sistema se muestra ahora en formato de texto normal.
+
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.
 - **Compatibilidad**: MIB-II, BRIDGE-MIB, Q-BRIDGE-MIB, IF-MIB HighSpeed.

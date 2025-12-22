@@ -66,7 +66,6 @@ public class StandardMibStrategy implements DiscoveryStrategy {
         device.setSysName(snmp.get(ip, OID_SYS_NAME));
         device.setSysLocation(snmp.get(ip, OID_SYS_LOCATION));
         device.setSysContact(snmp.get(ip, OID_SYS_CONTACT));
-        device.setSysContact(snmp.get(ip, OID_SYS_CONTACT));
         device.setSysUpTime(snmp.get(ip, OID_SYS_UPTIME));
 
         // 1b. Identificación de Marca/Modelo y Tipo

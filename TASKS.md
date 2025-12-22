@@ -118,5 +118,9 @@
     - [x] Implementar soporte para Windows (arp -a) <!-- id: 95 -->
     - [x] Normalizar formato de MAC Address <!-- id: 96 -->
     - [x] Integrar como paso prioritario (antes de SNMP) en NetworkScannerService <!-- id: 97 -->
+- [x] Corrección de Formato de Texto SNMP
+    - [x] Corregir conversión de OctetString a texto legible <!-- id: 98 -->
+    - [x] Detectar y convertir valores de sysContact, sysLocation, sysName correctamente <!-- id: 99 -->
+    - [x] Eliminar representación hexadecimal innecesaria <!-- id: 100 -->
 
 

@@ -67,7 +67,17 @@ public class SnmpClient {
             PDU response = event.getResponse();
 
             if (response != null && response.getErrorStatus() == PDU.noError) {
-                return response.get(0).getVariable().toString();
+                Variable variable = response.get(0).getVariable();
+
+                // Si es un OctetString, convertirlo a String legible
+                if (variable instanceof OctetString) {
+                    OctetString octetString = (OctetString) variable;
+                    // toValue() devuelve el contenido como String en lugar de la representación
+                    // hexadecimal
+                    return new String(octetString.getValue());
+                }
+
+                return variable.toString();
             } else {
                 logger.warn("Error en respuesta SNMP GET para {}: {}", ip,
                         response != null ? response.getErrorStatusText() : "Timeout");
