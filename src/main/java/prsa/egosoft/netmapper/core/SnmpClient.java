@@ -23,32 +23,37 @@ import java.util.TreeMap;
 /**
  * Cliente SNMP wrapper para simplificar operaciones GET y WALK.
  */
-public class SnmpClient {
-
+public class SnmpClient
+{
+    
     private static final Logger logger = LoggerFactory.getLogger(SnmpClient.class);
-
+    
     private Snmp snmp;
     private String community;
     private static final int RETRIES = 1;
     private static final int TIMEOUT = 1000;
-
-    public SnmpClient(String community) throws IOException {
+    
+    public SnmpClient(String community) throws IOException
+    {
         this.community = community;
         start();
     }
-
-    private void start() throws IOException {
+    
+    private void start() throws IOException
+    {
         TransportMapping<UdpAddress> transport = new DefaultUdpTransportMapping();
         snmp = new Snmp(transport);
         transport.listen();
     }
-
-    public void stop() throws IOException {
-        if (snmp != null) {
+    
+    public void stop() throws IOException
+    {
+        if(snmp != null)
+        {
             snmp.close();
         }
     }
-
+    
     /**
      * Realiza una operación SNMP GET para un OID específico.
      *
@@ -56,39 +61,47 @@ public class SnmpClient {
      * @param oid OID a consultar.
      * @return El valor obtenido o null si falla.
      */
-    public String get(String ip, String oid) {
-        try {
-            CommunityTarget target = createTarget(ip);
+    public String get(String ip, String oid)
+    {
+        try
+        {
+            CommunityTarget<Address> target = createTarget(ip);
             PDU pdu = new PDU();
             pdu.add(new VariableBinding(new OID(oid)));
             pdu.setType(PDU.GET);
-
-            ResponseEvent event = snmp.send(pdu, target);
+            
+            ResponseEvent<Address> event = snmp.send(pdu, target);
             PDU response = event.getResponse();
-
-            if (response != null && response.getErrorStatus() == PDU.noError) {
+            
+            if(response != null && response.getErrorStatus() == PDU.noError)
+            {
                 Variable variable = response.get(0).getVariable();
-
+                
                 // Si es un OctetString, convertirlo a String legible
-                if (variable instanceof OctetString) {
+                if(variable instanceof OctetString)
+                {
                     OctetString octetString = (OctetString) variable;
                     // toValue() devuelve el contenido como String en lugar de la representación
                     // hexadecimal
                     return new String(octetString.getValue());
                 }
-
+                
                 return variable.toString();
-            } else {
-                logger.warn("Error en respuesta SNMP GET para {}: {}", ip,
+            }
+            else
+            {
+                logger.warn("SNMP GET error for {}: {}", ip,
                         response != null ? response.getErrorStatusText() : "Timeout");
                 return null;
             }
-        } catch (Exception e) {
-            logger.error("Excepción durante SNMP GET a {}", ip, e);
+        }
+        catch(Exception e)
+        {
+            logger.error("Exception during SNMP GET to {}", ip, e);
             return null;
         }
     }
-
+    
     /**
      * Realiza un SNMP WALK para un OID base.
      *
@@ -96,28 +109,35 @@ public class SnmpClient {
      * @param rootOid OID raíz para el walk.
      * @return Mapa de OID -> Valor.
      */
-    public Map<String, String> walk(String ip, String rootOid) {
+    public Map<String, String> walk(String ip, String rootOid)
+    {
         Map<String, String> result = new TreeMap<>();
-        CommunityTarget target = createTarget(ip);
+        CommunityTarget<Address> target = createTarget(ip);
         TreeUtils treeUtils = new TreeUtils(snmp, new DefaultPDUFactory());
-
+        
         List<TreeEvent> events = treeUtils.getSubtree(target, new OID(rootOid));
-
-        if (events == null || events.isEmpty()) {
-            logger.warn("No se obtuvo respuesta para WALK en {} OID {}", ip, rootOid);
+        
+        if(events == null || events.isEmpty())
+        {
+            logger.warn("No response for WALK on {} OID {}", ip, rootOid);
             return result;
         }
-
-        for (TreeEvent event : events) {
-            if (event != null) {
-                if (event.isError()) {
-                    logger.error("Error en SNMP WALK a {}: {}", ip, event.getErrorMessage());
+        
+        for(TreeEvent event : events)
+        {
+            if(event != null)
+            {
+                if(event.isError())
+                {
+                    logger.error("Error in SNMP WALK to {}: {}", ip, event.getErrorMessage());
                     continue;
                 }
-
+                
                 VariableBinding[] varBindings = event.getVariableBindings();
-                if (varBindings != null) {
-                    for (VariableBinding vb : varBindings) {
+                if(varBindings != null)
+                {
+                    for(VariableBinding vb : varBindings)
+                    {
                         result.put(vb.getOid().toString(), vb.getVariable().toString());
                     }
                 }
@@ -125,10 +145,11 @@ public class SnmpClient {
         }
         return result;
     }
-
-    private CommunityTarget createTarget(String ip) {
+    
+    private CommunityTarget<Address> createTarget(String ip)
+    {
         Address targetAddress = GenericAddress.parse("udp:" + ip + "/161");
-        CommunityTarget target = new CommunityTarget();
+        CommunityTarget<Address> target = new CommunityTarget<>();
         target.setCommunity(new OctetString(community));
         target.setAddress(targetAddress);
         target.setRetries(RETRIES);

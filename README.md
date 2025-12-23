@@ -13,6 +13,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC en todas las visualizaciones (interfaces, endpoints, mapa de red) usando cache local + lookup online con fallback
 - **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
+- **Escaneo por Interfaz Específica**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local, mejorando la accesibilidad y precisión.
 
 ### Escaneo Avanzado
 - **Escaneo de Redes**: Soporte para múltiples formatos de entrada:

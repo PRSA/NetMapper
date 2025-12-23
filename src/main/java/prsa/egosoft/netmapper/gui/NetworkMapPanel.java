@@ -91,16 +91,19 @@ public class NetworkMapPanel extends JPanel {
     }
 
     public void initDevices() {
-        if (this.deviceMap == null)
-            this.deviceMap = new HashMap<>();
+        if (deviceMap == null)
+            deviceMap = new HashMap<>();
         else
-            this.deviceMap.clear();
+            deviceMap.clear();
     }
 
-    public void addDevice(NetworkDevice device) {
-        if (this.deviceMap == null)
+    public void addOrUpdateDevice(NetworkDevice device) {
+        if (deviceMap == null)
             initDevices();
-        this.deviceMap.put(device.getIpAddress(), device);
+        if (deviceMap.containsKey(device.getIpAddress()))
+            deviceMap.replace(device.getIpAddress(), device);
+        else
+            deviceMap.put(device.getIpAddress(), device);
     }
 
     public void clear() {

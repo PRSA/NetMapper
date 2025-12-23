@@ -99,6 +99,27 @@ Se ha corregido el manejo de valores `OctetString` en SNMP para mostrar texto le
 - **Solución**: El cliente SNMP detecta ahora valores `OctetString` y los convierte correctamente a cadenas de caracteres legibles.
 - **Impacto**: Toda la información de contacto, ubicación y nombres del sistema se muestra ahora en formato de texto normal.
 
+### 3.24 Escaneo por Interfaz Específica [NUEVO]
+
+El autodescubrimiento ahora utiliza la interfaz de red correcta para escanear cada red local:
+
+- **Asociación Inteligente**: Cada red LAN detectada se asocia automáticamente con la interfaz que la tiene configurada.
+- **Escaneo Dirigido**: Los escaneos ARP activos (Pcap4J) se realizan a través de la interfaz específica de cada red, mejorando la accesibilidad y precisión.
+- **Optimización Mantenida**: 
+  - Si una red está contenida en otra más amplia, solo se escanea la más amplia.
+  - Si una red está configurada en múltiples interfaces, se escanea solo una vez usando la primera interfaz encontrada.
+- **Retrocompatibilidad**: Los escaneos manuales (no autodescubrimiento) siguen usando la interfaz por defecto del sistema.
+- **Feedback Visual**: Los mensajes de log ahora indican qué interfaz se está usando para cada escaneo (ej: "Iniciando escaneo de 192.168.1.0/24 a través de interfaz Ethernet").
+
+**Archivos Modificados**:
+- [NetworkInterfaceInfo.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkInterfaceInfo.java): Nuevo modelo para asociar redes con interfaces
+- [NetworkDiscoveryUtils.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/util/NetworkDiscoveryUtils.java): Método `discoverLocalNetworksWithInterfaces()` que retorna información de interfaz
+- [ArpScanner.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/scan/ArpScanner.java): Interfaz extendida con método que acepta nombre de interfaz
+- [PcapArpScanner.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/scan/PcapArpScanner.java): Implementación de escaneo por interfaz específica
+- [NetworkScannerService.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/service/NetworkScannerService.java): Método sobrecargado que acepta interfaz
+- [MainWindow.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/gui/MainWindow.java): Autodescubrimiento actualizado para usar interfaces específicas
+
+
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.
 - **Compatibilidad**: MIB-II, BRIDGE-MIB, Q-BRIDGE-MIB, IF-MIB HighSpeed.

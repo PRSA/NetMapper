@@ -5,7 +5,6 @@ import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.model.NetworkInterface;
 import prsa.egosoft.netmapper.model.DetectedEndpoint;
 import prsa.egosoft.netmapper.util.SubnetUtils;
-import prsa.egosoft.netmapper.util.MacVendorUtils;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,6 +39,12 @@ public class DeviceTreePanel extends JPanel {
     public void updateUITexts() {
         rootNode.setUserObject(Messages.getString("tree.root"));
         treeModel.nodeChanged(rootNode);
+
+        // Re-display existing devices to update their group labels if necessary
+        // (though model objects won't change strings magically,
+        // static parts of the tree like "Interfaces (3)" are generated in
+        // displayDevice)
+        // For simplicity, we only update the root here.
     }
 
     public void clear() {

@@ -1,6 +1,5 @@
 package prsa.egosoft.netmapper.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.io.*;
 import java.net.HttpURLConnection;

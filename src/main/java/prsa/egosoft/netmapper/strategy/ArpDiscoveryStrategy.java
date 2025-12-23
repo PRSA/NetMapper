@@ -15,44 +15,53 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Estrategia de descubrimiento mediante tabla ARP (Fast).
- * Útil para identificar dispositivos que no responden a SNMP.
- * Compatible con Linux (/proc/net/arp) y Windows (arp -a).
+ * Estrategia de descubrimiento mediante tabla ARP (Fast). Útil para identificar
+ * dispositivos que no responden a SNMP. Compatible con Linux (/proc/net/arp) y
+ * Windows (arp -a).
  */
-public class ArpDiscoveryStrategy implements DiscoveryStrategy {
+public class ArpDiscoveryStrategy implements DiscoveryStrategy
+{
     private static final Logger logger = LoggerFactory.getLogger(ArpDiscoveryStrategy.class);
     private static final String LINUX_ARP_FILE = "/proc/net/arp";
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-
+    
     @Override
-    public boolean isApplicable(String sysDescr, String sysObjectId) {
+    public boolean isApplicable(String sysDescr, String sysObjectId)
+    {
         // Se aplica si no hay información previa o si queremos enriquecer
         return sysDescr == null;
     }
-
+    
     @Override
-    public void discover(SnmpClient snmpClient, NetworkDevice device) {
+    public void discover(SnmpClient snmpClient, NetworkDevice device)
+    {
         String ip = device.getIpAddress();
         String mac = IS_WINDOWS ? findMacInArpCommand(ip) : findMacInArpLinuxFile(ip);
-
+        
         // Fallback: Si en Linux falla el fichero, podríamos intentar 'arp -n'
         // pero /proc/net/arp es lo estándar.
-
-        if (mac != null) {
+        
+        if(mac != null)
+        {
             String vendor = MacVendorUtils.getVendor(mac);
             device.setVendor(vendor);
-
+            
             // Si no tiene interfaces (porque SNMP no ha corrido), creamos una mínima con la
             // MAC
-            if (device.getInterfaces().isEmpty()) {
+            if(device.getInterfaces().isEmpty())
+            {
                 NetworkInterface ni = new NetworkInterface(0, "ARP Discovery");
                 ni.setMacAddress(mac);
                 ni.setIpAddress(ip);
                 device.addInterface(ni);
-            } else {
+            }
+            else
+            {
                 // Si ya tiene, intentamos asociar la MAC a la interfaz que tiene la IP
-                for (NetworkInterface ni : device.getInterfaces()) {
-                    if (ip.equals(ni.getIpAddress())) {
+                for(NetworkInterface ni : device.getInterfaces())
+                {
+                    if(ip.equals(ni.getIpAddress()))
+                    {
                         ni.setMacAddress(mac);
                         break;
                     }
@@ -61,63 +70,82 @@ public class ArpDiscoveryStrategy implements DiscoveryStrategy {
             logger.debug("ARP discovery exitoso para {}: MAC={}, Vendor={}", ip, mac, vendor);
         }
     }
-
-    private String findMacInArpLinuxFile(String ip) {
-        try (BufferedReader br = new BufferedReader(new FileReader(LINUX_ARP_FILE))) {
+    
+    private String findMacInArpLinuxFile(String ip)
+    {
+        try(BufferedReader br = new BufferedReader(new FileReader(LINUX_ARP_FILE)))
+        {
             String line;
             // Saltar cabecera
             br.readLine();
-            while ((line = br.readLine()) != null) {
+            while((line = br.readLine()) != null)
+            {
                 String[] parts = line.split("\\s+");
-                if (parts.length >= 4 && parts[0].equals(ip)) {
+                if(parts.length >= 4 && parts[0].equals(ip))
+                {
                     String mac = parts[3];
-                    if (isValidMac(mac)) {
+                    if(isValidMac(mac))
+                    {
                         return normalizeMac(mac);
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error leyendo tabla ARP del sistema ({})", LINUX_ARP_FILE, e);
+        }
+        catch(IOException e)
+        {
+            logger.error("Error reading system ARP table ({})", LINUX_ARP_FILE, e);
         }
         return null;
     }
-
-    private String findMacInArpCommand(String ip) {
-        try {
+    
+    private String findMacInArpCommand(String ip)
+    {
+        try
+        {
             ProcessBuilder pb = new ProcessBuilder("arp", "-a");
             Process process = pb.start();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream())))
+            {
                 String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.contains(ip)) {
+                while((line = reader.readLine()) != null)
+                {
+                    if(line.contains(ip))
+                    {
                         String mac = extractMacFromLine(line);
-                        if (mac != null && isValidMac(mac)) {
+                        if(mac != null && isValidMac(mac))
+                        {
                             return normalizeMac(mac);
                         }
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error ejecutando comando arp -a", e);
+        }
+        catch(IOException e)
+        {
+            logger.error("Error executing arp -a command", e);
         }
         return null;
     }
-
-    private String extractMacFromLine(String line) {
+    
+    private String extractMacFromLine(String line)
+    {
         // Regex para dirección MAC (XX:XX:XX:XX:XX:XX o XX-XX-XX-XX-XX-XX)
         Pattern pattern = Pattern.compile("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}");
         Matcher matcher = pattern.matcher(line);
-        if (matcher.find()) {
+        if(matcher.find())
+        {
             return matcher.group();
         }
         return null;
     }
-
-    private boolean isValidMac(String mac) {
+    
+    private boolean isValidMac(String mac)
+    {
         return mac != null && !mac.equals("00:00:00:00:00:00") && !mac.equals("00-00-00-00-00-00");
     }
-
-    private String normalizeMac(String mac) {
+    
+    private String normalizeMac(String mac)
+    {
         return mac.replace("-", ":").toUpperCase();
     }
 }

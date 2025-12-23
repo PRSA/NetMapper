@@ -122,5 +122,14 @@
     - [x] Corregir conversión de OctetString a texto legible <!-- id: 98 -->
     - [x] Detectar y convertir valores de sysContact, sysLocation, sysName correctamente <!-- id: 99 -->
     - [x] Eliminar representación hexadecimal innecesaria <!-- id: 100 -->
+- [x] Escaneo por Interfaz Específica
+    - [x] Crear modelo NetworkInterfaceInfo para asociar redes con interfaces <!-- id: 101 -->
+    - [x] Implementar discoverLocalNetworksWithInterfaces() en NetworkDiscoveryUtils <!-- id: 102 -->
+    - [x] Extender ArpScanner con método que acepta interfaz específica <!-- id: 103 -->
+    - [x] Implementar findInterfaceByName() en PcapArpScanner <!-- id: 104 -->
+    - [x] Añadir método sobrecargado scanNetwork() con parámetro interfaceName <!-- id: 105 -->
+    - [x] Actualizar MainWindow.startAutoDiscovery() para usar interfaces específicas <!-- id: 106 -->
+    - [x] Añadir claves de internacionalización para mensajes de interfaz <!-- id: 107 -->
+
 
 

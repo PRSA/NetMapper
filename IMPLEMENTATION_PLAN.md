@@ -202,6 +202,23 @@ Se ha añadido la capacidad de realizar un descubrimiento rápido basado en ARP:
     -   **Fase 3**: Asocia MAC y Vendor al dispositivo antes de iniciar SNMP.
 -   **Beneficio**: Detecta equipos no gestionables (sin SNMP) y acelera el inventariado inicial.
 
+### 3.22 Escaneo por Interfaz Específica [NUEVO]
+
+Se ha mejorado el sistema de autodescubrimiento para utilizar la interfaz de red correcta al escanear cada red local:
+
+- **Modelo de Datos**: Nueva clase `NetworkInterfaceInfo` que encapsula la información de una red (CIDR) junto con su interfaz asociada (nombre y nombre descriptivo).
+- **Descubrimiento Mejorado**: `NetworkDiscoveryUtils.discoverLocalNetworksWithInterfaces()` retorna información de interfaz junto con cada red detectada.
+- **Escaneo Dirigido**: 
+    - `ArpScanner` y `PcapArpScanner` aceptan ahora un parámetro de interfaz específica.
+    - `PcapArpScanner.findInterfaceByName()` localiza la interfaz Pcap4J correcta por nombre.
+    - Los escaneos ARP activos se realizan a través de la interfaz específica de cada red.
+- **Optimización Mantenida**:
+    - Si una red está contenida en otra más amplia, solo se escanea la más amplia.
+    - Si una red está configurada en múltiples interfaces, se escanea solo una vez.
+- **Retrocompatibilidad**: Los escaneos manuales (no autodescubrimiento) siguen usando la interfaz por defecto.
+- **Feedback Mejorado**: Los mensajes de log indican qué interfaz se usa para cada escaneo.
+
+
 ## 4. Estructura del Proyecto
 
 ```

@@ -1,1 +1,5 @@
-Sigue estrictamente las reglas de formateo del archivo Eclipse XML adjunto. Prioriza el uso de [espacios/tabs] y la posición de las llaves definida en la configuración
+---
+trigger: always_on
+---
+
+Aplica las reglas de estilo importadas de Eclipse (fichero:"E:\workspace\NetMapper\.agent\rules\PRSA's Java Code Style.xml" y perfil:"PRSA's").
