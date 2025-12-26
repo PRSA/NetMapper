@@ -24,6 +24,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Internacionalización (i18n)**: Soporte completo para Español e Inglés con cambio dinámico de idioma en la interfaz.
 - **Interfaz mediante Pestañas**: Organización del árbol de dispositivos y el mapa de red en pestañas siempre accesibles.
 - **Interfaz Adaptativa**: Panel de dispositivos optimizado para ocupar todo el ancho disponible y visualización clara de jerarquías de red.
+- **Soporte CLI (Headless)**: Permite ejecutar escaneos y auto-descubrimiento sin interfaz gráfica, con soporte para múltiples formatos de exportación.
   - Lista separada por comas de cualquiera de los anteriores
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
@@ -62,10 +63,14 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 # Compilar proyecto y tests
 mvn clean compile test
 
-# Ejecutar aplicación
+# Ejecutar aplicación (GUI)
 mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main"
 
-# Para ejecutar en inglés
+# Ejecutar aplicación (CLI - Headless)
+# Ejemplo: Escanear subred y exportar a JSON y PNG
+mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Dexec.args="-c public -t 192.168.1.0/24 -json mapa.json -png mapa.png"
+
+# Para ejecutar en inglés (GUI)
 mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 ```
 
@@ -85,6 +90,15 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 7. Cambie a la pestaña **Mapa** para visualizar la topología de red en tiempo real
 8. Use el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente
 9. Use "Borrar" para resetear el estado y comenzar de nuevo
+
+## Parámetros CLI (Headless)
+
+- `-c <community>`: (Obligatorio) Comunidad SNMP.
+- `-t <targets>`: Objetivo de escaneo (IP, CIDR, rango, lista). Mutuamente exclusivo con `-a`.
+- `-a`: Descubrimiento automático de redes locales. Mutuamente exclusivo con `-t`.
+- `-png <path>`: Exportar mapa a imagen PNG.
+- `-pdf <path>`: Exportar mapa a documento PDF.
+- `-json <path>`: Exportar inventario a fichero JSON.
 
 ## Estructura del Proyecto
 

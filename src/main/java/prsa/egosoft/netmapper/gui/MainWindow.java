@@ -2,7 +2,7 @@ package prsa.egosoft.netmapper.gui;
 
 import prsa.egosoft.netmapper.i18n.Messages;
 import prsa.egosoft.netmapper.model.NetworkDevice;
-import prsa.egosoft.netmapper.service.NetworkScannerService;
+import prsa.egosoft.netmapper.service.NetworkController;
 import prsa.egosoft.netmapper.util.NetworkDiscoveryUtils;
 import prsa.egosoft.netmapper.Main;
 
@@ -13,7 +13,7 @@ import java.awt.*;
 
 public class MainWindow extends JFrame
 {
-    private NetworkScannerService scannerService;
+    private NetworkController networkController;
     private JTextField ipField;
     private JTextField communityField;
     private JTextArea logArea;
@@ -39,7 +39,7 @@ public class MainWindow extends JFrame
     {
         super(Messages.getString("window.title",
                 Messages.getString(Main.IS_ADMIN ? "window.adminmode" : "window.usermode")));
-        this.scannerService = new NetworkScannerService();
+        this.networkController = new NetworkController();
         // this.deviceNodeMap = new java.util.HashMap<>();
         
         setSize(800, 600);
@@ -189,27 +189,15 @@ public class MainWindow extends JFrame
     private void startAutoDiscovery()
     {
         logArea.append(Messages.getString("message.autodiscover_start") + "\n");
-        List<prsa.egosoft.netmapper.model.NetworkInterfaceInfo> networks = NetworkDiscoveryUtils
-                .discoverLocalNetworksWithInterfaces();
-        
-        if(networks.isEmpty())
-        {
-            logArea.append(Messages.getString("message.error_no_networks") + "\n");
-            return;
-        }
-        
-        logArea.append(Messages.getString("message.networks_found", networks.size()) + "\n");
-        
         String community = communityField.getText().trim();
-        for(prsa.egosoft.netmapper.model.NetworkInterfaceInfo netInfo : networks)
+        
+        // Use the controller for async auto-discovery
+        new Thread(() ->
         {
-            logArea.append(Messages.getString("message.scan_start_interface", netInfo.getCidr(),
-                    netInfo.getInterfaceDisplayName()) + "\n");
-            scannerService.scanNetwork(netInfo.getCidr(), community,
-                    device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
-                    error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")),
-                    netInfo.getInterfaceName());
-        }
+            networkController.autoDiscoverBlocking(community,
+                    device -> SwingUtilities.invokeLater(() -> displayDevice(device)));
+            SwingUtilities.invokeLater(() -> logArea.append(Messages.getString("message.scan_complete_all") + "\n"));
+        }).start();
     }
     
     private void startScan()
@@ -234,8 +222,9 @@ public class MainWindow extends JFrame
         
         logArea.append(Messages.getString("message.scan_start", ip) + "\n");
         
-        scannerService.scanNetwork(ip, community, device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
-                error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n"))); // Simplified error log
+        networkController.scanNetworkAsync(ip, community,
+                device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
+                error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")));
     }
     
     private boolean isValidTargetInput(String input)
