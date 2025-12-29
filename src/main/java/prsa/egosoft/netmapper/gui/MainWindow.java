@@ -3,10 +3,7 @@ package prsa.egosoft.netmapper.gui;
 import prsa.egosoft.netmapper.i18n.Messages;
 import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.service.NetworkController;
-import prsa.egosoft.netmapper.util.NetworkDiscoveryUtils;
 import prsa.egosoft.netmapper.Main;
-
-import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,10 +27,6 @@ public class MainWindow extends JFrame
     private JButton autoButton;
     private JButton clearButton;
     private JComboBox<String> languageSelector;
-    private String[] languages =
-    {"Español", "English"};
-    private java.util.Locale[] locales =
-    {new java.util.Locale("es"), java.util.Locale.ENGLISH};
     
     public MainWindow()
     {
@@ -91,19 +84,23 @@ public class MainWindow extends JFrame
         gbc.gridx = 6;
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.EAST;
-        languageSelector = new JComboBox<>(languages);
-        if(Messages.getLocale().getLanguage().equals("en"))
+        languageSelector = new JComboBox<>(Messages.getAvailableLanguages());
+        
+        int languageIndex = Messages.defaultLanguageIndex;
+        for(int i = 0; i < Messages.getAvailableLocales().length; i++)
         {
-            languageSelector.setSelectedIndex(1);
+            System.out.println(Messages.getAvailableLocales()[i] + " " + Messages.getLocale());
+            if(Messages.getAvailableLocales()[i].equals(Messages.getLocale()))
+            {
+                languageIndex = i;
+                break;
+            }
         }
-        else
-        {
-            languageSelector.setSelectedIndex(0);
-        }
+        languageSelector.setSelectedIndex(languageIndex);
         languageSelector.addActionListener(e ->
         {
             int index = languageSelector.getSelectedIndex();
-            Messages.setLocale(locales[index]);
+            Messages.setLocale(Messages.getAvailableLocales()[index]);
         });
         configPanel.add(languageSelector, gbc);
         
@@ -117,12 +114,6 @@ public class MainWindow extends JFrame
         autoButton.addActionListener(e -> startAutoDiscovery());
         configPanel.add(autoButton, gbc);
         
-        // Panel de Árbol
-        // rootNode = new DefaultMutableTreeNode(Messages.getString("tree.root"));
-        // treeModel = new DefaultTreeModel(rootNode);
-        // resultsTree = new JTree(treeModel);
-        
-        // JScrollPane treeScroll = new JScrollPane(resultsTree);
         treePanel = new DeviceTreePanel();
         
         // Panel de Mapa
@@ -258,9 +249,13 @@ public class MainWindow extends JFrame
         {
             String[] parts = target.split("/");
             if(parts.length != 2)
+            {
                 return false;
+            }
             if(!isValidIpAddress(parts[0]))
+            {
                 return false;
+            }
             
             // Check if it's CIDR (numeric prefix) or netmask (IP address)
             if(parts[1].contains("."))
@@ -288,7 +283,9 @@ public class MainWindow extends JFrame
         {
             String[] parts = target.split("-");
             if(parts.length != 2)
+            {
                 return false;
+            }
             return isValidIpAddress(parts[0].trim()) && isValidIpAddress(parts[1].trim());
         }
         
@@ -299,10 +296,14 @@ public class MainWindow extends JFrame
     private boolean isValidIpAddress(String ip)
     {
         if(ip == null || ip.isEmpty())
+        {
             return false;
+        }
         String[] parts = ip.split("\\.");
         if(parts.length != 4)
+        {
             return false;
+        }
         
         for(String part : parts)
         {
@@ -310,7 +311,9 @@ public class MainWindow extends JFrame
             {
                 int num = Integer.parseInt(part);
                 if(num < 0 || num > 255)
+                {
                     return false;
+                }
             }
             catch(NumberFormatException e)
             {

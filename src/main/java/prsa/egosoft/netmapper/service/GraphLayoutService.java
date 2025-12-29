@@ -15,7 +15,6 @@ import java.util.Map;
  */
 public class GraphLayoutService
 {
-    
     private static final double DEFAULT_WIDTH = 800;
     private static final double DEFAULT_HEIGHT = 600;
     private static final double ENDPOINT_ORBIT_RADIUS = 100;

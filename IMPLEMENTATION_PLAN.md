@@ -23,7 +23,7 @@ El proyecto sigue un patrón de diseño **MVC (Modelo-Vista-Controlador)** simpl
     -   `NetworkInterface`: Representa un puerto o interfaz física/lógica. Almacena IP, máscara, MAC, estado, velocidad, MTU y VLANs asociadas (nativa y etiquetadas).
 
 2.  **Núcleo y Servicios (`prsa.egosoft.netmapper.core`, `prsa.egosoft.netmapper.service`)**:
-    -   `SnmpClient`: Wrapper sobre SNMP4J. Maneja la complejidad de sesiones UDP, retries (3), timeouts (3000ms) y operaciones PDU (`GET`, `WALK`).
+    -   `SnmpClient`: Wrapper sobre SNMP4J. Maneja la complejidad de sesiones UDP, retries (1), timeouts (1000ms) y operaciones PDU. Soporta vinculación (bind) a direcciones IP locales para forzar el uso de interfaces específicas.
     -   `NetworkScannerService`: Orquestador que inicia el escaneo. Utiliza una estrategia definida para poblar el modelo `NetworkDevice`.
 
 3.  **Estrategias de Descubrimiento (`prsa.egosoft.netmapper.strategy`)**:
@@ -117,11 +117,12 @@ Se ha implementado validación completa del campo "Objetivo" antes de iniciar es
 -   **Mensajes de Error Informativos**: Dialog con ejemplos de formatos válidos.
 
 ### 3.10 Internacionalización (i18n)
-Se ha preparado la aplicación para soportar múltiples idiomas:
--   **Infraestructura**: Clase `Messages` para gestión de ResourceBundles.
--   **Resource Bundles**: `messages.properties` (default ES), `messages_es.properties`, `messages_en.properties`.
--   **Componentes Traducidos**: Todos los elementos de UI principales (títulos, botones, etiquetas, tooltips, mensajes de validación).
--   **Detección Automática**: Usa el locale del sistema por defecto, con capacidad de cambio manual.
+Se ha diseñado el sistema de internacionalización para soportar múltiples idiomas con cambio dinámico.
+
+-   **Consolidación de Recursos**: Uso de `messages_es.properties`, `messages_en.properties` y `messages_zh_CN.properties`.
+-   **Arquitectura Centralizada**: La clase `Messages` gestiona los idiomas disponibles (`getAvailableLanguages()`) y los locales asociados.
+-   **Refresco Dinámico**: Uso del patrón observador para actualizar toda la UI en tiempo real cuando se cambia el idioma en el JComboBox de configuración.
+-   **Detección y Fallback**: Usa el locale del sistema (ES, EN, ZH) o Español por defecto.
 
 ### 3.11 Visualización de Vendor en Todas las MACs
 Se ha completado la integración de información de fabricante en todas las ubicaciones donde se muestran direcciones MAC:
@@ -202,21 +203,15 @@ Se ha añadido la capacidad de realizar un descubrimiento rápido basado en ARP:
     -   **Fase 3**: Asocia MAC y Vendor al dispositivo antes de iniciar SNMP.
 -   **Beneficio**: Detecta equipos no gestionables (sin SNMP) y acelera el inventariado inicial.
 
-### 3.22 Escaneo por Interfaz Específica [NUEVO]
+### 3.22 Escaneo por Interfaz Específica (ARP y SNMP) [NUEVO]
 
 Se ha mejorado el sistema de autodescubrimiento para utilizar la interfaz de red correcta al escanear cada red local:
 
-- **Modelo de Datos**: Nueva clase `NetworkInterfaceInfo` que encapsula la información de una red (CIDR) junto con su interfaz asociada (nombre y nombre descriptivo).
-- **Descubrimiento Mejorado**: `NetworkDiscoveryUtils.discoverLocalNetworksWithInterfaces()` retorna información de interfaz junto con cada red detectada.
-- **Escaneo Dirigido**: 
-    - `ArpScanner` y `PcapArpScanner` aceptan ahora un parámetro de interfaz específica.
-    - `PcapArpScanner.findInterfaceByName()` localiza la interfaz Pcap4J correcta por nombre.
-    - Los escaneos ARP activos se realizan a través de la interfaz específica de cada red.
-- **Optimización Mantenida**:
-    - Si una red está contenida en otra más amplia, solo se escanea la más amplia.
-    - Si una red está configurada en múltiples interfaces, se escanea solo una vez.
-- **Retrocompatibilidad**: Los escaneos manuales (no autodescubrimiento) siguen usando la interfaz por defecto.
-- **Feedback Mejorado**: Los mensajes de log indican qué interfaz se usa para cada escaneo.
+- **Modelo de Datos**: `NetworkInterfaceInfo` encapsula la red (CIDR) y su interfaz asociada (nombre descriptivo e IP local).
+- **Descubrimiento Mejorado**: `NetworkDiscoveryUtils.discoverLocalNetworksWithInterfaces()` captura la IP local de cada interfaz.
+- **Escaneo ARP Dirigido**: Los escaneos ARP activos se realizan a través del handle de la interfaz específica.
+- **Escaneo SNMP Dirigido (Bind)**: El `SnmpClient` vincula su socket UDP a la IP local de la interfaz, forzando al sistema operativo a usar esa interfaz para el tráfico SNMP.
+- **Optimización**: Se mantienen los filtros de solapamiento de redes y escaneo único por red.
 
 
 ## 4. Estructura del Proyecto

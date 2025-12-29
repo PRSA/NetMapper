@@ -14,7 +14,7 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
 
 1.  **Escaneo**: Introduce una IP o rango en el campo superior y pulsa Enter o el botón de escaneo.
 2.  **Visualización**: Navega entre las pestañas **Dispositivos** (árbol) y **Mapa** (grafo).
-3.  **Configuración**: Utiliza el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente.
+3.  **Configuración**: Utiliza el selector de idioma en la parte superior derecha para cambiar entre Español, Inglés y Chino Simplificado instantáneamente.
     mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main"
     ```
     O usando el classpath generado:
@@ -50,7 +50,7 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
     - Iconos representativos y colores específicos según el tipo de dispositivo (Router, Switch, Firewall, Impresora, etc.)
     - **Persistencia de Posiciones**: El mapa recuerda dónde has colocado cada nodo, incluso si realizas un nuevo escaneo o se encuentran nuevos dispositivos.
 11. **Validación de Entrada**: Verificación del formato de objetivo antes de escanear (IP, CIDR, IP/Máscara, Rango, Lista).
-12. **Internacionalización**: Soporte dinámico para múltiples idiomas (Español/English) con selector en tiempo real.
+12. **Internacionalización**: Soporte dinámico para múltiples idiomas (Español/English/Chinese) con selector en tiempo real.
 13. **Identificación de Fabricantes**: Todas las direcciones MAC se muestran con información del fabricante cuando está disponible.
 14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux.
 15. **Descubrimiento Automático de Redes**: Botón "Descubrimiento Automático" que detecta interfaces y subredes locales.
@@ -92,24 +92,16 @@ Para poblar la tabla ARP del sistema antes de la lectura, NetMapper realiza ahor
 - **Captura**: Escucha las respuestas ARP Reply para identificar inmediatamente direcciones MAC y fabricantes.
 - **Ventaja**: Detecta dispositivos silenciosos que no generan tráfico espontáneamente.
 
-### 3.23 Corrección de Formato de Texto SNMP [NUEVO]
+### 3.23 Corrección de Formato de Texto SNMP
+Se ha corregido el manejo de valores `OctetString` en SNMP para mostrar texto legible (no hexadecimal).
 
-Se ha corregido el manejo de valores `OctetString` en SNMP para mostrar texto legible:
-- **Problema**: Los campos de texto como `sysContact`, `sysLocation` y `sysName` se mostraban en formato hexadecimal (ej: `48:65:6C:6C:6F` en lugar de `Hello`).
-- **Solución**: El cliente SNMP detecta ahora valores `OctetString` y los convierte correctamente a cadenas de caracteres legibles.
-- **Impacto**: Toda la información de contacto, ubicación y nombres del sistema se muestra ahora en formato de texto normal.
-
-### 3.24 Escaneo por Interfaz Específica [NUEVO]
+### 3.24 Escaneo por Interfaz Específica (ARP/SNMP) [NUEVO]
 
 El autodescubrimiento ahora utiliza la interfaz de red correcta para escanear cada red local:
 
-- **Asociación Inteligente**: Cada red LAN detectada se asocia automáticamente con la interfaz que la tiene configurada.
-- **Escaneo Dirigido**: Los escaneos ARP activos (Pcap4J) se realizan a través de la interfaz específica de cada red, mejorando la accesibilidad y precisión.
-- **Optimización Mantenida**: 
-  - Si una red está contenida en otra más amplia, solo se escanea la más amplia.
-  - Si una red está configurada en múltiples interfaces, se escanea solo una vez usando la primera interfaz encontrada.
-- **Retrocompatibilidad**: Los escaneos manuales (no autodescubrimiento) siguen usando la interfaz por defecto del sistema.
-- **Feedback Visual**: Los mensajes de log ahora indican qué interfaz se está usando para cada escaneo (ej: "Iniciando escaneo de 192.168.1.0/24 a través de interfaz Ethernet").
+- **Asociación Inteligente**: Cada red LAN detectada se asocia con la interfaz física configurada.
+- **Escaneo ARP Dirigido**: Los escaneos ARP activos se realizan a través de la interfaz específica.
+- **SNMP Bound**: El tráfico SNMP se vincula (bind) a la IP local de la interfaz, asegurando que los paquetes salgan por la tarjeta de red correcta.
 
 **Archivos Modificados**:
 - [NetworkInterfaceInfo.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkInterfaceInfo.java): Nuevo modelo para asociar redes con interfaces

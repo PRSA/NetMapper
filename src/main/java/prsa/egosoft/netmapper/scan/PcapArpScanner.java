@@ -40,7 +40,9 @@ public class PcapArpScanner implements ArpScanner
         Map<String, String> detectedDevices = new ConcurrentHashMap<>();
         
         if(ips == null || ips.isEmpty())
+        {
             return detectedDevices;
+        }
         
         // Try to identify the correct network interface.
         PcapNetworkInterface nif = null;
@@ -193,7 +195,9 @@ public class PcapArpScanner implements ArpScanner
                     boolean hasIpv4 = dev.getAddresses().stream()
                             .anyMatch(a -> a.getAddress() instanceof java.net.Inet4Address);
                     if(hasIpv4)
+                    {
                         return dev;
+                    }
                 }
             }
         }

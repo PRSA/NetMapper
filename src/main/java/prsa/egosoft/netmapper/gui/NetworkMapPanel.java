@@ -8,32 +8,19 @@ import prsa.egosoft.netmapper.model.NetworkGraph.GraphEdge;
 import prsa.egosoft.netmapper.service.ExportService;
 import prsa.egosoft.netmapper.service.GraphLayoutService;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 
 /**
  * Panel displaying a network topology graph with export and print capabilities.
@@ -96,27 +83,41 @@ public class NetworkMapPanel extends JPanel
     public void updateUITexts()
     {
         this.pngButton.setText(Messages.getString("button.png"));
+        this.pngButton.setToolTipText(Messages.getString("tooltip.png"));
         this.pdfButton.setText(Messages.getString("button.pdf"));
+        this.pdfButton.setToolTipText(Messages.getString("tooltip.pdf"));
         this.jsonButton.setText(Messages.getString("button.json"));
+        this.jsonButton.setToolTipText(Messages.getString("tooltip.json"));
         this.printButton.setText(Messages.getString("button.print"));
+        this.printButton.setToolTipText(Messages.getString("tooltip.print"));
     }
     
     public void initDevices()
     {
         if(deviceMap == null)
+        {
             deviceMap = new HashMap<>();
+        }
         else
+        {
             deviceMap.clear();
+        }
     }
     
     public void addOrUpdateDevice(NetworkDevice device)
     {
         if(deviceMap == null)
+        {
             initDevices();
+        }
         if(deviceMap.containsKey(device.getIpAddress()))
+        {
             deviceMap.replace(device.getIpAddress(), device);
+        }
         else
+        {
             deviceMap.put(device.getIpAddress(), device);
+        }
     }
     
     public void clear()
@@ -130,7 +131,9 @@ public class NetworkMapPanel extends JPanel
     public void updateMap()
     {
         if(deviceMap == null)
+        {
             initDevices();
+        }
         if(deviceMap.isEmpty())
         {
             graph = new NetworkGraph();
@@ -308,7 +311,9 @@ public class NetworkMapPanel extends JPanel
                 private void updateCursor(Point p)
                 {
                     if(selectedNode != null)
+                    {
                         return;
+                    }
                     
                     boolean overNode = false;
                     for(GraphNode node : GraphPanel.this.graph.getNodes())
@@ -463,24 +468,40 @@ public class NetworkMapPanel extends JPanel
         {
             String type = node.getTypeLabel();
             if(type == null)
+            {
                 return node.getType() == NetworkGraph.NodeType.DEVICE ? new Color(100, 150, 255)
                         : new Color(150, 255, 150);
+            }
             
             type = type.toLowerCase();
             if(type.contains("router"))
+            {
                 return new Color(255, 165, 0);
+            }
             if(type.contains("switch"))
+            {
                 return new Color(70, 130, 180);
+            }
             if(type.contains("firewall"))
+            {
                 return new Color(220, 20, 60);
+            }
             if(type.contains("impresora"))
+            {
                 return new Color(46, 139, 87);
+            }
             if(type.contains("móvil") || type.contains("movil"))
+            {
                 return new Color(255, 140, 0);
+            }
             if(type.contains("servidor"))
+            {
                 return new Color(138, 43, 226);
+            }
             if(type.contains("pc"))
+            {
                 return new Color(0, 191, 255);
+            }
             
             if(node.getType() == NetworkGraph.NodeType.DEVICE)
             {
@@ -495,22 +516,38 @@ public class NetworkMapPanel extends JPanel
         private String getNodeIcon(String type)
         {
             if(type == null)
+            {
                 return "";
+            }
             type = type.toLowerCase();
             if(type.contains("router"))
+            {
                 return "\uD83C\uDF10";
+            }
             if(type.contains("switch"))
+            {
                 return "\u21C4";
+            }
             if(type.contains("firewall"))
+            {
                 return "\uD83D\uDD25";
+            }
             if(type.contains("impresora"))
+            {
                 return "\uD83D\uDDA8";
+            }
             if(type.contains("móvil") || type.contains("movil"))
+            {
                 return "\uD83D\uDCF1";
+            }
             if(type.contains("servidor"))
+            {
                 return "\uD83D\uDDA5";
+            }
             if(type.contains("pc"))
+            {
                 return "\uD83D\uDCBB";
+            }
             return "";
         }
     }
@@ -606,23 +643,39 @@ public class NetworkMapPanel extends JPanel
     {
         String type = node.getTypeLabel();
         if(type == null)
+        {
             return node.getType() == NetworkGraph.NodeType.DEVICE ? new Color(100, 150, 255) : new Color(150, 255, 150);
+        }
         
         type = type.toLowerCase();
         if(type.contains("router"))
+        {
             return new Color(255, 165, 0);
+        }
         if(type.contains("switch"))
+        {
             return new Color(70, 130, 180);
+        }
         if(type.contains("firewall"))
+        {
             return new Color(220, 20, 60);
+        }
         if(type.contains("impresora"))
+        {
             return new Color(46, 139, 87);
+        }
         if(type.contains("móvil") || type.contains("movil"))
+        {
             return new Color(255, 140, 0);
+        }
         if(type.contains("servidor"))
+        {
             return new Color(138, 43, 226);
+        }
         if(type.contains("pc"))
+        {
             return new Color(0, 191, 255);
+        }
         
         if(node.getType() == NetworkGraph.NodeType.DEVICE)
         {
@@ -637,22 +690,38 @@ public class NetworkMapPanel extends JPanel
     private static String getNodeIconForType(String type)
     {
         if(type == null)
+        {
             return "";
+        }
         type = type.toLowerCase();
         if(type.contains("router"))
+        {
             return "\uD83C\uDF10";
+        }
         if(type.contains("switch"))
+        {
             return "\u21C4";
+        }
         if(type.contains("firewall"))
+        {
             return "\uD83D\uDD25";
+        }
         if(type.contains("impresora"))
+        {
             return "\uD83D\uDDA8";
+        }
         if(type.contains("móvil") || type.contains("movil"))
+        {
             return "\uD83D\uDCF1";
+        }
         if(type.contains("servidor"))
+        {
             return "\uD83D\uDDA5";
+        }
         if(type.contains("pc"))
+        {
             return "\uD83D\uDCBB";
+        }
         return "";
     }
 }

@@ -46,17 +46,20 @@ public class NetworkScannerService
     
     /**
      * Escanea un rango de red (CIDR o IP única) usando una interfaz de red
-     * específica.
-     * 
-     * @param cidrInput     Red en formato CIDR o IP única
-     * @param community     Comunidad SNMP
-     * @param onSuccess     Callback para dispositivos descubiertos
-     * @param onError       Callback para errores
-     * @param interfaceName Nombre de la interfaz de red a usar (null para usar la
-     *                      por defecto)
+     * específica y opcionalmente vinculando SNMP a una dirección local.
      */
     public void scanNetwork(String cidrInput, String community, Consumer<NetworkDevice> onSuccess,
             Consumer<String> onError, String interfaceName)
+    {
+        scanNetwork(cidrInput, community, onSuccess, onError, interfaceName, null);
+    }
+    
+    /**
+     * Escanea un rango de red (CIDR o IP única) usando una interfaz de red
+     * específica y vinculando SNMP a una dirección local.
+     */
+    public void scanNetwork(String cidrInput, String community, Consumer<NetworkDevice> onSuccess,
+            Consumer<String> onError, String interfaceName, String localAddress)
     {
         List<String> ips = SubnetUtils.getIpList(cidrInput);
         if(ips.isEmpty())
@@ -90,20 +93,20 @@ public class NetworkScannerService
         for(String ip : ips)
         {
             String knownMac = activeArpMap.get(ip);
-            scanDevice(ip, community, onSuccess, onError, knownMac);
+            scanDevice(ip, community, onSuccess, onError, knownMac, localAddress);
         }
     }
     
     public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError)
     {
-        scanDevice(ip, community, onSuccess, onError, null);
+        scanDevice(ip, community, onSuccess, onError, null, null);
     }
     
     /**
      * Escanea un único dispositivo IP de forma asíncrona.
      */
     public void scanDevice(String ip, String community, Consumer<NetworkDevice> onSuccess, Consumer<String> onError,
-            String knownMac)
+            String knownMac, String localAddress)
     {
         executorService.submit(() ->
         {
@@ -111,7 +114,7 @@ public class NetworkScannerService
             try
             {
                 // logger.info("Scanning {}", ip); // Reduce log noise for bulk scans
-                client = new SnmpClient(community);
+                client = new SnmpClient(community, localAddress);
                 
                 // Crear dispositivo
                 NetworkDevice device = new NetworkDevice(ip);

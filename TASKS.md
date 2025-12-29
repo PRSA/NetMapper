@@ -80,12 +80,22 @@
     - [x] Filtrar redes redundantes o solapadas (priorizar rangos mayores) <!-- id: 63 -->
     - [x] Añadir botón "Descubrimiento Automático" en GUI <!-- id: 64 -->
     - [x] Integrar con el servicio de escaneo concurrente <!-- id: 65 -->
-- [x] Refactorización de Idiomas y Selector Dinámico
-    - [x] Eliminar bundle por defecto y consolidar en ES/EN <!-- id: 66 -->
+- [x] Escaneo por Interfaz Específica (ARP y SNMP)
+    - [x] Crear modelo NetworkInterfaceInfo para asociar redes con interfaces <!-- id: 101 -->
+    - [x] Implementar discoverLocalNetworksWithInterfaces() en NetworkDiscoveryUtils <!-- id: 102 -->
+    - [x] Extender ArpScanner con método que acepta interfaz específica <!-- id: 103 -->
+    - [x] Implementar findInterfaceByName() en PcapArpScanner <!-- id: 104 -->
+    - [x] Añadir método sobrecargado scanNetwork() con parámetro interfaceName <!-- id: 105 -->
+    - [x] Actualizar MainWindow.startAutoDiscovery() para usar interfaces específicas <!-- id: 106 -->
+    - [x] Implementar "bind" de socket UDP en SnmpClient para forzar interfaz en SNMP <!-- id: 108 -->
+- [x] Refactorización de Idiomas y Soporte Chino
+    - [x] Eliminar bundle por defecto y consolidar en ES/EN/ZH <!-- id: 66 -->
     - [x] Implementar sistema de fallback a Español <!-- id: 67 -->
     - [x] Añadir selector de idioma (JComboBox) en GUI <!-- id: 68 -->
     - [x] Implementar refresco dinámico de textos mediante observador <!-- id: 69 -->
     - [x] Estandarizar placeholders a formato MessageFormat ({0}) <!-- id: 70 -->
+    - [x] Añadir soporte para Chino Simplificado (messages_zh_CN.properties) <!-- id: 109 -->
+    - [x] Centralizar gestión de idiomas disponibles en la clase Messages <!-- id: 110 -->
 - [x] Internacionalización Completa (Alertas y Etiquetas)
     - [x] Localizar alertas JOptionPane y mensajes de error <!-- id: 71 -->
     - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
@@ -122,14 +132,32 @@
     - [x] Corregir conversión de OctetString a texto legible <!-- id: 98 -->
     - [x] Detectar y convertir valores de sysContact, sysLocation, sysName correctamente <!-- id: 99 -->
     - [x] Eliminar representación hexadecimal innecesaria <!-- id: 100 -->
-- [x] Escaneo por Interfaz Específica
+- [x] Escaneo por Interfaz Específica (ARP y SNMP)
     - [x] Crear modelo NetworkInterfaceInfo para asociar redes con interfaces <!-- id: 101 -->
     - [x] Implementar discoverLocalNetworksWithInterfaces() en NetworkDiscoveryUtils <!-- id: 102 -->
     - [x] Extender ArpScanner con método que acepta interfaz específica <!-- id: 103 -->
     - [x] Implementar findInterfaceByName() en PcapArpScanner <!-- id: 104 -->
     - [x] Añadir método sobrecargado scanNetwork() con parámetro interfaceName <!-- id: 105 -->
     - [x] Actualizar MainWindow.startAutoDiscovery() para usar interfaces específicas <!-- id: 106 -->
-    - [x] Añadir claves de internacionalización para mensajes de interfaz <!-- id: 107 -->
+    - [x] Implementar "bind" de socket UDP en SnmpClient para forzar interfaz en SNMP <!-- id: 108 -->
+- [x] Refactorización de Idiomas y Soporte Chino
+    - [x] Eliminar bundle por defecto y consolidar en ES/EN/ZH <!-- id: 66 -->
+    - [x] Implementar sistema de fallback a Español <!-- id: 67 -->
+    - [x] Añadir selector de idioma (JComboBox) en GUI <!-- id: 68 -->
+    - [x] Implementar refresco dinámico de textos mediante observador <!-- id: 69 -->
+    - [x] Estandarizar placeholders a formato MessageFormat ({0}) <!-- id: 70 -->
+    - [x] Añadir soporte para Chino Simplificado (messages_zh_CN.properties) <!-- id: 109 -->
+    - [x] Centralizar gestión de idiomas disponibles en la clase Messages <!-- id: 110 -->
+- [x] Internacionalización Completa (Alertas y Etiquetas)
+    - [x] Localizar alertas JOptionPane y mensajes de error <!-- id: 71 -->
+    - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
+    - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
+    - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
+- [x] Mejora de Layout y Usabilidad
+    - [x] Hacer que el panel de dispositivos ocupe todo el ancho de la ventana <!-- id: 80 -->
+    - [x] Implementar interfaz de pestañas (Tabs) para dispositivos y mapa <!-- id: 81 -->
+    - [x] Refactorizar panel de configuración a GridBagLayout para diseño multilínea <!-- id: 84 -->
+    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->
 
 
 

@@ -24,7 +24,6 @@ import java.util.function.Consumer;
  */
 public class ExportService
 {
-    
     private final GraphLayoutService layoutService;
     private final ObjectMapper objectMapper;
     

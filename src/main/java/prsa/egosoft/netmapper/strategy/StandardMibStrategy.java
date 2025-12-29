@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
  */
 public class StandardMibStrategy implements DiscoveryStrategy
 {
-    
     // OIDs MIB-II System
     private static final String OID_SYS_DESCR = "1.3.6.1.2.1.1.1.0";
     private static final String OID_SYS_OBJECT_ID = "1.3.6.1.2.1.1.2.0";
@@ -81,7 +80,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
         try
         {
             if(sysServicesStr != null)
+            {
                 sysServices = Integer.parseInt(sysServicesStr);
+            }
         }
         catch(NumberFormatException ignored)
         {
@@ -126,7 +127,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
                 netIf.setType(ifTypes.get(OID_IF_TYPE + "." + index));
                 String mtuStr = ifMtus.get(OID_IF_MTU + "." + index);
                 if(mtuStr != null)
+                {
                     netIf.setMtu(Integer.parseInt(mtuStr));
+                }
                 
                 // Speed Logic: Prefer High Speed if available and > 0, otherwise normal speed
                 String highSpeedStr = ifHighSpeeds.get(oidIfHighSpeed + "." + index);
@@ -280,11 +283,15 @@ public class StandardMibStrategy implements DiscoveryStrategy
         {
             String descr = ni.getDescription();
             if(descr == null || descr.isEmpty())
+            {
                 continue;
+            }
             
             // Skip if already has VLAN assigned (from Q-BRIDGE-MIB)
             if(ni.getUntaggedVlanId() > 0)
+            {
                 continue;
+            }
             
             // Try each pattern
             for(int i = 0; i < vlanPatterns.length; i++)
@@ -371,7 +378,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
                 // Suffix is ifIndex.ip.ip.ip.ip
                 String[] parts = oidSuffix.split("\\.");
                 if(parts.length < 5)
+                {
                     continue;
+                }
                 
                 int ifIndex = Integer.parseInt(parts[0]);
                 String mac = formatMacAddress(entry.getValue());
@@ -535,7 +544,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
                 // Asumimos que los dos últimos componentes son TimeMark y VlanId
                 String[] parts = oid.split("\\.");
                 if(parts.length < 2)
+                {
                     continue;
+                }
                 
                 int vlanId = Integer.parseInt(parts[parts.length - 1]);
                 String portListHex = entry.getValue(); // String Hex (ej: "FF 00 ...")
@@ -608,7 +619,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
     {
         List<Integer> ports = new ArrayList<>();
         if(hexString == null || hexString.isEmpty())
+        {
             return ports;
+        }
         
         // Limpieza básica: quitar separadores comunes (: o espacio)
         String cleanHex = hexString.replaceAll("[:\\s]", "");
@@ -650,9 +663,13 @@ public class StandardMibStrategy implements DiscoveryStrategy
     private String formatMacAddress(String raw)
     {
         if(raw == null || raw.isEmpty())
+        {
             return "";
+        }
         if(raw.contains(":"))
+        {
             return raw;
+        }
         // Hex string cleaning implies more logic, but this is a stub for raw data
         return raw;
     }
@@ -660,11 +677,17 @@ public class StandardMibStrategy implements DiscoveryStrategy
     private String mapStatus(String status)
     {
         if("1".equals(status))
+        {
             return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.up");
+        }
         if("2".equals(status))
+        {
             return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.down");
+        }
         if("3".equals(status))
+        {
             return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.testing");
+        }
         return prsa.egosoft.netmapper.i18n.Messages.getString("interface.status.unknown", status);
     }
     
@@ -741,35 +764,65 @@ public class StandardMibStrategy implements DiscoveryStrategy
         {
             String lowerDescr = descr.toLowerCase();
             if(lowerDescr.contains("cisco"))
+            {
                 vendor = "Cisco";
+            }
             else if(lowerDescr.contains("huawei"))
+            {
                 vendor = "Huawei";
+            }
             else if(lowerDescr.contains("juniper"))
+            {
                 vendor = "Juniper";
+            }
             else if(lowerDescr.contains("aruba"))
+            {
                 vendor = "Aruba";
+            }
             else if(lowerDescr.contains("3com"))
+            {
                 vendor = "3Com";
+            }
             else if(lowerDescr.contains("hewlett") || lowerDescr.contains("hpe"))
+            {
                 vendor = "HP / HPE";
+            }
             else if(lowerDescr.contains("linux"))
+            {
                 vendor = "Linux";
+            }
             else if(lowerDescr.contains("windows"))
+            {
                 vendor = "Windows";
+            }
             else if(lowerDescr.contains("d-link") || lowerDescr.contains("dlink"))
+            {
                 vendor = "D-Link";
+            }
             else if(lowerDescr.contains("extreme"))
+            {
                 vendor = "Extreme Networks";
+            }
             else if(lowerDescr.contains("teldat"))
+            {
                 vendor = "Teldat";
+            }
             else if(lowerDescr.contains("tenda"))
+            {
                 vendor = "Tenda";
+            }
             else if(lowerDescr.contains("asus"))
+            {
                 vendor = "Asus";
+            }
             else if(lowerDescr.contains("engenius"))
+            {
                 vendor = "EnGenius";
+            }
             else if(lowerDescr.contains("apple") || lowerDescr.contains("macos") || lowerDescr.contains("mac os"))
+            {
                 vendor = "Apple";
+            }
         }
         
         // Intento básico de extraer modelo del sysDescr si es Cisco
@@ -829,7 +882,9 @@ public class StandardMibStrategy implements DiscoveryStrategy
         else if(descr.contains("linux") || vendor.contains("linux"))
         {
             if(type.equals(prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown")))
+            {
                 type = prsa.egosoft.netmapper.i18n.Messages.getString("device.type.pc_linux");
+            }
         }
         else if(descr.contains("iphone") || descr.contains("ipad") || descr.contains("android"))
         {
@@ -881,15 +936,25 @@ public class StandardMibStrategy implements DiscoveryStrategy
     {
         List<String> services = new ArrayList<>();
         if((sysServices & 1) != 0)
+        {
             services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.physical"));
+        }
         if((sysServices & 2) != 0)
+        {
             services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.datalink"));
+        }
         if((sysServices & 4) != 0)
+        {
             services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.internet"));
+        }
         if((sysServices & 8) != 0)
+        {
             services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.endtoend"));
+        }
         if((sysServices & 64) != 0)
+        {
             services.add(prsa.egosoft.netmapper.i18n.Messages.getString("service.applications"));
+        }
         
         return String.join(", ", services);
     }

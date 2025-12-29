@@ -30,18 +30,34 @@ public class SnmpClient
     
     private Snmp snmp;
     private String community;
+    private String localAddress;
     private static final int RETRIES = 1;
     private static final int TIMEOUT = 1000;
     
     public SnmpClient(String community) throws IOException
     {
+        this(community, null);
+    }
+    
+    public SnmpClient(String community, String localAddress) throws IOException
+    {
         this.community = community;
+        this.localAddress = localAddress;
         start();
     }
     
     private void start() throws IOException
     {
-        TransportMapping<UdpAddress> transport = new DefaultUdpTransportMapping();
+        TransportMapping<UdpAddress> transport;
+        if(localAddress != null && !localAddress.isEmpty())
+        {
+            // Bind to specific local address (e.g., 192.168.1.15/0)
+            transport = new DefaultUdpTransportMapping(new UdpAddress(localAddress + "/0"));
+        }
+        else
+        {
+            transport = new DefaultUdpTransportMapping();
+        }
         snmp = new Snmp(transport);
         transport.listen();
     }

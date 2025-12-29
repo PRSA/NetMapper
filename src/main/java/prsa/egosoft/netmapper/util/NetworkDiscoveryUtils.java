@@ -15,7 +15,6 @@ import prsa.egosoft.netmapper.model.NetworkInterfaceInfo;
 
 public class NetworkDiscoveryUtils
 {
-    
     /**
      * Discovers all local network interfaces and returns a list of unique,
      * non-overlapping CIDR networks with their associated interface information.
@@ -71,7 +70,7 @@ public class NetworkDiscoveryUtils
      * Discovers all local network interfaces and returns a list of unique,
      * non-overlapping CIDR networks. Prioritizes larger ranges (smaller prefix
      * lengths) when networks overlap or encompass others.
-     * 
+     *
      * @deprecated Use {@link #discoverLocalNetworksWithInterfaces()} for
      *             interface-aware scanning
      */
@@ -222,7 +221,7 @@ public class NetworkDiscoveryUtils
         
         NetworkInterfaceInfo toNetworkInterfaceInfo()
         {
-            return new NetworkInterfaceInfo(toCidr(), interfaceName, interfaceDisplayName);
+            return new NetworkInterfaceInfo(toCidr(), interfaceName, interfaceDisplayName, originalIp);
         }
         
         private static long ipToLong(InetAddress ip)

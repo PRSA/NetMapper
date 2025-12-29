@@ -13,7 +13,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC en todas las visualizaciones (interfaces, endpoints, mapa de red) usando cache local + lookup online con fallback
 - **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
-- **Escaneo por Interfaz Específica**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local, mejorando la accesibilidad y precisión.
+- **Escaneo por Interfaz Específica (ARP/SNMP)**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local. El tráfico SNMP se vincula (bind) a la IP local de la interfaz para mayor precisión.
 
 ### Escaneo Avanzado
 - **Escaneo de Redes**: Soporte para múltiples formatos de entrada:
@@ -21,7 +21,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - CIDR: `192.168.1.0/24`
   - IP/Máscara: `192.168.1.0/255.255.255.0`
   - Rango IP: `192.168.1.1-192.168.1.50`
-- **Internacionalización (i18n)**: Soporte completo para Español e Inglés con cambio dinámico de idioma en la interfaz.
+- **Internacionalización (i18n)**: Soporte completo para Español, Inglés y Chino Simplificado con cambio dinámico de idioma en la interfaz.
 - **Interfaz mediante Pestañas**: Organización del árbol de dispositivos y el mapa de red en pestañas siempre accesibles.
 - **Interfaz Adaptativa**: Panel de dispositivos optimizado para ocupar todo el ancho disponible y visualización clara de jerarquías de red.
 - **Soporte CLI (Headless)**: Permite ejecutar escaneos y auto-descubrimiento sin interfaz gráfica, con soporte para múltiples formatos de exportación.
@@ -44,9 +44,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Layout Optimizada**: Interfaz organizada en pestañas con panel de configuración multilínea para una navegación más cómoda y eficiente.
 
 ### Internacionalización
-- **Soporte Dinámico Integro**: Toda la interfaz, incluyendo alertas (`JOptionPane`), mensajes de log, errores técnicos y etiquetas del árbol, están disponibles en Español e Inglés.
+- **Soporte Dinámico Integro**: Toda la interfaz, incluyendo alertas (`JOptionPane`), mensajes de log, errores técnicos y etiquetas del árbol, están disponibles en Español, Inglés y Chino Simplificado.
 - **Selector de Idioma**: Selector desplegable en la UI para cambiar el idioma en tiempo real sin reiniciar.
-- **Detección y Fallback**: Usa el locale del sistema al inicio (si es ES o EN), de lo contrario usa Español por defecto.
+- **Detección y Fallback**: Usa el locale del sistema al inicio (si es ES, EN o ZH), de lo contrario usa Español por defecto.
 
 ## Requisitos
 
@@ -88,7 +88,7 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 5. **Opcional**: Use "Descubrimiento Automático" para encontrar y escanear subredes locales automáticamente
 6. Explore los resultados en la pestaña **Dispositivos**
 7. Cambie a la pestaña **Mapa** para visualizar la topología de red en tiempo real
-8. Use el selector de idioma en la parte superior derecha para cambiar entre Español e Inglés instantáneamente
+8. Use el selector de idioma en la parte superior derecha para cambiar entre Español, Inglés y Chino Simplificado instantáneamente
 9. Use "Borrar" para resetear el estado y comenzar de nuevo
 
 ## Parámetros CLI (Headless)
@@ -114,7 +114,8 @@ src/main/java/prsa/egosoft/netmapper/
 
 src/main/resources/
 ├── messages_es.properties    # Recursos en Español (por defecto)
-└── messages_en.properties    # Recursos en Inglés
+├── messages_en.properties    # Recursos en Inglés
+└── messages_zh_CN.properties # Recursos en Chino Simplificado
 ```
 
 ## Compatibilidad

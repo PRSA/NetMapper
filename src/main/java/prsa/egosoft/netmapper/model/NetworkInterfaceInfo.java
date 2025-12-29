@@ -8,12 +8,14 @@ public class NetworkInterfaceInfo
     private String cidr;
     private String interfaceName;
     private String interfaceDisplayName;
+    private String localIp;
     
-    public NetworkInterfaceInfo(String cidr, String interfaceName, String interfaceDisplayName)
+    public NetworkInterfaceInfo(String cidr, String interfaceName, String interfaceDisplayName, String localIp)
     {
         this.cidr = cidr;
         this.interfaceName = interfaceName;
         this.interfaceDisplayName = interfaceDisplayName;
+        this.localIp = localIp;
     }
     
     public String getCidr()
@@ -46,10 +48,20 @@ public class NetworkInterfaceInfo
         this.interfaceDisplayName = interfaceDisplayName;
     }
     
+    public String getLocalIp()
+    {
+        return localIp;
+    }
+    
+    public void setLocalIp(String localIp)
+    {
+        this.localIp = localIp;
+    }
+    
     @Override
     public String toString()
     {
         return "NetworkInterfaceInfo{" + "cidr='" + cidr + '\'' + ", interfaceName='" + interfaceName + '\''
-                + ", interfaceDisplayName='" + interfaceDisplayName + '\'' + '}';
+                + ", interfaceDisplayName='" + interfaceDisplayName + '\'' + ", localIp='" + localIp + '\'' + '}';
     }
 }
