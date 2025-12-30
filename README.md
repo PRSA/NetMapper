@@ -10,7 +10,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Soporte de VLANs**: Detecta VLANs configuradas mediante Q-BRIDGE-MIB y fallback para sistemas Linux (detección por nomenclatura de interfaces)
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo
-- **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC en todas las visualizaciones (interfaces, endpoints, mapa de red) usando cache local + lookup online con fallback
+- **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC con detección local de LAA y caché optimizada (local + lookup online con fallback) para evitar consultas redundantes.
 - **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
 - **Escaneo por Interfaz Específica (ARP/SNMP)**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local. El tráfico SNMP se vincula (bind) a la IP local de la interfaz para mayor precisión.
@@ -28,8 +28,9 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - Lista separada por comas de cualquiera de los anteriores
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
-- **Ordenamiento**: Dispositivos ordenados automáticamente por dirección IP
-- **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces y subnets locales del equipo e iniciar su escaneo.
+- **Ordenamiento Lógico**: Dispositivos ordenados por IP e interfaces ordenadas (numéricas primero) en el árbol.
+- **Visualización de Mapa Topológico**: Grafo interactivo con **auto-escalado inteligente** y distribución optimizada de endpoints para maximizar la legibilidad en redes densas. Garantiza visualizaciones completas en pantalla, PNG, PDF e impresora.
+- **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces locales e iniciar su escaneo.
 
 ### Visualización
 - **Interfaz Gráfica**: Visualización clara mediante pestañas (Swing JTabbedPane)
@@ -99,6 +100,7 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 - `-png <path>`: Exportar mapa a imagen PNG.
 - `-pdf <path>`: Exportar mapa a documento PDF.
 - `-json <path>`: Exportar inventario a fichero JSON.
+- `-h`: Mostrar ayuda.
 
 ## Estructura del Proyecto
 

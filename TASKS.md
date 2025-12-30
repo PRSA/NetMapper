@@ -157,7 +157,9 @@
     - [x] Hacer que el panel de dispositivos ocupe todo el ancho de la ventana <!-- id: 80 -->
     - [x] Implementar interfaz de pestañas (Tabs) para dispositivos y mapa <!-- id: 81 -->
     - [x] Refactorizar panel de configuración a GridBagLayout para diseño multilínea <!-- id: 84 -->
-    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->
-
-
-
+    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->- [x] Mejora de la Representación Visual y Usabilidad
+    - [x] Reducir el diámetro de los nodos a la mitad para mejorar la densidad del mapa <!-- id: 111 -->
+    - [x] Mostrar descripción textual junto al valor numérico de ifType en interfaces <!-- id: 112 -->
+    - [x] Ordenar interfaces en el árbol (numéricas primero, luego alfanuméricas) <!-- id: 113 -->
+    - [x] Corregir caché de fabricantes MAC (detección LAA y almacenamiento de fallos) <!-- id: 114 -->
+    - [x] Implementar auto-escalado y mejorar distribución de equipos en el mapa <!-- id: 115 -->

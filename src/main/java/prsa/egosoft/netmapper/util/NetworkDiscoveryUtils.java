@@ -74,6 +74,7 @@ public class NetworkDiscoveryUtils
      * @deprecated Use {@link #discoverLocalNetworksWithInterfaces()} for
      *             interface-aware scanning
      */
+    @Deprecated
     public static List<String> discoverLocalNetworks()
     {
         List<NetworkInfo> networks = new ArrayList<>();

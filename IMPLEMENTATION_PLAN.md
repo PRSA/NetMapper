@@ -131,6 +131,8 @@ Se ha completado la integración de información de fabricante en todas las ubic
 -   **Mapa de Red**: Las etiquetas de arcos y nodos ya incluían información de vendor para interfaces y endpoints.
 -   **Mecanismo Unificado**: Todas las ubicaciones utilizan `MacVendorUtils.getVendor()` que implementa:
     -   Cache local persistente en `mac_vendors.properties`.
+    -   **Detección Local de LAA**: Identificación automática de direcciones administradas localmente para evitar consultas online.
+    -   **Caché Negativa**: Almacenamiento de resultados "Desconocidos" en memoria para evitar reintentos de consulta en la misma sesión.
     -   Autodescubrimiento mediante APIs online (api.macvendors.com + fallback a macvendorlookup.com).
     -   Actualización automática del cache con nuevos vendors descubiertos.
 
@@ -188,9 +190,20 @@ Se ha rediseñado el panel superior para mejorar la ergonomía:
 - **GridBagLayout**: Permite una distribución flexible de componentes en múltiples filas.
 - **Reubicación de Botones**: El botón "Auto Descubrimiento" se sitúa en una segunda línea para no saturar la primera fila y mejorar la jerarquía visual debajo de la etiqueta de objetivo.
 
-### 3.18 Visualización de sysServices
-Se ha implementado el soporte para mostrar los servicios de red activos según RFC 1213:
-- **Lógica**: Decodificación de los bits del campo `sysServices` para identificar capas (Physical, Datalink, Internet, End-to-End, Applications).
+### 3.18 Visualización de sysServices y ifType
+Se ha implementado el soporte para mostrar los servicios de red activos según RFC 1213 y tipos de interfaz detallados:
+- **sysServices**: Decodificación de los bits del campo `sysServices` para identificar capas (Physical, Datalink, Internet, End-to-End, Applications).
+- **ifType**: Integración de `InterfaceTypeUtils` para mapear valores numéricos a descripciones IANA estándar (ej: 6 -> ethernet-csmacd, 24 -> softwareLoopback).
+
+### 3.19 Optimización de Densidad Visual
+Para mejorar la usabilidad en redes complejas, se han ajustado los parámetros gráficos del mapa:
+- **NODE_RADIUS**: Reducido de 30 a 15 píxeles.
+- **Iconos**: Tamaño de fuente Segoe UI Emoji ajustado a 15px para legibilidad en nodos reducidos.
+
+### 3.20 Ordenamiento Lógico en el Árbol
+Las interfaces se ordenan mediante un comparador personalizado en `DeviceTreePanel`:
+- **Criterio**: Las descripciones numéricas se comparan como enteros (Long) para asegurar que "2" preceda a "10".
+- **Prioridad**: Los identificadores numéricos aparecen siempre antes que los alfanuméricos.
 ### 3.21 Escaneo ARP Multiplataforma [NUEVO]
 
 Se ha añadido la capacidad de realizar un descubrimiento rápido basado en ARP:

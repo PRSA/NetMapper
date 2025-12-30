@@ -80,7 +80,7 @@ public class MainWindow extends JFrame
         clearButton.addActionListener(e -> resetApp());
         configPanel.add(clearButton, gbc);
         
-        // Selector de Idioma (fianl de la fila 0)
+        // Selector de Idioma (final de la fila 0)
         gbc.gridx = 6;
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.EAST;
@@ -89,7 +89,6 @@ public class MainWindow extends JFrame
         int languageIndex = Messages.defaultLanguageIndex;
         for(int i = 0; i < Messages.getAvailableLocales().length; i++)
         {
-            System.out.println(Messages.getAvailableLocales()[i] + " " + Messages.getLocale());
             if(Messages.getAvailableLocales()[i].equals(Messages.getLocale()))
             {
                 languageIndex = i;

@@ -55,11 +55,15 @@ La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP
 14. **Detección de VLANs en Linux**: Fallback automático para detectar VLANs en sistemas Linux.
 15. **Descubrimiento Automático de Redes**: Botón "Descubrimiento Automático" que detecta interfaces y subredes locales.
 16. **Selector de Idioma**: Permite cambiar el idioma de toda la interfaz sin reiniciar la aplicación.
-17. **Exportación e Impresión del Mapa**: Botones dedicados en la barra de herramientas del mapa:
+17. **Visualización de ifType**: Las interfaces muestran tanto el valor numérico como la descripción (ej: `6 (ethernet-csmacd)`).
+18. **Ordenamiento de Interfaces**: Las interfaces aparecen ordenadas (numéricas primero, luego alfanuméricas).
+19. **Auto-escalado y Distribución del Mapa**: El mapa se ajusta automáticamente al tamaño de visualización (ventana, PNG, PDF) para evitar cortes. Los endpoints se distribuyen en arcos inteligentes para evitar solapamientos.
+20. **Caché de Fabricantes MAC**: Optimización para evitar consultas redundantes mediante detección de LAA y almacenamiento de resultados desconocidos.
+21. **Exportación e Impresión del Mapa**: Botones dedicados en la barra de herramientas del mapa:
     - **PNG**: Exporta el estado actual del mapa como una imagen `.png`.
     - **PDF**: Generas un documento PDF con el mapa.
     - **Imprimir**: Envía el mapa directamente a la impresora configurada.
-18. **Layout de Pestañas e Interfaz Multilínea**:
+22. **Layout de Pestañas e Interfaz Multilínea**:
     - Organización en pestañas para separar datos jerárquicos de la visualización gráfica.
     - Panel de configuración distribuido en dos filas para mayor claridad; el botón "Auto Descubrimiento" se encuentra debajo de la etiqueta de objetivo.
 19. **Servicios de Red**: El tipo de dispositivo incluye ahora los servicios y capas activas detectadas (ej: Internet, Enlace, Aplicaciones).

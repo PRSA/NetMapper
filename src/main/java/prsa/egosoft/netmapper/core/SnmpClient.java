@@ -106,14 +106,16 @@ public class SnmpClient
             }
             else
             {
-                logger.warn("SNMP GET error for {}: {}", ip,
+                logger.warn("SNMP GET error from {} interface for {}: {}",
+                        localAddress != null ? localAddress : "default", ip,
                         response != null ? response.getErrorStatusText() : "Timeout");
                 return null;
             }
         }
         catch(Exception e)
         {
-            logger.error("Exception during SNMP GET to {}", ip, e);
+            logger.error("Exception during SNMP GET from {} interface to {}",
+                    localAddress != null ? localAddress : "default", ip, e);
             return null;
         }
     }
@@ -135,7 +137,8 @@ public class SnmpClient
         
         if(events == null || events.isEmpty())
         {
-            logger.warn("No response for WALK on {} OID {}", ip, rootOid);
+            logger.warn("No response for WALK on {} OID {} from {} interface", ip, rootOid,
+                    localAddress != null ? localAddress : "default");
             return result;
         }
         
@@ -145,7 +148,8 @@ public class SnmpClient
             {
                 if(event.isError())
                 {
-                    logger.error("Error in SNMP WALK to {}: {}", ip, event.getErrorMessage());
+                    logger.error("Error in SNMP WALK from {} interface to {}: {}",
+                            localAddress != null ? localAddress : "default", ip, event.getErrorMessage());
                     continue;
                 }
                 

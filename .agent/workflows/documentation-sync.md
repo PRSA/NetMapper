@@ -16,6 +16,3 @@ Este workflow asegura que la documentación del proyecto se mantenga al día con
     - Actualiza capturas o pasos manuales si aplica.
 5. **Actualizar IMPLEMENTATION_PLAN.md**:
     - Si hubo cambios estructurales significativos, documenta la nueva realidad técnica.
-
-// turbo
-6. **Validación final**: Verifica que los 4 ficheros existen y contienen la información actualizada ejecutando `ls -l README.md TASKS.md WALKTHROUGH.md IMPLEMENTATION_PLAN.md`.

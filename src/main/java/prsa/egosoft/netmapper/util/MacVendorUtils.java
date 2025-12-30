@@ -104,14 +104,44 @@ public class MacVendorUtils
             }
             
             // 2. Online Lookup
+            // First check if it's a Locally Administered Address (LAA)
+            if(isLocallyAdministered(oui))
+            {
+                String laaLabel = Messages.getString("vendor.laa");
+                saveCache(oui, laaLabel);
+                return laaLabel;
+            }
+            
             String vendor = lookupOnline(macAddress); // Pass full MAC often required by APIs
             if(vendor != null && !vendor.trim().isEmpty() && !Messages.getString("vendor.unknown").equals(vendor))
             {
                 saveCache(oui, vendor);
                 return vendor;
             }
+            else
+            {
+                // Cache negative results as "Unknown" to avoid repeated online hits in the same
+                // session
+                saveCache(oui, Messages.getString("vendor.unknown"));
+            }
         }
         return Messages.getString("vendor.unknown");
+    }
+    
+    /**
+     * Checks if a MAC prefix (OUI) is a Locally Administered Address (LAA). These
+     * are identified by the second least significant bit of the first byte being 1.
+     * In the first octet XX, X0, X1, X2, X3... the second hex digit must be 2, 6,
+     * A, or E.
+     */
+    private static boolean isLocallyAdministered(String oui)
+    {
+        if(oui == null || oui.length() < 2)
+        {
+            return false;
+        }
+        char secondChar = oui.charAt(1);
+        return secondChar == '2' || secondChar == '6' || secondChar == 'A' || secondChar == 'E';
     }
     
     private static String lookupOnline(String mac)

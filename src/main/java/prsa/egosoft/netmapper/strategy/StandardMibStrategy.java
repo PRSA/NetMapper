@@ -5,6 +5,7 @@ import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.model.NetworkInterface;
 import prsa.egosoft.netmapper.model.DetectedEndpoint;
 import prsa.egosoft.netmapper.util.MacVendorUtils;
+import prsa.egosoft.netmapper.util.InterfaceTypeUtils;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -124,7 +125,8 @@ public class StandardMibStrategy implements DiscoveryStrategy
                 NetworkInterface netIf = new NetworkInterface(index, descr);
                 
                 // Configuración extendida
-                netIf.setType(ifTypes.get(OID_IF_TYPE + "." + index));
+                String rawType = ifTypes.get(OID_IF_TYPE + "." + index);
+                netIf.setType(InterfaceTypeUtils.formatInterfaceType(rawType));
                 String mtuStr = ifMtus.get(OID_IF_MTU + "." + index);
                 if(mtuStr != null)
                 {

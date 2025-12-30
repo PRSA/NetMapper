@@ -41,8 +41,8 @@ public class ExportService
     
     public void exportToPNG(File file, NetworkGraph graph, Consumer<Graphics2D> paintCallback) throws IOException
     {
-        int width = 1200; // Default width for headless export
-        int height = 800; // Default height for headless export
+        int width = 1600; // Increased width for better resolution
+        int height = 1200;
         
         layoutService.calculateLayout(graph, width, height);
         
@@ -53,7 +53,8 @@ public class ExportService
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, width, height);
         
-        paintCallback.accept(g2);
+        // We use the static paintGraph directly to ensure auto-scaling
+        prsa.egosoft.netmapper.gui.NetworkMapPanel.paintGraph(g2, graph, width, height);
         g2.dispose();
         
         ImageIO.write(image, "png", file);
@@ -61,8 +62,8 @@ public class ExportService
     
     public void exportToPDF(File file, NetworkGraph graph, Consumer<Graphics2D> paintCallback) throws IOException
     {
-        int width = 1200;
-        int height = 800;
+        int width = 1600;
+        int height = 1200;
         
         layoutService.calculateLayout(graph, width, height);
         
@@ -75,7 +76,7 @@ public class ExportService
             PdfBoxGraphics2D pdfBoxGraphics2D = new PdfBoxGraphics2D(document, width, height);
             try
             {
-                paintCallback.accept(pdfBoxGraphics2D);
+                prsa.egosoft.netmapper.gui.NetworkMapPanel.paintGraph(pdfBoxGraphics2D, graph, width, height);
             }
             finally
             {

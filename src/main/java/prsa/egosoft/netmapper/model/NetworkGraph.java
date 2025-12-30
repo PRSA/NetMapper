@@ -1,5 +1,7 @@
 package prsa.egosoft.netmapper.model;
 
+import java.awt.FontMetrics;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,96 @@ public class NetworkGraph
 {
     private List<GraphNode> nodes;
     private List<GraphEdge> edges;
+    
+    /**
+     * Calculates the bounding box of the entire graph including labels.
+     */
+    public Rectangle2D calculateBounds(java.awt.Graphics2D g2)
+    {
+        if(nodes.isEmpty())
+        {
+            return new Rectangle2D.Double(0, 0, 100, 100);
+        }
+        
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        
+        // Use a default node radius for bounds calculation
+        int radius = 15;
+        
+        for(GraphNode node : nodes)
+        {
+            // Node circle bounds
+            minX = Math.min(minX, node.getX() - radius);
+            minY = Math.min(minY, node.getY() - radius);
+            maxX = Math.max(maxX, node.getX() + radius);
+            maxY = Math.max(maxY, node.getY() + radius);
+            
+            // Node label bounds
+            if(node.getLabel() != null && !node.getLabel().isEmpty())
+            {
+                g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 10));
+                FontMetrics fm = g2.getFontMetrics();
+                String[] lines = node.getLabel().split("\n");
+                int labelWidth = 0;
+                for(String line : lines)
+                {
+                    labelWidth = Math.max(labelWidth, fm.stringWidth(line));
+                }
+                int labelHeight = lines.length * fm.getHeight();
+                
+                minX = Math.min(minX, node.getX() - labelWidth / 2.0);
+                maxX = Math.max(maxX, node.getX() + labelWidth / 2.0);
+                maxY = Math.max(maxY, node.getY() + radius + 12 + labelHeight);
+            }
+        }
+        
+        // Also consider edge labels
+        for(GraphEdge edge : edges)
+        {
+            if(edge.getLabel() != null && !edge.getLabel().isEmpty())
+            {
+                GraphNode source = findNode(edge.getSourceId());
+                GraphNode target = findNode(edge.getTargetId());
+                if(source != null && target != null)
+                {
+                    double midX = (source.getX() + target.getX()) / 2.0;
+                    double midY = (source.getY() + target.getY()) / 2.0;
+                    
+                    g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 9));
+                    FontMetrics fm = g2.getFontMetrics();
+                    String[] lines = edge.getLabel().split("\n");
+                    int labelWidth = 0;
+                    for(String line : lines)
+                    {
+                        labelWidth = Math.max(labelWidth, fm.stringWidth(line));
+                    }
+                    int labelHeight = lines.length * fm.getHeight();
+                    
+                    minX = Math.min(minX, midX - labelWidth / 2.0);
+                    maxX = Math.max(maxX, midX + labelWidth / 2.0);
+                    minY = Math.min(minY, midY - labelHeight / 2.0);
+                    maxY = Math.max(maxY, midY + labelHeight / 2.0);
+                }
+            }
+        }
+        
+        return new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
+    }
+    
+    private GraphNode findNode(String id)
+    {
+        for(GraphNode node : nodes)
+        {
+            if(node.getId().equals(id))
+            {
+                return node;
+            }
+        }
+        return null;
+    }
     
     public NetworkGraph()
     {
@@ -43,6 +135,14 @@ public class NetworkGraph
      * Builds a network graph from scanned devices.
      */
     public static NetworkGraph buildFromDevices(Map<String, NetworkDevice> deviceMap)
+    {
+        return buildFromDevices(deviceMap, true);
+    }
+    
+    /**
+     * Builds a network graph from scanned devices.
+     */
+    public static NetworkGraph buildFromDevices(Map<String, NetworkDevice> deviceMap, boolean simplifiedPhysicalView)
     {
         NetworkGraph graph = new NetworkGraph();
         Map<String, GraphNode> nodeMap = new HashMap<>();
@@ -185,7 +285,132 @@ public class NetworkGraph
         // Third pass: Merge bidirectional device-to-device edges
         mergeBidirectionalEdges(graph);
         
+        // Fourth pass: Remove redundant (transitive) links between devices
+        if(simplifiedPhysicalView)
+        {
+            applyPhysicalRedundancyFilter(graph, deviceMap);
+        }
+        
         return graph;
+    }
+    
+    /**
+     * Removes redundant links between devices where a multi-hop path is known. Uses
+     * MAC table visibility to infer the most direct physical path.
+     */
+    private static void applyPhysicalRedundancyFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap)
+    {
+        // 1. Map each device IP to its set of interface MACs for robust lookup
+        Map<String, List<String>> deviceToMacs = new HashMap<>();
+        Map<String, String> macToIp = new HashMap<>(); // Reverse map for fast device lookup by MAC
+        
+        for(NetworkDevice dev : deviceMap.values())
+        {
+            List<String> macs = new ArrayList<>();
+            for(NetworkInterface ni : dev.getInterfaces())
+            {
+                if(ni.getMacAddress() != null && !ni.getMacAddress().isEmpty())
+                {
+                    String mac = ni.getMacAddress().toLowerCase();
+                    macs.add(mac);
+                    macToIp.put(mac, dev.getIpAddress());
+                }
+            }
+            deviceToMacs.put(dev.getIpAddress(), macs);
+        }
+        
+        List<GraphEdge> edgesToRemove = new ArrayList<>();
+        
+        // Helper to check if a device is seen on a port
+        java.util.function.BiFunction<NetworkDevice, String, Integer> getPortViewingDevice = (viewer, targetIp) ->
+        {
+            List<String> targetMacs = deviceToMacs.get(targetIp);
+            for(Map.Entry<Integer, List<DetectedEndpoint>> entry : viewer.getMacAddressTable().entrySet())
+            {
+                for(DetectedEndpoint ep : entry.getValue())
+                {
+                    // Match by IP
+                    if(targetIp.equals(ep.getIpAddress()))
+                    {
+                        return entry.getKey();
+                    }
+                    // Or match by MAC
+                    if(ep.getMacAddress() != null && targetMacs != null
+                            && targetMacs.contains(ep.getMacAddress().toLowerCase()))
+                    {
+                        return entry.getKey();
+                    }
+                }
+            }
+            return null;
+        };
+        
+        // For each device-to-device edge A-B
+        for(GraphEdge edge : new ArrayList<>(graph.getEdges()))
+        {
+            String sourceId = edge.getSourceId();
+            String targetId = edge.getTargetId();
+            
+            if(!sourceId.startsWith("device_") || !targetId.startsWith("device_"))
+            {
+                continue;
+            }
+            
+            String sourceIp = sourceId.replace("device_", "");
+            String targetIp = targetId.replace("device_", "");
+            
+            NetworkDevice sourceDev = deviceMap.get(sourceIp);
+            if(sourceDev == null)
+            {
+                continue;
+            }
+            
+            // Find which port of sourceDev sees targetIp
+            Integer sourcePort = getPortViewingDevice.apply(sourceDev, targetIp);
+            if(sourcePort == null)
+            {
+                continue;
+            }
+            
+            // Look for intermediate nodes: devices seen on the SAME port as targetIp
+            // but that are "between" sourceDev and targetIp.
+            List<String> othersOnSamePort = new ArrayList<>();
+            for(DetectedEndpoint ep : sourceDev.getMacAddressTable().get(sourcePort))
+            {
+                String otherIp = ep.getIpAddress();
+                if(otherIp == null && ep.getMacAddress() != null)
+                {
+                    otherIp = macToIp.get(ep.getMacAddress().toLowerCase());
+                }
+                
+                if(otherIp != null && !otherIp.equals(targetIp) && deviceMap.containsKey(otherIp))
+                {
+                    othersOnSamePort.add(otherIp);
+                }
+            }
+            
+            for(String intermediateIp : othersOnSamePort)
+            {
+                NetworkDevice interDev = deviceMap.get(intermediateIp);
+                
+                // If the intermediate device sees sourceDev and targetDev on DIFFERENT
+                // interfaces,
+                // then it is physically between them.
+                Integer interPortToSource = getPortViewingDevice.apply(interDev, sourceIp);
+                Integer interPortToTarget = getPortViewingDevice.apply(interDev, targetIp);
+                
+                if(interPortToSource != null && interPortToTarget != null
+                        && !interPortToSource.equals(interPortToTarget))
+                {
+                    // Found a path sourceDev <-> interDev <-> targetDev
+                    // So sourceDev <-> targetDev is redundant.
+                    edgesToRemove.add(edge);
+                    break;
+                }
+            }
+        }
+        
+        graph.getEdges().removeAll(edgesToRemove);
     }
     
     /**

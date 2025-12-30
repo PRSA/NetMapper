@@ -39,6 +39,8 @@ public class NetworkMapPanel extends JPanel
     private JButton pdfButton;
     private JButton jsonButton;
     private JButton printButton;
+    private JCheckBox physicalViewCheckbox;
+    private boolean simplifiedView = true;
     
     public NetworkMapPanel()
     {
@@ -76,6 +78,17 @@ public class NetworkMapPanel extends JPanel
         printButton.addActionListener(e -> printMap());
         toolBar.add(printButton);
         
+        toolBar.addSeparator();
+        
+        this.physicalViewCheckbox = new JCheckBox();
+        physicalViewCheckbox.setSelected(simplifiedView);
+        physicalViewCheckbox.addActionListener(e ->
+        {
+            simplifiedView = physicalViewCheckbox.isSelected();
+            updateMap();
+        });
+        toolBar.add(physicalViewCheckbox);
+        
         add(toolBar, BorderLayout.NORTH);
         add(new JScrollPane(graphPanel), BorderLayout.CENTER);
     }
@@ -90,6 +103,8 @@ public class NetworkMapPanel extends JPanel
         this.jsonButton.setToolTipText(Messages.getString("tooltip.json"));
         this.printButton.setText(Messages.getString("button.print"));
         this.printButton.setToolTipText(Messages.getString("tooltip.print"));
+        this.physicalViewCheckbox.setText(Messages.getString("button.physical_view"));
+        this.physicalViewCheckbox.setToolTipText(Messages.getString("tooltip.physical_view"));
     }
     
     public void initDevices()
@@ -140,7 +155,7 @@ public class NetworkMapPanel extends JPanel
         }
         else
         {
-            graph = NetworkGraph.buildFromDevices(deviceMap);
+            graph = NetworkGraph.buildFromDevices(deviceMap, simplifiedView);
         }
         graphPanel.setGraph(graph);
         graphPanel.repaint();
@@ -224,12 +239,10 @@ public class NetworkMapPanel extends JPanel
                 Graphics2D g2d = (Graphics2D) graphics;
                 g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
                 
-                double scaleX = pageFormat.getImageableWidth() / graphPanel.getWidth();
-                double scaleY = pageFormat.getImageableHeight() / graphPanel.getHeight();
-                double scale = Math.min(scaleX, scaleY);
-                g2d.scale(scale, scale);
+                double imgWidth = pageFormat.getImageableWidth();
+                double imgHeight = pageFormat.getImageableHeight();
                 
-                graphPanel.paint(g2d);
+                NetworkMapPanel.paintGraph(g2d, graph, (int) imgWidth, (int) imgHeight);
                 
                 return PAGE_EXISTS;
             }
@@ -252,32 +265,39 @@ public class NetworkMapPanel extends JPanel
     private class GraphPanel extends JPanel
     {
         private NetworkGraph graph;
-        private static final int NODE_RADIUS = 30;
+        private static final int NODE_RADIUS = 15;
         
         private GraphNode selectedNode = null;
         private Point dragOffset = new Point();
+        
+        // Multiplicador de escala actual (para transformar coordenadas de ratón)
+        private double currentScale = 1.0;
+        private double offsetX = 0;
+        private double offsetY = 0;
         
         public GraphPanel(NetworkGraph graph)
         {
             this.graph = graph;
             setPreferredSize(new Dimension(800, 600));
             setBackground(Color.WHITE);
-            // No initial calculateLayout here, will be called by first updateMap
             
             MouseAdapter mouseAdapter = new MouseAdapter()
             {
                 @Override
                 public void mousePressed(MouseEvent e)
                 {
+                    // Transform mouse coordinates to graph coordinates
+                    double gx = (e.getX() - offsetX) / currentScale;
+                    double gy = (e.getY() - offsetY) / currentScale;
+                    
                     for(GraphNode node : GraphPanel.this.graph.getNodes())
                     {
-                        double dist = Math
-                                .sqrt(Math.pow(e.getX() - node.getX(), 2) + Math.pow(e.getY() - node.getY(), 2));
+                        double dist = Math.sqrt(Math.pow(gx - node.getX(), 2) + Math.pow(gy - node.getY(), 2));
                         if(dist <= NODE_RADIUS)
                         {
                             selectedNode = node;
-                            dragOffset.x = (int) (e.getX() - node.getX());
-                            dragOffset.y = (int) (e.getY() - node.getY());
+                            dragOffset.x = (int) (gx - node.getX());
+                            dragOffset.y = (int) (gy - node.getY());
                             setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                             break;
                         }
@@ -296,8 +316,10 @@ public class NetworkMapPanel extends JPanel
                 {
                     if(selectedNode != null)
                     {
-                        selectedNode.setX(e.getX() - dragOffset.x);
-                        selectedNode.setY(e.getY() - dragOffset.y);
+                        double gx = (e.getX() - offsetX) / currentScale;
+                        double gy = (e.getY() - offsetY) / currentScale;
+                        selectedNode.setX(gx - dragOffset.x);
+                        selectedNode.setY(gy - dragOffset.y);
                         repaint();
                     }
                 }
@@ -315,11 +337,13 @@ public class NetworkMapPanel extends JPanel
                         return;
                     }
                     
+                    double gx = (p.getX() - offsetX) / currentScale;
+                    double gy = (p.getY() - offsetY) / currentScale;
+                    
                     boolean overNode = false;
                     for(GraphNode node : GraphPanel.this.graph.getNodes())
                     {
-                        double dist = Math
-                                .sqrt(Math.pow(p.getX() - node.getX(), 2) + Math.pow(p.getY() - node.getY(), 2));
+                        double dist = Math.sqrt(Math.pow(gx - node.getX(), 2) + Math.pow(gy - node.getY(), 2));
                         if(dist <= NODE_RADIUS)
                         {
                             overNode = true;
@@ -343,7 +367,6 @@ public class NetworkMapPanel extends JPanel
         
         public void setGraph(NetworkGraph newGraph)
         {
-            // Save current positions to preserve them if nodes still exist
             Map<String, Point.Double> oldPositions = new HashMap<>();
             if(this.graph != null)
             {
@@ -354,9 +377,10 @@ public class NetworkMapPanel extends JPanel
             }
             
             this.graph = newGraph;
-            layoutService.calculateLayout(this.graph, getWidth(), getHeight());
+            // Layout inicial razonable
+            layoutService.calculateLayout(this.graph, getWidth() > 0 ? getWidth() : 800,
+                    getHeight() > 0 ? getHeight() : 600);
             
-            // Restore positions for existing nodes
             for(GraphNode node : this.graph.getNodes())
             {
                 if(oldPositions.containsKey(node.getId()))
@@ -371,192 +395,40 @@ public class NetworkMapPanel extends JPanel
             }
         }
         
-        /**
-         * @deprecated Use GraphLayoutService instead.
-         */
-        @Deprecated
-        private void calculateLayout()
-        {
-            layoutService.calculateLayout(graph, getWidth(), getHeight());
-        }
-        
         @Override
         protected void paintComponent(Graphics g)
         {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             
-            g2.setColor(Color.GRAY);
-            g2.setStroke(new BasicStroke(2));
-            g2.setFont(new Font("Arial", Font.PLAIN, 9));
-            for(GraphEdge edge : graph.getEdges())
+            // Calculate scale to fit all
+            java.awt.geom.Rectangle2D bounds = graph.calculateBounds(g2);
+            double padding = 40;
+            double availableWidth = getWidth() - padding * 2;
+            double availableHeight = getHeight() - padding * 2;
+            
+            currentScale = Math.min(availableWidth / bounds.getWidth(), availableHeight / bounds.getHeight());
+            if(currentScale > 1.5)
             {
-                GraphNode source = findNode(edge.getSourceId());
-                GraphNode target = findNode(edge.getTargetId());
-                if(source != null && target != null)
-                {
-                    g2.drawLine((int) source.getX(), (int) source.getY(), (int) target.getX(), (int) target.getY());
-                    
-                    if(edge.getLabel() != null && !edge.getLabel().isEmpty())
-                    {
-                        int midX = (int) ((source.getX() + target.getX()) / 2);
-                        int midY = (int) ((source.getY() + target.getY()) / 2);
-                        
-                        g2.setColor(new Color(100, 100, 100, 180));
-                        String[] lines = edge.getLabel().split("\n");
-                        FontMetrics fm = g2.getFontMetrics();
-                        int yOffset = -(lines.length * fm.getHeight()) / 2;
-                        for(String line : lines)
-                        {
-                            int labelWidth = fm.stringWidth(line);
-                            g2.drawString(line, midX - labelWidth / 2, midY + yOffset);
-                            yOffset += fm.getHeight();
-                        }
-                    }
-                }
+                currentScale = 1.5; // Avoid over-scaling small graphs
             }
             
-            for(GraphNode node : graph.getNodes())
-            {
-                Color nodeColor = getNodeColor(node);
-                String icon = getNodeIcon(node.getTypeLabel());
-                
-                g2.setColor(nodeColor);
-                Ellipse2D circle = new Ellipse2D.Double(node.getX() - NODE_RADIUS, node.getY() - NODE_RADIUS,
-                        NODE_RADIUS * 2, NODE_RADIUS * 2);
-                g2.fill(circle);
-                
-                g2.setColor(Color.BLACK);
-                g2.draw(circle);
-                
-                if(!icon.isEmpty())
-                {
-                    g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
-                    FontMetrics ifm = g2.getFontMetrics();
-                    int iconWidth = ifm.stringWidth(icon);
-                    g2.drawString(icon, (int) (node.getX() - iconWidth / 2),
-                            (int) (node.getY() + ifm.getAscent() / 2 - 2));
-                }
-                
-                g2.setFont(new Font("Arial", Font.PLAIN, 10));
-                FontMetrics fm = g2.getFontMetrics();
-                String[] lines = node.getLabel().split("\n");
-                int yOffset = NODE_RADIUS + 15;
-                for(String line : lines)
-                {
-                    int labelWidth = fm.stringWidth(line);
-                    g2.drawString(line, (int) (node.getX() - labelWidth / 2), (int) (node.getY() + yOffset));
-                    yOffset += fm.getHeight();
-                }
-            }
-        }
-        
-        private GraphNode findNode(String id)
-        {
-            for(GraphNode node : graph.getNodes())
-            {
-                if(node.getId().equals(id))
-                {
-                    return node;
-                }
-            }
-            return null;
-        }
-        
-        private Color getNodeColor(GraphNode node)
-        {
-            String type = node.getTypeLabel();
-            if(type == null)
-            {
-                return node.getType() == NetworkGraph.NodeType.DEVICE ? new Color(100, 150, 255)
-                        : new Color(150, 255, 150);
-            }
+            offsetX = padding - bounds.getMinX() * currentScale
+                    + (availableWidth - bounds.getWidth() * currentScale) / 2;
+            offsetY = padding - bounds.getMinY() * currentScale
+                    + (availableHeight - bounds.getHeight() * currentScale) / 2;
             
-            type = type.toLowerCase();
-            if(type.contains("router"))
-            {
-                return new Color(255, 165, 0);
-            }
-            if(type.contains("switch"))
-            {
-                return new Color(70, 130, 180);
-            }
-            if(type.contains("firewall"))
-            {
-                return new Color(220, 20, 60);
-            }
-            if(type.contains("impresora"))
-            {
-                return new Color(46, 139, 87);
-            }
-            if(type.contains("móvil") || type.contains("movil"))
-            {
-                return new Color(255, 140, 0);
-            }
-            if(type.contains("servidor"))
-            {
-                return new Color(138, 43, 226);
-            }
-            if(type.contains("pc"))
-            {
-                return new Color(0, 191, 255);
-            }
+            g2.translate(offsetX, offsetY);
+            g2.scale(currentScale, currentScale);
             
-            if(node.getType() == NetworkGraph.NodeType.DEVICE)
-            {
-                return new Color(100, 150, 255);
-            }
-            else
-            {
-                return new Color(150, 255, 150);
-            }
-        }
-        
-        private String getNodeIcon(String type)
-        {
-            if(type == null)
-            {
-                return "";
-            }
-            type = type.toLowerCase();
-            if(type.contains("router"))
-            {
-                return "\uD83C\uDF10";
-            }
-            if(type.contains("switch"))
-            {
-                return "\u21C4";
-            }
-            if(type.contains("firewall"))
-            {
-                return "\uD83D\uDD25";
-            }
-            if(type.contains("impresora"))
-            {
-                return "\uD83D\uDDA8";
-            }
-            if(type.contains("móvil") || type.contains("movil"))
-            {
-                return "\uD83D\uDCF1";
-            }
-            if(type.contains("servidor"))
-            {
-                return "\uD83D\uDDA5";
-            }
-            if(type.contains("pc"))
-            {
-                return "\uD83D\uDCBB";
-            }
-            return "";
+            drawGraph(g2, graph);
         }
     }
     
     /**
-     * Static helper for painting a graph without an instance of GraphPanel. Useful
-     * for headless exports.
+     * Common drawing logic for all formats.
      */
-    public static void paintGraph(Graphics2D g2, NetworkGraph graph)
+    private static void drawGraph(Graphics2D g2, NetworkGraph graph)
     {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
@@ -564,10 +436,10 @@ public class NetworkMapPanel extends JPanel
         g2.setColor(Color.GRAY);
         g2.setStroke(new BasicStroke(2));
         g2.setFont(new Font("Arial", Font.PLAIN, 9));
-        for(NetworkGraph.GraphEdge edge : graph.getEdges())
+        for(GraphEdge edge : graph.getEdges())
         {
-            NetworkGraph.GraphNode source = findNodeInList(graph.getNodes(), edge.getSourceId());
-            NetworkGraph.GraphNode target = findNodeInList(graph.getNodes(), edge.getTargetId());
+            GraphNode source = findNodeInList(graph.getNodes(), edge.getSourceId());
+            GraphNode target = findNodeInList(graph.getNodes(), edge.getTargetId());
             if(source != null && target != null)
             {
                 g2.drawLine((int) source.getX(), (int) source.getY(), (int) target.getX(), (int) target.getY());
@@ -587,20 +459,20 @@ public class NetworkMapPanel extends JPanel
                         g2.drawString(line, midX - labelWidth / 2, midY + yOffset);
                         yOffset += fm.getHeight();
                     }
-                    g2.setColor(Color.GRAY); // Reset color for next edge
+                    g2.setColor(Color.GRAY);
                 }
             }
         }
         
         // Draw nodes
-        for(NetworkGraph.GraphNode node : graph.getNodes())
+        int radius = 15;
+        for(GraphNode node : graph.getNodes())
         {
             Color nodeColor = getNodeColorForType(node);
             String icon = getNodeIconForType(node.getTypeLabel());
             
             g2.setColor(nodeColor);
-            java.awt.geom.Ellipse2D circle = new java.awt.geom.Ellipse2D.Double(node.getX() - 30, node.getY() - 30, 60,
-                    60);
+            Ellipse2D circle = new Ellipse2D.Double(node.getX() - radius, node.getY() - radius, radius * 2, radius * 2);
             g2.fill(circle);
             
             g2.setColor(Color.BLACK);
@@ -608,7 +480,7 @@ public class NetworkMapPanel extends JPanel
             
             if(!icon.isEmpty())
             {
-                g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+                g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 15));
                 FontMetrics ifm = g2.getFontMetrics();
                 int iconWidth = ifm.stringWidth(icon);
                 g2.drawString(icon, (int) (node.getX() - iconWidth / 2), (int) (node.getY() + ifm.getAscent() / 2 - 2));
@@ -617,7 +489,7 @@ public class NetworkMapPanel extends JPanel
             g2.setFont(new Font("Arial", Font.PLAIN, 10));
             FontMetrics fm = g2.getFontMetrics();
             String[] lines = node.getLabel().split("\n");
-            int yOffset = 30 + 15;
+            int yOffset = radius + 12;
             for(String line : lines)
             {
                 int labelWidth = fm.stringWidth(line);
@@ -625,6 +497,38 @@ public class NetworkMapPanel extends JPanel
                 yOffset += fm.getHeight();
             }
         }
+    }
+    
+    /**
+     * Static helper for painting a graph. HEADLESS.
+     */
+    public static void paintGraph(Graphics2D g2, NetworkGraph graph, int width, int height)
+    {
+        // Auto-scale in headless mode too
+        java.awt.geom.Rectangle2D bounds = graph.calculateBounds(g2);
+        double padding = 50;
+        double availableWidth = width - padding * 2;
+        double availableHeight = height - padding * 2;
+        
+        double scale = Math.min(availableWidth / bounds.getWidth(), availableHeight / bounds.getHeight());
+        if(scale > 1.5)
+        {
+            scale = 1.5;
+        }
+        
+        double tx = padding - bounds.getMinX() * scale + (availableWidth - bounds.getWidth() * scale) / 2;
+        double ty = padding - bounds.getMinY() * scale + (availableHeight - bounds.getHeight() * scale) / 2;
+        
+        g2.translate(tx, ty);
+        g2.scale(scale, scale);
+        
+        drawGraph(g2, graph);
+    }
+    
+    // Obsolete helper but kept for signature compatibility if needed
+    public static void paintGraph(Graphics2D g2, NetworkGraph graph)
+    {
+        paintGraph(g2, graph, 1200, 800);
     }
     
     private static NetworkGraph.GraphNode findNodeInList(java.util.List<NetworkGraph.GraphNode> nodes, String id)

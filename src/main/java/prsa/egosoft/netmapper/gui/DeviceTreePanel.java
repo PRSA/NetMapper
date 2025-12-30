@@ -13,6 +13,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class DeviceTreePanel extends JPanel
 {
@@ -111,9 +113,48 @@ public class DeviceTreePanel extends JPanel
         deviceNode.add(sysInfoNode);
         
         // Interfaces Node
+        List<NetworkInterface> interfaces = new ArrayList<>(device.getInterfaces());
+        interfaces.sort((n1, n2) ->
+        {
+            String s1 = n1.getDescription();
+            String s2 = n2.getDescription();
+            if(s1 == null)
+            {
+                s1 = "";
+            }
+            if(s2 == null)
+            {
+                s2 = "";
+            }
+            
+            boolean isN1Num = s1.matches("\\d+");
+            boolean isN2Num = s2.matches("\\d+");
+            
+            if(isN1Num && isN2Num)
+            {
+                try
+                {
+                    return Long.compare(Long.parseLong(s1), Long.parseLong(s2));
+                }
+                catch(NumberFormatException e)
+                {
+                    // Fallback to string comparison
+                }
+            }
+            if(isN1Num)
+            {
+                return -1;
+            }
+            if(isN2Num)
+            {
+                return 1;
+            }
+            return s1.compareToIgnoreCase(s2);
+        });
+        
         DefaultMutableTreeNode ifNode = new DefaultMutableTreeNode(
-                Messages.getString("tree.interfaces", device.getInterfaces().size()));
-        for(NetworkInterface ni : device.getInterfaces())
+                Messages.getString("tree.interfaces", interfaces.size()));
+        for(NetworkInterface ni : interfaces)
         {
             DefaultMutableTreeNode niNode = new DefaultMutableTreeNode(ni.toString());
             
