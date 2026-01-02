@@ -163,3 +163,15 @@
     - [x] Ordenar interfaces en el árbol (numéricas primero, luego alfanuméricas) <!-- id: 113 -->
     - [x] Corregir caché de fabricantes MAC (detección LAA y almacenamiento de fallos) <!-- id: 114 -->
     - [x] Implementar auto-escalado y mejorar distribución de equipos en el mapa <!-- id: 115 -->
+- [x] Refinamiento del Mapa de Red y Topología Física
+    - [x] Estandarizar normalización de MAC addresses para comparaciones fiables <!-- id: 116 -->
+    - [x] Implementar filtro de redundancia física basado en tablas MAC <!-- id: 117 -->
+    - [x] Añadir logging de depuración para la eliminación de enlaces <!-- id: 118 -->
+    - [x] Resolver problemas de deserialización Jackson en modelos de datos <!-- id: 119 -->
+    - [x] Verificar topología física con datos reales (Aruba/Fortinet) <!-- id: 120 -->
+- [x] Carga de Mapa desde JSON
+    - [x] Implementar método loadDevicesFromJson en NetworkController <!-- id: 121 -->
+    - [x] Añadir parámetro CLI -m para cargar mapa y exclusiva con -t/-a <!-- id: 122 -->
+    - [x] Añadir botón "Cargar Mapa" en GUI con JFileChooser <!-- id: 123 -->
+    - [x] Localizar textos de carga de mapa (ES/EN) <!-- id: 124 -->
+    - [x] Verificar carga correcta y regeneración de mapa <!-- id: 125 -->

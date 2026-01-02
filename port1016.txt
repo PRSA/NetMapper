@@ -1,0 +1,100 @@
+      "1016" : [ {
+        "macAddress" : "00:15:17:47:12:46",
+        "ipAddress" : null,
+        "vendor" : "Intel Corporate"
+      }, {
+        "macAddress" : "00:15:17:4f:5a:e4",
+        "ipAddress" : null,
+        "vendor" : "Intel Corporate"
+      }, {
+        "macAddress" : "00:1e:c9:e7:c8:0f",
+        "ipAddress" : null,
+        "vendor" : "Dell Inc."
+      }, {
+        "macAddress" : "00:22:19:93:1e:95",
+        "ipAddress" : null,
+        "vendor" : "Dell Inc."
+      }, {
+        "macAddress" : "ac:71:2e:03:72:8a",
+        "ipAddress" : null,
+        "vendor" : "Fortinet, Inc."
+      }, {
+        "macAddress" : "ac:71:2e:03:72:9e",
+        "ipAddress" : null,
+        "vendor" : "Fortinet, Inc."
+      }, {
+        "macAddress" : "ac:71:2e:03:72:a3",
+        "ipAddress" : null,
+        "vendor" : "Fortinet, Inc."
+      }, {
+        "macAddress" : "ac:71:2e:03:72:a4",
+        "ipAddress" : null,
+        "vendor" : "Fortinet, Inc."
+      }, {
+        "macAddress" : "bc:24:11:6d:76:9d",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "bc:24:11:c5:45:a4",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "bc:24:11:14:16:ff",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "bc:24:11:f7:77:56",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "bc:24:11:1a:a7:a0",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "bc:24:11:3c:89:0b",
+        "ipAddress" : null,
+        "vendor" : "Proxmox Server Solutions GmbH"
+      }, {
+        "macAddress" : "02:15:17:4f:5a:e2",
+        "ipAddress" : null,
+        "vendor" : "Dirección Administrada Localmente"
+      }, {
+        "macAddress" : "d4:85:64:9c:6d:a3",
+        "ipAddress" : null,
+        "vendor" : "Hewlett Packard"
+      }, {
+        "macAddress" : "d4:85:64:03:4b:53",
+        "ipAddress" : null,
+        "vendor" : "Hewlett Packard"
+      } ]
+    }
+  },
+  "10.81.128.31" : {
+    "ipAddress" : "10.81.128.31",
+    "sysDescr" : "Aruba JL256A 2930F-48G-PoE+-4SFP+ Switch, revision WC.16.03.0004, ROM WC.16.01.0003 (/ws/swbuildm/rel_tacoma_qaoff/code/build/lvm(swbuildm_rel_tacoma_qaoff_rel_tacoma))",
+    "sysName" : "switchCOCJ1_128.31",
+    "sysLocation" : "",
+    "sysContact" : "sistemas.ius",
+    "sysUpTime" : "185 days, 22:04:20.24",
+    "sysObjectId" : "1.3.6.1.4.1.11.2.3.7.11.181.21",
+    "vendor" : "Aruba",
+    "model" : "Desconocido",
+    "deviceType" : "Switch",
+    "sysServices" : 74,
+    "formattedServices" : "Enlace, Extremo a extremo, Aplicaciones",
+    "interfaces" : [ {
+      "index" : 1,
+      "description" : "1",
+      "macAddress" : "00:fd:45:1e:da:ff",
+      "adminStatus" : "UP",
+      "operStatus" : "DOWN",
+      "ipAddress" : null,
+      "subnetMask" : null,
+      "untaggedVlanId" : 5,
+      "taggedVlans" : [ ],
+      "mtu" : 1500,
+      "speed" : "1000000000",
+      "type" : "6 (ethernet-csmacd)"
+    }, {
+      "index" : 10,
+      "description" : "10",

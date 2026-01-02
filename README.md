@@ -11,6 +11,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC con detección local de LAA y caché optimizada (local + lookup online con fallback) para evitar consultas redundantes.
+- **Topología Física Real**: Algoritmo de eliminación de redundancias que infiere la conexión física directa entre dispositivos ignorando enlaces lógicos indirectos mediante el análisis de tablas MAC.
 - **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
 - **Escaneo por Interfaz Específica (ARP/SNMP)**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local. El tráfico SNMP se vincula (bind) a la IP local de la interfaz para mayor precisión.
@@ -21,6 +22,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
   - CIDR: `192.168.1.0/24`
   - IP/Máscara: `192.168.1.0/255.255.255.0`
   - Rango IP: `192.168.1.1-192.168.1.50`
+- **Carga de Mapa JSON**: Visualización instantánea de mapas previamente escaneados y guardados sin necesidad de re-escarnear.
 - **Internacionalización (i18n)**: Soporte completo para Español, Inglés y Chino Simplificado con cambio dinámico de idioma en la interfaz.
 - **Interfaz mediante Pestañas**: Organización del árbol de dispositivos y el mapa de red en pestañas siempre accesibles.
 - **Interfaz Adaptativa**: Panel de dispositivos optimizado para ocupar todo el ancho disponible y visualización clara de jerarquías de red.
@@ -87,7 +89,8 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 3. Ingrese la comunidad SNMP (por defecto `public`)
 4. Haga clic en "Escanear" para el objetivo manual
 5. **Opcional**: Use "Descubrimiento Automático" para encontrar y escanear subredes locales automáticamente
-6. Explore los resultados en la pestaña **Dispositivos**
+6. **Opcional**: Use el botón "Cargar Mapa" en la pestaña de Configuración para cargar un mapa JSON previamente guardado.
+7. Explore los resultados en la pestaña **Dispositivos**
 7. Cambie a la pestaña **Mapa** para visualizar la topología de red en tiempo real
 8. Use el selector de idioma en la parte superior derecha para cambiar entre Español, Inglés y Chino Simplificado instantáneamente
 9. Use "Borrar" para resetear el estado y comenzar de nuevo
@@ -95,6 +98,7 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 ## Parámetros CLI (Headless)
 
 - `-c <community>`: (Obligatorio) Comunidad SNMP.
+- `-m <file>`: Cargar mapa de red desde un archivo JSON. Mutuamente exclusivo con `-t` y `-a`.
 - `-t <targets>`: Objetivo de escaneo (IP, CIDR, rango, lista). Mutuamente exclusivo con `-a`.
 - `-a`: Descubrimiento automático de redes locales. Mutuamente exclusivo con `-t`.
 - `-png <path>`: Exportar mapa a imagen PNG.

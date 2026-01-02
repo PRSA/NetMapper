@@ -167,9 +167,14 @@ Se ha rediseñado el sistema de internacionalización para permitir cambios en c
 - **Refresco Dinámico**: `MainWindow` implementa un método `updateUITexts()` que se registra como observador y re-asocia todos los textos de labels, botones y tooltips al cambiar la selección en el `JComboBox` de idiomas.
 - **Internacionalización Integral**: Se han localizado también todas las alertas (`JOptionPane`), mensajes de error técnicos, unidades (bps), estados de interfaces y categorías de dispositivos, eliminando cualquier cadena de texto dependiente del código.
 
+### 3.15 Carga de Mapas y Persistencia JSON [NUEVO]
+Se ha cerrado el ciclo de persistencia implementando la **carga** de mapas:
+- **`NetworkController.loadDevicesFromJson(File)`**: Utiliza Jackson `ObjectMapper` para deserializar el JSON a `Map<String, NetworkDevice>`. Gracias a los constructores vacíos añadidos previamente, la reconstrucción del grafo de objetos es automática.
+- **Integración UI**: El método `loadMap()` en `MainWindow` gestiona la selección de fichero y la actualización asíncrona (SwingWorker/Thread) de los modelos de árbol y mapa.
+- **Modo CLI Híbrido**: El flag `-m` permite iniciar la aplicación con un estado pre-cargado, habilitando casos de uso como "visualizar snapshot de ayer" o "convertir log JSON a reporte PDF" scriptable.
 
 
-### 3.15 Exportación e Impresión del Mapa de Red
+### 3.16 Exportación e Impresión del Mapa de Red
 Se ha implementado la capacidad de exportar el estado actual del mapa de red a formatos digitales y soporte para impresión física.
 - **Componente**: `NetworkMapPanel` con una barra de herramientas `JToolBar` integrada.
 - **Formatos de Exportación**:
@@ -226,6 +231,19 @@ Se ha mejorado el sistema de autodescubrimiento para utilizar la interfaz de red
 - **Escaneo SNMP Dirigido (Bind)**: El `SnmpClient` vincula su socket UDP a la IP local de la interfaz, forzando al sistema operativo a usar esa interfaz para el tráfico SNMP.
 - **Optimización**: Se mantienen los filtros de solapamiento de redes y escaneo único por red.
 
+
+
+### 3.23 Filtro de Redundancia Física [NUEVO]
+
+Se ha implementado una optimización en `NetworkGraph.java` para deducir la topología física real a partir de las tablas de direcciones MAC (BRIDGE-MIB), eliminando enlaces lógicos que no representan conexiones físicas directas.
+
+- **Normalización**: Uso de un método `normalizeMac` centralizado que convierte todas las direcciones a minúsculas y utiliza `:` como separador, garantizando la consistencia en las comparaciones de datos provenientes de distintos fabricantes.
+- **Lógica de Inferencia**: 
+    - Se analiza cada par de dispositivos conectados lógicamente ($A$ y $B$).
+    - Se busca un tercer dispositivo ($I$) que aparezca en el mismo puerto que $B$ desde la perspectiva de $A$.
+    - Si $I$ ve a $A$ y a $B$ en **puertos diferentes**, se confirma que $I$ es un nodo intermedio físico.
+    - En caso positivo, el enlace directo $A \leftrightarrow B$ se elimina por ser redundante.
+- **Persistencia Jackson**: Se han añadido constructores sin argumentos a las clases `NetworkDevice`, `NetworkInterface` y `DetectedEndpoint` para permitir la serialización y deserialización JSON sin errores, facilitando herramientas de verificación y auditoría.
 
 ## 4. Estructura del Proyecto
 

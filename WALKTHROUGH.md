@@ -115,6 +115,20 @@ El autodescubrimiento ahora utiliza la interfaz de red correcta para escanear ca
 - [NetworkScannerService.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/service/NetworkScannerService.java): Método sobrecargado que acepta interfaz
 - [MainWindow.java](file:///e:/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/gui/MainWindow.java): Autodescubrimiento actualizado para usar interfaces específicas
 
+### 3.26 Carga de Mapa desde JSON [NUEVO]
+
+Se ha implementado la funcionalidad para cargar un mapa de red previamente exportado a JSON, permitiendo su visualización y análisis sin necesidad de realizar un nuevo escaneo activo.
+
+- **GUI ("Cargar Mapa")**: 
+    - Botón dedicado en el panel de configuración.
+    - Abre un selector de archivos nativo filtrado por `.json`.
+    - Carga los dispositivos en el árbol y reconstruye la topología del mapa inmediatamente.
+    - Útil para revisiones offline o demostraciones.
+- **CLI (`-m <file>`)**:
+    - Nuevo parámetro para cargar y procesar un mapa en modo headless.
+    - Exclusividad: No puede combinarse con objetivos de escaneo (`-t`) o autodescubrimiento (`-a`).
+    - Permite pipelines de conversión (ej: JSON -> PNG) sin acceso a la red real.
+
 
 ## Notas de Implementación
 - **Estabilidad**: Timeout SNMP aumentado a 3000ms con 3 reintentos para redes lentas.
@@ -125,3 +139,17 @@ El autodescubrimiento ahora utiliza la interfaz de red correcta para escanear ca
 
 > [!NOTE]
 > Asegúrese de que no hay firewalls bloqueando el puerto UDP 161 entre la máquina que ejecuta NetMapper y los dispositivos de red.
+
+### 3.25 Filtro de Redundancia Física [NUEVO]
+Se ha perfeccionado el algoritmo de construcción del mapa para inferir con precisión la topología física real, eliminando enlaces lógicos redundantes:
+- **Normalización de MACs**: Procesamiento estandarizado de direcciones físicas (lowercase, separador `:`) para comparaciones fiables entre diferentes fabricantes (Aruba, Fortinet, HP).
+- **Inferencia de Nodos Intermedios**: El sistema ahora detecta si un dispositivo (como un switch Core) actúa como intermediario físico entre otros dos, simplificando la vista del mapa para mostrar solo conexiones directas.
+- **Logging de Depuración**: Inclusión de trazas detalladas en consola que explican por qué se ha eliminado un enlace específico basándose en las tablas de direcciones MAC (BRIDGE-MIB).
+- **Compatibilidad Jackson**: Los modelos de datos se han actualizado con constructores por defecto para permitir la persistencia y carga de mapas de red complejos.
+
+**Archivos Modificados**:
+- [NetworkGraph.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkGraph.java): Implementación del filtro y normalización.
+- [NetworkDevice.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkDevice.java), [NetworkInterface.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkInterface.java), [DetectedEndpoint.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/DetectedEndpoint.java): Soporte para deserialización Jackson.
+
+> [!NOTE]
+> Este filtro se aplica únicamente cuando la opción "Vista Física Simplificada" está activa durante la construcción del grafo.
