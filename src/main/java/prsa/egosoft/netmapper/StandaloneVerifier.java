@@ -61,6 +61,34 @@ public class StandaloneVerifier {
         checkLinkPresence(graph, x5, x55, true);
         checkLinkPresence(graph, x4, x55, false);
 
+        // 10.81.128.254 Hub Issue Debugging:
+        String x254 = "device_10.81.128.254";
+        String x120 = "device_10.81.128.120";
+        String x121 = "device_10.81.128.121";
+
+        checkLinkPresence(graph, x254, x55, true);
+        checkLinkPresence(graph, x5, x120, true);
+        checkLinkPresence(graph, x5, x121, true);
+        checkLinkPresence(graph, x254, x120, false);
+        checkLinkPresence(graph, x254, x121, false);
+        checkLinkPresence(graph, x4, x120, false);
+
+        System.out.println("\nListing all PHYSICAL DEVICE links for 10.81.128.254:");
+        int physicalCount = 0;
+        for (GraphEdge edge : graph.getEdges()) {
+            if (edge.getType() == NetworkGraph.EdgeType.PHYSICAL && !edge.getTargetId().startsWith("endpoint_")
+                    && !edge.getSourceId().startsWith("endpoint_")) {
+                if (edge.getSourceId().equals(x254)) {
+                    System.out.println(" -> " + edge.getTargetId().replace("device_", ""));
+                    physicalCount++;
+                } else if (edge.getTargetId().equals(x254)) {
+                    System.out.println(" -> " + edge.getSourceId().replace("device_", ""));
+                    physicalCount++;
+                }
+            }
+        }
+        System.out.println("Total Physical Device Links for 254: " + physicalCount);
+
         System.out.println("\nVerification complete.");
     }
 
@@ -69,8 +97,10 @@ public class StandaloneVerifier {
         for (GraphEdge edge : graph.getEdges()) {
             if ((edge.getSourceId().equals(id1) && edge.getTargetId().equals(id2)) ||
                     (edge.getSourceId().equals(id2) && edge.getTargetId().equals(id1))) {
-                exists = true;
-                break;
+                if (edge.getType() == NetworkGraph.EdgeType.PHYSICAL) {
+                    exists = true;
+                    break;
+                }
             }
         }
 

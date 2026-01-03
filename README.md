@@ -31,7 +31,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
 - **Ordenamiento Lógico**: Dispositivos ordenados por IP e interfaces ordenadas (numéricas primero) en el árbol.
-- **Visualización de Mapa Topológico**: Grafo interactivo con **auto-escalado inteligente** y distribución optimizada de endpoints para maximizar la legibilidad en redes densas. Garantiza visualizaciones completas en pantalla, PNG, PDF e impresora.
+- **Visualización de Mapa Topológico**: Grafo interactivo con **zoom (rueda/botones)**, **panorámica (arrastrar)** y **filtros de visibilidad**. Permite alternar entre enlaces físicos y lógicos, y filtrar por tipo de dispositivo (Router, Switch, PC, etc.) o por categoría (Dispositivo, Endpoint). Distribución optimizada para máxima legibilidad.
 - **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces locales e iniciar su escaneo.
 
 ### Visualización

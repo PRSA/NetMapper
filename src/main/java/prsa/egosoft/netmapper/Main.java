@@ -121,10 +121,10 @@ public class Main {
             logger.info("  -c <community>  " + Messages.getString("cli.opt.community"));
             logger.info("  -t <targets>    " + Messages.getString("cli.opt.targets"));
             logger.info("  -a              " + Messages.getString("cli.opt.autodiscover"));
+            logger.info("  -m <path>       " + Messages.getString("cli.opt.load_map"));
             logger.info("  -png <path>     " + Messages.getString("cli.opt.png"));
             logger.info("  -pdf <path>     " + Messages.getString("cli.opt.pdf"));
             logger.info("  -json <path>    " + Messages.getString("cli.opt.json"));
-            logger.info("  -m <path>       " + Messages.getString("cli.opt.load_map"));
             logger.info("  -h              " + Messages.getString("cli.opt.help"));
             return;
         } else {

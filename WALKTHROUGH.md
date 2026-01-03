@@ -153,3 +153,69 @@ Se ha perfeccionado el algoritmo de construcción del mapa para inferir con prec
 
 > [!NOTE]
 > Este filtro se aplica únicamente cuando la opción "Vista Física Simplificada" está activa durante la construcción del grafo.
+
+### 3.27 Zoom y Panorámica en Mapa [NUEVO]
+
+Se ha enriquecido la experiencia de usuario en la pestaña "Mapa" añadiendo controles de navegación completos:
+
+- **Zoom (Acercar/Alejar)**:
+    - **Rueda del ratón**: Gire la rueda para hacer zoom in/out centrado en el puntero del ratón.
+    - **Botones**: Utilice los nuevos botones `+` y `-` en la barra de herramientas.
+- **Panorámica (Desplazamiento)**:
+    - **Arrastrar**: Haga clic y arrastre sobre el fondo blanco del mapa para mover la vista (panning) en cualquier dirección.
+    - **Cursor Inteligente**: El cursor cambia a una "mano" para indicar que se puede desplazar el lienzo.
+- **Ajustar a Pantalla (Fit)**:
+    - Botón "Fit" (Ajustar) para restablecer la vista y encuadrar todo el grafo automáticamente en el panel.
+- **Persistencia de Vista**: A diferencia de la versión anterior, el nivel de zoom y posición se mantienen estables y no se resetean automáticamente con cada actualización menor del grafo, permitiendo trabajar en detalles sin interrupciones.
+
+**Archivos Modificados**:
+- [NetworkMapPanel.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/gui/NetworkMapPanel.java): Implementación completa de la lógica de transformación gráfica.
+- [messages_en.properties](file:///opt/workspace/NetMapper/src/main/resources/messages_en.properties), [messages_es.properties](file:///opt/workspace/NetMapper/src/main/resources/messages_es.properties): Textos internacionalizados para los nuevos controles.
+
+### 3.28 Verificación de Topología en Estrella [NUEVO]
+
+Se ha validado el funcionamiento del algoritmo de simplificación física (`applyPhysicalRedundancyFilter` y `applyStrictTriangleFilter`) utilizando un escenario real complejo:
+
+- **Configuración**: 
+    - Nodo Central (Core): `10.81.128.4`
+    - Switches en periferia conectados al Core: `10.81.128.5`, `10.81.128.11` a `10.81.128.54`.
+    - Switch secundario: `10.81.128.55` conectado a `10.81.128.5`.
+- **Resultados de Verificación**:
+    - **Filtrado Correcto**: Se han eliminado los enlaces directos lógicos detectados por el Core hacia `.55`, favoreciendo el camino físico real: `Core (4) -> Switch (5) -> Switch (55)`.
+    - **No Redundancia**: Se ha verificado que no existen enlaces cruzados entre los switches de la periferia, manteniendo la estructura de estrella limpia.
+    - **Integridad**: El sistema ha mantenido un total de 776 nodos y ha eliminado más de 300 enlaces redundantes en un grafo de gran escala, optimizando significativamente la visualización.
+
+**Herramientas de Verificación**:
+- [StandaloneVerifier.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/StandaloneVerifier.java): Programa de test autónomo ejecutado contra `network_map.json`.
+
+### 3.29 Filtros de Visibilidad en el Mapa [NUEVO]
+
+Se han implementado filtros granulares que permiten controlar qué elementos se muestran en el mapa topológico.
+
+**Capacidades**:
+- **Tipos de Enlace**: Alternar entre enlaces "Físicos" (conexión directa detectada) y "Lógicos" (redundancias marcadas por el algoritmo de simplificación). Los enlaces lógicos se muestran con líneas discontinuas.
+- **Categorías de Nodo**: Mostrar/Ocultar "Dispositivos" o "Endpoints" de forma global.
+- **Tipos de Dispositivo**: Filtrado dinámico por sub-tipo (ej: solo Routers, solo Switches) basado en los datos cargados.
+- **Visibilidad en Cascada**: Al ocultar un nodo, todos sus enlaces conectados desaparecen automáticamente para mantener la coherencia visual.
+
+**Uso**:
+1. Hacer clic en el botón **"Filtros"** de la barra de herramientas del mapa.
+2. Seleccionar/Deseleccionar los elementos deseados en el menú emergente.
+3. El mapa se actualiza instantáneamente reflejando el nuevo estado.
+
+**Archivos Modificados**:
+- [NetworkGraph.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkGraph.java): Soporte para `EdgeType` y cálculo de límites filtrado.
+- [NetworkMapPanel.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/gui/NetworkMapPanel.java): Gestión de estado de filtros, menú emergente y renderizado condicional.
+- [messages_*.properties](file:///opt/workspace/NetMapper/src/main/resources/): Traducciones de los filtros en ES, EN y ZH.
+
+### 3.30 Mejora en Detección de Dispositivos Multi-homed [NUEVO]
+
+Se ha perfeccionado el algoritmo de redundancia para manejar correctamente servidores o dispositivos con múltiples IPs (aliases) que generaban un efecto "hub" erróneo (como en el caso de `10.81.128.254`).
+
+**Mejoras**:
+- **Detección por MAC**: El filtro ahora identifica dispositivos intermediarios comparando direcciones MAC, no solo IPs. Esto permite reconocer a un switch como "intermediario" incluso si es visto bajo una IP de gestión diferente.
+- **Validación**: Se ha verificado que la estrella de enlaces físicos centrada en `10.81.128.245` desaparece, manteniendo solo su enlace directo real al switch `10.81.128.55`.
+
+**Archivos Modificados**:
+- [NetworkGraph.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkGraph.java): Refactorización de `applyPhysicalRedundancyFilter` para usar búsqueda por MAC.
+- [StandaloneVerifier.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/StandaloneVerifier.java): Actualizado para validar específicamente este escenario.

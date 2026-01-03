@@ -175,3 +175,8 @@
     - [x] Añadir botón "Cargar Mapa" en GUI con JFileChooser <!-- id: 123 -->
     - [x] Localizar textos de carga de mapa (ES/EN) <!-- id: 124 -->
     - [x] Verificar carga correcta y regeneración de mapa <!-- id: 125 -->
+- [x] Navegación Interactiva del Mapa (Zoom/Pan) <!-- id: 126 -->
+- [x] Localizar textos de zoom y pan para ES/EN/ZH <!-- id: 127 -->
+- [x] Verificar algoritmo de simplificación con topología estrella (4-5-55) <!-- id: 128 -->
+- [x] Resolver efecto "hub" en servidores virtualizados (Switch Arbitration) <!-- id: 129 -->
+- [x] Implementar filtrado de interfaces virtuales (VLAN/lo) en topología <!-- id: 130 -->
