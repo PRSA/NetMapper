@@ -63,12 +63,17 @@ public class NetworkController {
      */
     public void scanNetworkAsync(String target, String community, Consumer<NetworkDevice> onSuccess,
             Consumer<String> onError) {
+        scanNetworkAsync(target, community, onSuccess, onError, null);
+    }
+
+    public void scanNetworkAsync(String target, String community, Consumer<NetworkDevice> onSuccess,
+            Consumer<String> onError, Runnable onComplete) {
         scannerService.scanNetwork(target, community, device -> {
             discoveredDevices.put(device.getIpAddress(), device);
             if (onSuccess != null) {
                 onSuccess.accept(device);
             }
-        }, onError);
+        }, onError, onComplete);
     }
 
     /**

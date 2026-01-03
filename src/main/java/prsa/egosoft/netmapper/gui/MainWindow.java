@@ -53,20 +53,34 @@ public class MainWindow extends JFrame {
         // Fila 0
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
         ipLabel = new JLabel();
         configPanel.add(ipLabel, gbc);
+        gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 1;
-        ipField = new JTextField("192.168.1.0/24", 15);
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        ipField = new JTextField("192.168.1.0/24", 25);
         configPanel.add(ipField, gbc);
 
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+
         gbc.gridx = 2;
+        gbc.anchor = GridBagConstraints.EAST;
         communityLabel = new JLabel();
         configPanel.add(communityLabel, gbc);
+        gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 3;
-        communityField = new JTextField("public", 10);
+        gbc.weightx = 0.5;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        communityField = new JTextField("public", 15);
         configPanel.add(communityField, gbc);
+
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
 
         gbc.gridx = 4;
         scanButton = new JButton();
@@ -110,10 +124,13 @@ public class MainWindow extends JFrame {
 
         // Botón Cargar Mapa
         gbc.gridx = 2;
-        gbc.gridwidth = 1;
+        gbc.gridwidth = 2;
         loadMapButton = new JButton();
         loadMapButton.addActionListener(e -> loadMap());
         configPanel.add(loadMapButton, gbc);
+
+        // Reset gridwidth
+        gbc.gridwidth = 1;
 
         treePanel = new DeviceTreePanel();
 
@@ -214,7 +231,9 @@ public class MainWindow extends JFrame {
 
         networkController.scanNetworkAsync(ip, community,
                 device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
-                error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")));
+                error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")),
+                () -> SwingUtilities
+                        .invokeLater(() -> logArea.append(Messages.getString("message.scan_complete_all") + "\n")));
     }
 
     private boolean isValidTargetInput(String input) {
