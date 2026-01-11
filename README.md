@@ -9,6 +9,11 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Detección de Fabricante/Modelo**: Identificación automática de marca y modelo del dispositivo
 - **Soporte de VLANs**: Detecta VLANs configuradas mediante Q-BRIDGE-MIB y fallback para sistemas Linux (detección por nomenclatura de interfaces)
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
+- **Detección Avanzada de Topología**: Infiere conexiones físicas utilizando:
+    *   **LLDP (Direct Discovery)**: Descubrimiento directo de vecinos para máxima precisión.
+    *   **Tablas MAC (FDB)**: Correlación heurística donde LLDP no está disponible, con validación estricta.
+    *   **Validación Física**: Verificación de estados STP (Spanning Tree), coincidencia de velocidad y Duplex.
+    *   **Optimización de Redundancia**: Elimina enlaces redundantes o transitivos, preservando enlaces críticos (LAG, Core).
 - **Tabla de Rutas**: Visualiza la tabla de enrutamiento del dispositivo
 - **Identificación de Fabricantes MAC**: Resolución automática de fabricantes por MAC con detección local de LAA y caché optimizada (local + lookup online con fallback) para evitar consultas redundantes.
 - **Topología Física Real**: Algoritmo de eliminación de redundancias que infiere la conexión física directa entre dispositivos ignorando enlaces lógicos indirectos mediante el análisis de tablas MAC.
@@ -35,7 +40,7 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
 - **Ordenamiento Lógico**: Dispositivos ordenados por IP e interfaces ordenadas (numéricas primero) en el árbol.
-- **Visualización de Mapa Topológico**: Grafo interactivo con **zoom (rueda/botones)**, **panorámica (arrastrar)** y **filtros de visibilidad**. Permite alternar entre enlaces físicos y lógicos, y filtrar por tipo de dispositivo (Router, Switch, PC, etc.) o por categoría (Dispositivo, Endpoint). Distribución optimizada para máxima legibilidad.
+- **Visualización de Mapa Topológico**: Grafo interactivo con **zoom (rueda/botones)**, **panorámica (arrastrar)** y **filtros de visibilidad**. Permite alternar entre enlaces físicos y lógicos (desactivados por defecto), y filtrar por tipo de dispositivo (Router, Switch, PC, etc.) o por categoría (Dispositivo, Endpoint). Distribución optimizada para máxima legibilidad.
 - **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces locales e iniciar su escaneo.
 
 ### Visualización

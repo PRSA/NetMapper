@@ -189,3 +189,9 @@
 - [x] Refinar arbitraje de endpoints para eliminar links redundantes (Gondomar fix) <!-- id: 136 -->
     - [x] Implementar estrategia "Global Winner" basada en proximidad (Direct vs Infra) <!-- id: 137 -->
     - [x] Refactorizar filtros a GraphContext para consistencia de recolección MAC <!-- id: 138 -->
+- [x] Configurar filtro "enlaces lógicos" desactivado por defecto <!-- id: 139 -->
+- [x] Implementar Motor de Topología Avanzada y Validación Física Strict <!-- id: 140 -->
+    - [x] Análisis detallado de cumplimiento con criterios físicos (Reporte) <!-- id: 141 -->
+    - [x] Implementar recolección SNMP de LLDP, STP y Duplex <!-- id: 142 -->
+    - [x] Refactorizar NetworkGraph para priorizar "Direct Discovery" (LLDP) <!-- id: 143 -->
+    - [x] Implementar validación estricta de atributos físicos (STP blocking, Duplex mismatch) <!-- id: 144 -->

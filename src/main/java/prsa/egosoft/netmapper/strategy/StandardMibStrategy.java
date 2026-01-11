@@ -265,6 +265,200 @@ public class StandardMibStrategy implements DiscoveryStrategy
         {
             System.err.println("Error fetching ARP Table: " + e.getMessage());
         }
+        
+        // 8. LLDP Neighbors (lldpRemTable)
+        try
+        {
+            fetchLldpTable(snmp, ip, device);
+        }
+        catch(Exception e)
+        {
+            System.err.println("Error fetching LLDP Table: " + e.getMessage());
+        }
+        
+        // 9. STP Status (dot1dStpPortTable)
+        try
+        {
+            fetchStpStatus(snmp, ip, device);
+        }
+        catch(Exception e)
+        {
+            System.err.println("Error fetching STP Status: " + e.getMessage());
+        }
+        
+        // 10. Duplex Status (EtherLike-MIB)
+        try
+        {
+            fetchDuplexStatus(snmp, ip, device);
+        }
+        catch(Exception e)
+        {
+            System.err.println("Error fetching Duplex Status: " + e.getMessage());
+        }
+    }
+    
+    private void fetchLldpTable(SnmpClient snmp, String ip, NetworkDevice device)
+    {
+        // lldpRemSysName: 1.0.8802.1.1.2.1.4.1.1.9
+        String oidLldpSysName = "1.0.8802.1.1.2.1.4.1.1.9";
+        // lldpRemPortDesc: 1.0.8802.1.1.2.1.4.1.1.8
+        String oidLldpPortDesc = "1.0.8802.1.1.2.1.4.1.1.8";
+        // lldpRemSysDesc: 1.0.8802.1.1.2.1.4.1.1.10
+        String oidLldpSysDesc = "1.0.8802.1.1.2.1.4.1.1.10";
+        
+        Map<String, String> names = snmp.walk(ip, oidLldpSysName);
+        Map<String, String> portDescs = snmp.walk(ip, oidLldpPortDesc);
+        Map<String, String> sysDescs = snmp.walk(ip, oidLldpSysDesc);
+        
+        if(names.isEmpty() && portDescs.isEmpty() && sysDescs.isEmpty())
+        {
+            return;
+        }
+        
+        // We assume lldpLocPortNum maps to ifIndex, but standard says it's internal.
+        // We often need lldpLocPortTable to map lldpPortNum -> ifIndex.
+        // OID: 1.0.8802.1.1.2.1.3.7.1.3 (lldpLocPortId) or just use heuristic.
+        // For simplicity in this iteration, we'll try to map if the index matches
+        // ifIndex logic
+        // often (timeMark.portNum.index).
+        
+        for(Map.Entry<String, String> entry : names.entrySet())
+        {
+            try
+            {
+                // Key: ...timeMark.portNum.index
+                String oidSuffix = entry.getKey().substring(oidLldpSysName.length() + 1);
+                String[] parts = oidSuffix.split("\\.");
+                if(parts.length < 2)
+                    continue;
+                
+                // Usually the second to last is lldpRemLocalPortNum
+                int localPortNum = Integer.parseInt(parts[1]);
+                
+                String neighborName = entry.getValue();
+                String remotePort = portDescs.get(oidLldpPortDesc + "." + oidSuffix);
+                String remoteSysDesc = sysDescs.get(oidLldpSysDesc + "." + oidSuffix);
+                
+                String info = neighborName;
+                if(remotePort != null)
+                    info += " (" + remotePort + ")";
+                    
+                // Store in device map using localPortNum as key (assuming direct mapping for
+                // now)
+                // Real impl might need lldpLocPortTable mapping
+                device.getLldpNeighbors().put(localPortNum, info);
+                
+                // Also update interface if possible
+                for(NetworkInterface ni : device.getInterfaces())
+                {
+                    if(ni.getIndex() == localPortNum)
+                    {
+                        ni.setNeighborInfo(info);
+                        break;
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // Ignore parse error
+            }
+        }
+    }
+    
+    private void fetchStpStatus(SnmpClient snmp, String ip, NetworkDevice device)
+    {
+        // dot1dStpPortState: 1.3.6.1.2.1.17.2.15.1.3
+        String oidStpState = "1.3.6.1.2.1.17.2.15.1.3";
+        Map<String, String> states = snmp.walk(ip, oidStpState);
+        
+        // Map Bridge Port -> IfIndex
+        Map<Integer, Integer> bridgeMap = getBridgePortToIfIndexMap(snmp, ip);
+        boolean hasMap = !bridgeMap.isEmpty();
+        
+        for(Map.Entry<String, String> entry : states.entrySet())
+        {
+            try
+            {
+                int bridgePort = Integer.parseInt(entry.getKey().substring(oidStpState.length() + 1));
+                int stateVal = Integer.parseInt(entry.getValue());
+                String stateStr = mapStpState(stateVal);
+                
+                Integer ifIndex = bridgeMap.get(bridgePort);
+                if(ifIndex == null && !hasMap)
+                    ifIndex = bridgePort; // Fallback
+                    
+                if(ifIndex != null)
+                {
+                    for(NetworkInterface ni : device.getInterfaces())
+                    {
+                        if(ni.getIndex() == ifIndex)
+                        {
+                            ni.setStpState(stateStr);
+                            break;
+                        }
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // Ignore
+            }
+        }
+    }
+    
+    private String mapStpState(int state)
+    {
+        switch(state)
+        {
+            case 1:
+                return "disabled";
+            case 2:
+                return "blocking";
+            case 3:
+                return "listening";
+            case 4:
+                return "learning";
+            case 5:
+                return "forwarding";
+            case 6:
+                return "broken";
+            default:
+                return "unknown(" + state + ")";
+        }
+    }
+    
+    private void fetchDuplexStatus(SnmpClient snmp, String ip, NetworkDevice device)
+    {
+        // dot3StatsDuplexStatus: 1.3.6.1.2.1.10.7.2.1.19
+        String oidDuplex = "1.3.6.1.2.1.10.7.2.1.19";
+        Map<String, String> statuses = snmp.walk(ip, oidDuplex);
+        
+        for(Map.Entry<String, String> entry : statuses.entrySet())
+        {
+            try
+            {
+                int ifIndex = Integer.parseInt(entry.getKey().substring(oidDuplex.length() + 1));
+                int val = Integer.parseInt(entry.getValue());
+                String duplex = "Unknown";
+                if(val == 2)
+                    duplex = "Half";
+                else if(val == 3)
+                    duplex = "Full";
+                
+                for(NetworkInterface ni : device.getInterfaces())
+                {
+                    if(ni.getIndex() == ifIndex)
+                    {
+                        ni.setDuplexMode(duplex);
+                        break;
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // Ignore
+            }
+        }
     }
     
     /**

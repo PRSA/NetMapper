@@ -193,7 +193,7 @@ Se ha validado el funcionamiento del algoritmo de simplificación física (`appl
 Se han implementado filtros granulares que permiten controlar qué elementos se muestran en el mapa topológico.
 
 **Capacidades**:
-- **Tipos de Enlace**: Alternar entre enlaces "Físicos" (conexión directa detectada) y "Lógicos" (redundancias marcadas por el algoritmo de simplificación). Los enlaces lógicos se muestran con líneas discontinuas.
+- **Tipos de Enlace**: Alternar entre enlaces "Físicos" (conexión directa detectada) y "Lógicos" (redundancias marcadas por el algoritmo de simplificación). Los enlaces lógicos están desactivados por defecto y se muestran con líneas discontinuas cuando se activan.
 - **Categorías de Nodo**: Mostrar/Ocultar "Dispositivos" o "Endpoints" de forma global.
 - **Tipos de Dispositivo**: Filtrado dinámico por sub-tipo (ej: solo Routers, solo Switches) basado en los datos cargados.
 - **Visibilidad en Cascada**: Al ocultar un nodo, todos sus enlaces conectados desaparecen automáticamente para mantener la coherencia visual.
@@ -248,3 +248,22 @@ Se ha resuelto el problema de los endpoints que aparecían duplicados o conectad
 **Escenario de Validación**:
 - **Dataset**: `network_map_Gondomar.json` (12 switches, topología compleja).
 - **Resultado**: Reducción de 37 endpoints multi-homed a **0** (verificado con `TestEndpointArbitration.java`).
+
+### 3.33 Motor de Topología Avanzada [NUEVO]
+
+Se ha implementado el soporte completo para descubrimiento mediante protocolos de capa 2 y validación física estricta.
+
+- **Direct Discovery (LLDP)**:
+    - El sistema ahora consulta la tabla `lldpRemTable` vía SNMP.
+    - Los enlaces descubiertos por LLDP se consideran la "fuente de verdad" y se etiquetan explícitamente en el mapa.
+    - Estos enlaces tienen prioridad absoluta sobre los inferidos por FDB.
+
+- **Validación Física Estricta**:
+    - Para los enlaces inferidos por tablas MAC (donde no hay LLDP), se aplican nuevas reglas de validación:
+        - **STP State**: Los puertos bloqueados por Spanning Tree no generan enlaces físicos visibles.
+        - **Speed/Duplex**: Se verifica que ambos extremos del enlace presunto tengan características físicas compatibles.
+
+**Escenario de Validación**:
+1. Ejecutar `mvn clean compile` para verificar la integridad del nuevo modelo de datos.
+2. Iniciar la aplicación y cargar un mapa o escanear una red con dispositivos LLDP.
+3. Verificar que los enlaces troncales aparezcan como físicos (línea sólida) y que los enlaces LLDP muestren la etiqueta `(LLDP)` si se inspeccionan.

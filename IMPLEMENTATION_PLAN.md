@@ -233,16 +233,27 @@ Se ha mejorado el sistema de autodescubrimiento para utilizar la interfaz de red
 
 
 
-### 3.23 Filtro de Redundancia Física [NUEVO]
+### 3.23 Construcción del Grafo (`NetworkGraph.java`)
 
-Se ha implementado una optimización en `NetworkGraph.java` para deducir la topología física real a partir de las tablas de direcciones MAC (BRIDGE-MIB), eliminando enlaces lógicos que no representan conexiones físicas directas.
+El grafo se construye en fases para garantizar la máxima fidelidad física:
 
-- **Normalización**: Uso de un método `normalizeMac` centralizado que convierte todas las direcciones a minúsculas y utiliza `:` como separador, garantizando la consistencia en las comparaciones de datos provenientes de distintos fabricantes.
-- **Lógica de Inferencia**: 
-    - Se analiza cada par de dispositivos conectados lógicamente ($A$ y $B$).
-    - Se busca un tercer dispositivo ($I$) que aparezca en el mismo puerto que $B$ desde la perspectiva de $A$.
-    - Si $I$ ve a $A$ y a $B$ en **puertos diferentes**, se confirma que $I$ es un nodo intermedio físico.
-    - En caso positivo, el enlace directo $A \leftrightarrow B$ se elimina por ser redundante.
+1.  **Fase 1: Descubrimiento Directo (LLDP)**:
+    *   Se consultan los vecinos LLDP (`lldpRemTable`) de cada dispositivo.
+    *   Si se encuentra una coincidencia, se crea inmediatamente un enlace **FÍSICO** validado.
+    *   Esta es la fuente de verdad primaria.
+
+2.  **Fase 2: Inferencia vía FDB (Tablas MAC)**:
+    *   Se utiliza para enlaces donde LLDP no está habilitado.
+    *   Se correlacionan las tablas MAC (`dot1dTpFdb`) de los switches.
+    *   **Validación Estricta**: Antes de crear un enlace, se verifica:
+        *   **Estado STP**: El puerto no debe estar en estado `Blocking` o `Broken`.
+        *   **Duplex/Velocidad**: Se comprueba la consistencia de los atributos físicos (si están disponibles).
+        *   **Redundancia**: Se aplica lógica para evitar "falsos positivos" en topologías malladas.
+
+3.  **Fase 3: Filtrado y Optimización**:
+    *   **Detectción de LAG**: Se identifican interfaces agregadas (Port-Channels).
+    *   **Protección Core**: Los enlaces entre switches centrales se preservan explícitamente.
+    *   **Arbitraje de Endpoints**: Se selecciona el enlace más directo ("Global Winner") para dispositivos finales vistos por múltiples switches.
 - **Persistencia Jackson**: Se han añadido constructores sin argumentos a las clases `NetworkDevice`, `NetworkInterface` y `DetectedEndpoint` para permitir la serialización y deserialización JSON sin errores, facilitando herramientas de verificación y auditoría.
 ### 3.24 Optimizaciones de Alto Rendimiento y Precisión [NUEVO]
 

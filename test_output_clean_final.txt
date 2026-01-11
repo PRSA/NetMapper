@@ -1,8 +1,0 @@
-[[1;34mINFO[m] Scanning for projects...
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m------------------< [0;36mprsa.egosoft.netmapper:netmapper[0;1m >------------------[m
-[[1;34mINFO[m] [1mBuilding netmapper 1.0-SNAPSHOT[m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mexec-maven-plugin:3.6.2:java[m [1m(default-cli)[m @ [36mnetmapper[0;1m ---[m
-[Thread-1] INFO prsa.egosoft.netmapper.service.NetworkController - Loaded 12 devices from network_map_Gondomar.json
