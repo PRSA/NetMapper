@@ -12,13 +12,12 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-
-import prsa.egosoft.netmapper.util.SubnetUtils; // Import SubnetUtils
 import java.util.List;
+import java.util.Map;
 
+import prsa.egosoft.netmapper.util.SubnetUtils;
 import prsa.egosoft.netmapper.scan.ArpScanner;
 import prsa.egosoft.netmapper.scan.PcapArpScanner;
-import java.util.Map;
 
 /**
  * Servicio principal para coordinar el escaneo de dispositivos.

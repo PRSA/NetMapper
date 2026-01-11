@@ -152,6 +152,22 @@ public class DeviceTreePanel extends JPanel {
 					+ Messages.getString("interface.speed_unit")));
 		}
 
+		// Display duplex mode if available
+		if (ni.getDuplexMode() != null && !ni.getDuplexMode().equalsIgnoreCase("Unknown")) {
+			niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.duplex") + ": " + ni.getDuplexMode()));
+		}
+
+		// Display STP state if available
+		if (ni.getStpState() != null) {
+			niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.stp_state") + ": " + ni.getStpState()));
+		}
+
+		// Display Neighbor info if available
+		if (ni.getNeighborInfo() != null && !ni.getNeighborInfo().isEmpty()) {
+			niNode.add(new DefaultMutableTreeNode(
+					Messages.getString("interface.neighbors") + ": " + ni.getNeighborInfo()));
+		}
+
 		// Display IP address and subnet mask if available
 		if (ni.getIpAddress() != null) {
 			niNode.add(new DefaultMutableTreeNode(Messages.getString("interface.ip") + ": " + ni.getIpAddress()));

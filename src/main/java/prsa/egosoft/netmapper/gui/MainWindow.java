@@ -3,7 +3,6 @@ package prsa.egosoft.netmapper.gui;
 import prsa.egosoft.netmapper.i18n.Messages;
 import prsa.egosoft.netmapper.model.NetworkDevice;
 import prsa.egosoft.netmapper.service.NetworkController;
-import prsa.egosoft.netmapper.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +29,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         super(Messages.getString("window.title",
-                Messages.getString(Main.IS_ADMIN ? "window.adminmode" : "window.usermode")));
+                Messages.getString(prsa.egosoft.netmapper.Main.IS_ADMIN ? "window.adminmode" : "window.usermode")));
         this.networkController = new NetworkController();
         // this.deviceNodeMap = new java.util.HashMap<>();
 
@@ -157,7 +156,7 @@ public class MainWindow extends JFrame {
 
     public void updateUITexts() {
         setTitle(Messages.getString("window.title",
-                Messages.getString(Main.IS_ADMIN ? "window.adminmode" : "window.usermode")));
+                Messages.getString(prsa.egosoft.netmapper.Main.IS_ADMIN ? "window.adminmode" : "window.usermode")));
         ipLabel.setText(Messages.getString("label.target") + ":");
         communityLabel.setText(Messages.getString("label.community") + ":");
         scanButton.setText(Messages.getString("button.scan"));
