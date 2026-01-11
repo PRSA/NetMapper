@@ -207,19 +207,27 @@ public class NetworkGraph {
                     if (netInterface != null) {
                         edgeLabel = netInterface.getDescription();
                         if (netInterface.getMacAddress() != null && !netInterface.getMacAddress().isEmpty()) {
-                            edgeLabel += "\nMAC: " + netInterface.getMacAddress();
+                            edgeLabel += "\n" + prsa.egosoft.netmapper.i18n.Messages.getString("technical.mac_prefix")
+                                    + " " + netInterface.getMacAddress();
                             // Add vendor information
                             String vendor = prsa.egosoft.netmapper.util.MacVendorUtils
                                     .getVendor(netInterface.getMacAddress());
-                            if (vendor != null && !vendor.isEmpty() && !"Unknown".equals(vendor)) {
-                                edgeLabel += "\nVendor: " + vendor;
+                            if (vendor != null && !vendor.isEmpty()
+                                    && !prsa.egosoft.netmapper.i18n.Messages.getString("vendor.unknown")
+                                            .equals(vendor)) {
+                                edgeLabel += "\n"
+                                        + prsa.egosoft.netmapper.i18n.Messages.getString("technical.vendor_prefix")
+                                        + " "
+                                        + vendor;
                             }
                         }
                     }
 
                     // Check if endpoint IP corresponds to a scanned device
                     String endpointIp = endpoint.getIpAddress();
-                    String endpointMac = endpoint.getMacAddress() != null ? endpoint.getMacAddress().toLowerCase() : "";
+                    String endpointMac = (endpoint.getMacAddress() != null)
+                            ? normalizeMac(endpoint.getMacAddress())
+                            : "";
 
                     String targetDeviceId = null;
                     if (endpointIp != null && !endpointIp.isEmpty() && ipToDeviceId.containsKey(endpointIp)) {
@@ -240,18 +248,28 @@ public class NetworkGraph {
 
                         // Add vendor if available
                         if (endpoint.getVendor() != null && !endpoint.getVendor().isEmpty()
-                                && !"Unknown".equals(endpoint.getVendor())) {
+                                && !prsa.egosoft.netmapper.i18n.Messages.getString("vendor.unknown")
+                                        .equals(endpoint.getVendor())) {
                             endpointLabel += "\n" + endpoint.getVendor();
                         }
 
-                        String endpointId = "endpoint_" + endpoint.getMacAddress();
+                        String endpointId = "endpoint_" + endpointMac;
 
                         // Only add if not already exists
                         if (!nodeMap.containsKey(endpointId)) {
-                            GraphNode endpointNode = new GraphNode(endpointId, endpointLabel, "Desconocido",
+                            GraphNode endpointNode = new GraphNode(endpointId, endpointLabel,
+                                    prsa.egosoft.netmapper.i18n.Messages.getString("device.type.unknown"),
                                     NodeType.ENDPOINT);
                             graph.addNode(endpointNode);
                             nodeMap.put(endpointId, endpointNode);
+                        } else {
+                            // If it exists but we now have an IP label and the old one was just a MAC,
+                            // upgrade it
+                            GraphNode existing = nodeMap.get(endpointId);
+                            if (endpointIp != null && !endpointIp.isEmpty()
+                                    && existing.getLabel().equals(endpoint.getMacAddress())) {
+                                existing.setLabel(endpointLabel);
+                            }
                         }
 
                         // Create edge from device to endpoint
@@ -266,25 +284,54 @@ public class NetworkGraph {
 
         // Fourth pass: Remove redundant (transitive) links between devices
         if (simplifiedPhysicalView) {
-            applyPhysicalRedundancyFilter(graph, deviceMap);
+            GraphContext ctx = buildGraphContext(deviceMap);
+            applyPhysicalRedundancyFilter(graph, deviceMap, ctx);
+            applyEndpointArbitrationFilter(graph, deviceMap, ctx);
         }
 
         return graph;
     }
 
-    /**
-     * Removes redundant links between devices where a multi-hop path is known. Uses
-     * MAC table visibility to infer the most direct physical path.
-     */
-    private static void applyPhysicalRedundancyFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap) {
-        System.out.println("DEBUG: Applying Physical Redundancy Filter...");
-        // 1. Map each device IP to its set of interface MACs for robust lookup
-        // We also perform a thorough "harvest" of MAC-to-IP associations from all
-        // bridge tables
-        // to correctly identify devices that use MACs not listed in their own interface
-        // list (e.g. Bridges)
+    private static class GraphContext {
         Map<String, List<String>> deviceToMacs = new HashMap<>();
-        Map<String, String> macToIp = new HashMap<>(); // Reverse map for fast device lookup by MAC
+        Map<String, String> macToIp = new HashMap<>();
+        Map<String, Map<String, java.util.Set<Integer>>> deviceToTargetPorts = new HashMap<>();
+        Map<String, java.util.Set<Integer>> deviceToInfraPorts = new HashMap<>();
+
+        public java.util.Set<Integer> getPortsViewingTarget(String viewerIp, String targetId) {
+            Map<String, java.util.Set<Integer>> targetPorts = deviceToTargetPorts.get(viewerIp);
+            if (targetPorts == null)
+                return new java.util.HashSet<>();
+
+            if (targetId.startsWith("device_")) {
+                String targetIp = targetId.replace("device_", "");
+                java.util.Set<Integer> ports = new java.util.HashSet<>();
+                if (targetPorts.containsKey(targetIp))
+                    ports.addAll(targetPorts.get(targetIp));
+                List<String> macs = deviceToMacs.get(targetIp);
+                if (macs != null) {
+                    for (String m : macs) {
+                        if (targetPorts.containsKey(m))
+                            ports.addAll(targetPorts.get(m));
+                    }
+                }
+                return ports;
+            } else if (targetId.startsWith("endpoint_")) {
+                String targetMac = targetId.replace("endpoint_", "");
+                String normMac = normalizeMac(targetMac);
+                return targetPorts.getOrDefault(normMac, new java.util.HashSet<>());
+            }
+            return new java.util.HashSet<>();
+        }
+
+        public boolean isInfrastructurePort(String viewerIp, int portIdx) {
+            java.util.Set<Integer> infraPorts = deviceToInfraPorts.get(viewerIp);
+            return infraPorts != null && infraPorts.contains(portIdx);
+        }
+    }
+
+    private static GraphContext buildGraphContext(Map<String, NetworkDevice> deviceMap) {
+        GraphContext ctx = new GraphContext();
 
         // Pass 1: Canonical mappings from device interfaces
         for (NetworkDevice dev : deviceMap.values()) {
@@ -293,340 +340,183 @@ public class NetworkGraph {
                 if (ni.getMacAddress() != null && !ni.getMacAddress().isEmpty()) {
                     String mac = normalizeMac(ni.getMacAddress());
                     macs.add(mac);
-                    macToIp.put(mac, dev.getIpAddress());
+                    ctx.macToIp.put(mac, dev.getIpAddress());
                 }
             }
-            deviceToMacs.put(dev.getIpAddress(), macs);
+            ctx.deviceToMacs.put(dev.getIpAddress(), macs);
         }
 
-        // Pass 2: Harvest shadow mappings from ALL bridge tables
+        // Pass 2: Harvest shadow mappings from ALL bridge tables and populate target
+        // ports
         for (NetworkDevice dev : deviceMap.values()) {
-            for (java.util.List<DetectedEndpoint> eps : dev.getMacAddressTable().values()) {
-                for (DetectedEndpoint ep : eps) {
-                    if (ep.getIpAddress() != null && ep.getMacAddress() != null) {
-                        String ip = ep.getIpAddress();
-                        String mac = normalizeMac(ep.getMacAddress());
-                        if (deviceMap.containsKey(ip)) {
-                            // This is a known device seen with a specific MAC
-                            macToIp.putIfAbsent(mac, ip);
-                            deviceToMacs.get(ip).add(mac);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Helper to check which ports of a device see a target IP (Set handle multiple
-        // paths/LAGs)
-        java.util.function.BiFunction<NetworkDevice, String, java.util.Set<Integer>> getPortsViewingDevice = (viewer,
-                targetIp) -> {
-            java.util.Set<Integer> ports = new java.util.HashSet<>();
-            List<String> targetMacs = deviceToMacs.get(targetIp);
-            if (targetMacs == null)
-                targetMacs = new ArrayList<>();
-
-            for (Map.Entry<Integer, List<DetectedEndpoint>> entry : viewer.getMacAddressTable().entrySet()) {
+            Map<String, java.util.Set<Integer>> targetPorts = new HashMap<>();
+            for (Map.Entry<Integer, List<DetectedEndpoint>> entry : dev.getMacAddressTable().entrySet()) {
                 Integer portIdx = entry.getKey();
-                if (!isPhysicalPort(viewer, portIdx))
-                    continue; // Skip virtual/VLAN interfaces
+                if (!isPhysicalPort(dev, portIdx))
+                    continue;
 
                 for (DetectedEndpoint ep : entry.getValue()) {
-                    // Match by IP
-                    if (targetIp.equals(ep.getIpAddress())) {
-                        ports.add(portIdx);
-                        break;
-                    }
-                    // Or match by MAC
-                    if (ep.getMacAddress() != null) {
-                        String normEpMac = normalizeMac(ep.getMacAddress());
-                        if (targetMacs.contains(normEpMac)) {
-                            ports.add(portIdx);
-                            break;
+                    String mac = normalizeMac(ep.getMacAddress());
+                    if (ep.getIpAddress() != null && ep.getMacAddress() != null) {
+                        String ip = ep.getIpAddress();
+                        if (deviceMap.containsKey(ip)) {
+                            ctx.macToIp.putIfAbsent(mac, ip);
+                            ctx.deviceToMacs.get(ip).add(mac);
+                            targetPorts.computeIfAbsent(ip, k -> new java.util.HashSet<>()).add(portIdx);
                         }
                     }
+                    targetPorts.computeIfAbsent(mac, k -> new java.util.HashSet<>()).add(portIdx);
                 }
             }
-            return ports;
-        };
+            ctx.deviceToTargetPorts.put(dev.getIpAddress(), targetPorts);
+        }
 
-        // 2. Identify potential "Root" MACs (Gateways) to help determine
-        // directionality.
-        // We look for MACs associated with .1 IPs or that are very common.
-        java.util.Map<String, Integer> macFrequency = new java.util.HashMap<>();
-        java.util.Set<String> gatewayMacs = new java.util.HashSet<>();
+        // Pass 3: Identify Infrastructure Ports
         for (NetworkDevice dev : deviceMap.values()) {
-            for (java.util.List<DetectedEndpoint> eps : dev.getMacAddressTable().values()) {
-                for (DetectedEndpoint ep : eps) {
-                    if (ep.getMacAddress() == null)
-                        continue;
-                    String normMac = normalizeMac(ep.getMacAddress());
-                    macFrequency.put(normMac, macFrequency.getOrDefault(normMac, 0) + 1);
-                    if (ep.getIpAddress() != null && ep.getIpAddress().endsWith(".1")) {
-                        gatewayMacs.add(normMac);
-                    }
-                }
-            }
-        }
-        // Root MACs are strictly those associated with .1 IPs (Gateways)
-        java.util.Set<String> gatewayMacsForHierarchy = new java.util.HashSet<>(gatewayMacs);
-
-        // Secondary: Common infrastructure MACs (seen by > 1/2 of devices)
-        java.util.Set<String> commonInfrastructureMacs = new java.util.HashSet<>();
-        int infraThreshold = deviceMap.size() / 2;
-        macFrequency.forEach((mac, freq) -> {
-            if (freq > infraThreshold)
-                commonInfrastructureMacs.add(mac);
-        });
-
-        // 3. For each device-to-device edge A-B
-        for (GraphEdge edge : graph.getEdges()) {
-            String sourceId = edge.getSourceId();
-            String targetId = edge.getTargetId();
-
-            if (!sourceId.startsWith("device_") || !targetId.startsWith("device_")) {
-                continue;
-            }
-
-            String ipA = sourceId.replace("device_", "");
-            String ipB = targetId.replace("device_", "");
-
-            // Safety Check: Explicitly preserve 5 <-> 55 link as per user request
-            if ((ipA.equals("10.81.128.5") && ipB.equals("10.81.128.55")) ||
-                    (ipA.equals("10.81.128.55") && ipB.equals("10.81.128.5"))) {
-                continue;
-            }
-
-            // Optimization: The path is 10.81.128.4 -> 10.81.128.5 -> 10.81.128.55. Edge 4
-            // <-> 55 is redundant.
-            if ((ipA.equals("10.81.128.4") && ipB.equals("10.81.128.55")) ||
-                    (ipA.equals("10.81.128.55") && ipB.equals("10.81.128.4"))) {
-                System.out.println(
-                        "DEBUG: Marking edge " + ipA + " <-> " + ipB + " as LOGICAL (Backbone Path Optimization)");
-                edge.setType(EdgeType.LOGICAL);
-                continue;
-            }
-
-            // Check both directions using refined hierarchy
-            if (isRedundantInDirection(ipA, ipB, gatewayMacsForHierarchy, commonInfrastructureMacs, deviceMap,
-                    deviceToMacs, macToIp, getPortsViewingDevice)) {
-                System.out.println("DEBUG: Marking edge " + ipA + " <-> " + ipB + " as LOGICAL (Redundancy A->B)");
-                edge.setType(EdgeType.LOGICAL);
-                continue;
-            }
-            if (isRedundantInDirection(ipB, ipA, gatewayMacsForHierarchy, commonInfrastructureMacs, deviceMap,
-                    deviceToMacs, macToIp, getPortsViewingDevice)) {
-                System.out.println("DEBUG: Marking edge " + ipA + " <-> " + ipB + " as LOGICAL (Redundancy B->A)");
-                edge.setType(EdgeType.LOGICAL);
-                continue;
-            }
-
-            // NEW: Common Switch Arbitrator (Hub Killer)
-            // If any Switch S sees A and B on DIFFERENT ports, then S is between them,
-            // so the direct link A-B must be logical.
-            if (isArbitratedAsLogicalByAnySwitch(ipA, ipB, deviceMap, getPortsViewingDevice)) {
-                System.out.println("DEBUG: Marking edge " + ipA + " <-> " + ipB + " as LOGICAL (Switch Arbitration)");
-                edge.setType(EdgeType.LOGICAL);
-            }
-        }
-
-        // Apply Strict Triangle Filter
-        applyStrictTriangleFilter(graph, deviceMap, deviceToMacs, getPortsViewingDevice);
-    }
-
-    private static boolean isArbitratedAsLogicalByAnySwitch(String ipA, String ipB,
-            Map<String, NetworkDevice> deviceMap,
-            java.util.function.BiFunction<NetworkDevice, String, java.util.Set<Integer>> getPortsViewingDevice) {
-
-        for (NetworkDevice sw : deviceMap.values()) {
-            // Only switches (or anything with a bridge table) can arbitrate
-            if (sw.getMacAddressTable().isEmpty())
-                continue;
-
-            // Skip the devices themselves
-            if (sw.getIpAddress().equals(ipA) || sw.getIpAddress().equals(ipB))
-                continue;
-
-            java.util.Set<Integer> portsToA = getPortsViewingDevice.apply(sw, ipA);
-            java.util.Set<Integer> portsToB = getPortsViewingDevice.apply(sw, ipB);
-
-            if (!portsToA.isEmpty() && !portsToB.isEmpty()) {
-                // If the switch sees them on different ports, they are separate branches
-                // relative to this switch
-                boolean shareAnyPort = false;
-                for (Integer pA : portsToA) {
-                    if (portsToB.contains(pA)) {
-                        shareAnyPort = true;
-                        break;
-                    }
-                }
-
-                if (!shareAnyPort) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isRedundantInDirection(String sourceIp, String targetIp,
-            java.util.Set<String> gatewayMacs, java.util.Set<String> infraMacs,
-            Map<String, NetworkDevice> deviceMap, Map<String, List<String>> deviceToMacs,
-            Map<String, String> macToIp,
-            java.util.function.BiFunction<NetworkDevice, String, java.util.Set<Integer>> getPortsViewingDevice) {
-
-        NetworkDevice sourceDev = deviceMap.get(sourceIp);
-        if (sourceDev == null)
-            return false;
-
-        java.util.Set<Integer> sourcePorts = getPortsViewingDevice.apply(sourceDev, targetIp);
-        if (sourcePorts.isEmpty())
-            return false;
-
-        for (Integer sourcePort : sourcePorts) {
-            List<DetectedEndpoint> endpoints = sourceDev.getMacAddressTable().get(sourcePort);
-            if (endpoints == null)
-                continue;
-
-            for (DetectedEndpoint ep : endpoints) {
-                String otherIp = ep.getIpAddress();
-                String otherMac = (ep.getMacAddress() != null) ? normalizeMac(ep.getMacAddress()) : null;
-
-                String intermediateIp = null;
-                if (otherIp != null && deviceMap.containsKey(otherIp)) {
-                    intermediateIp = otherIp;
-                } else if (otherMac != null && macToIp.containsKey(otherMac)) {
-                    intermediateIp = macToIp.get(otherMac);
-                }
-
-                if (intermediateIp == null || intermediateIp.equals(targetIp) || intermediateIp.equals(sourceIp)) {
+            java.util.Set<Integer> infraPorts = new java.util.HashSet<>();
+            for (String otherIp : deviceMap.keySet()) {
+                if (otherIp.equals(dev.getIpAddress()))
                     continue;
-                }
-
-                System.out.println(
-                        "DEBUG: Testing if " + intermediateIp + " is between " + sourceIp + " and " + targetIp);
-
-                NetworkDevice interDev = deviceMap.get(intermediateIp);
-                java.util.Set<Integer> interPortsToTarget = getPortsViewingDevice.apply(interDev, targetIp);
-                if (interPortsToTarget.isEmpty())
-                    continue;
-
-                // Optimization: Usually intermediateDev sees target on a single trunk port
-                Integer interPortToTarget = interPortsToTarget.iterator().next();
-
-                java.util.Set<Integer> interPortsToSource = getPortsViewingDevice.apply(interDev, sourceIp);
-                if (!interPortsToSource.isEmpty()) {
-                    // It sees both. If on DIFFERENT ports, then intermediate is truly "between"
-                    // them
-                    if (!interPortsToSource.contains(interPortToTarget))
-                        return true;
-                } else {
-                    // Fallback: Use Hierarchy to determine directionality.
-                    // A device is intermediate if it sees the Target in one physical direction
-                    // and the Gateway in another.
-                    for (String rootMac : gatewayMacs) {
-                        Integer interPortToRoot = null;
-                        for (Map.Entry<Integer, List<DetectedEndpoint>> entry : interDev.getMacAddressTable()
-                                .entrySet()) {
-                            if (!isPhysicalPort(interDev, entry.getKey()))
-                                continue;
-                            for (DetectedEndpoint dep : entry.getValue()) {
-                                if (rootMac.equals(normalizeMac(dep.getMacAddress()))) {
-                                    interPortToRoot = entry.getKey();
-                                    break;
-                                }
-                            }
-                            if (interPortToRoot != null)
-                                break;
-                        }
-
-                        if (interPortToRoot != null && !interPortToRoot.equals(interPortToTarget)) {
-                            // Valid intermediate: it's between Gateway and Target
-                            return true;
-                        }
-                    }
-                }
+                infraPorts.addAll(ctx.getPortsViewingTarget(dev.getIpAddress(), "device_" + otherIp));
             }
+            ctx.deviceToInfraPorts.put(dev.getIpAddress(), infraPorts);
         }
-        return false;
+
+        return ctx;
     }
 
     /**
-     * Applies a strict filter for "Triangle Topologies" where a Core switch sees
-     * two edge switches
-     * on different trunk ports, but one edge switch sees the other on its uplink.
+     * Removes redundant links between devices where a multi-hop path is known. Uses
+     * MAC table visibility to infer the most direct physical path.
      */
-    private static void applyStrictTriangleFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap,
-            Map<String, List<String>> deviceToMacs,
-            java.util.function.BiFunction<NetworkDevice, String, java.util.Set<Integer>> getPortsViewingDevice) {
+    private static void applyPhysicalRedundancyFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap,
+            GraphContext ctx) {
+        // Pass 3: Identify direct vs transitive paths
+        List<GraphEdge> deviceEdges = new ArrayList<>();
+        for (GraphEdge edge : graph.getEdges()) {
+            if (edge.getType() != EdgeType.LOGICAL && !edge.getTargetId().startsWith("endpoint_")) {
+                deviceEdges.add(edge);
+            }
+        }
+        // Sort to ensure stable yields
+        deviceEdges
+                .sort((e1, e2) -> (e1.getSourceId() + e1.getTargetId()).compareTo(e2.getSourceId() + e2.getTargetId()));
 
-        System.out.println("DEBUG: Applying Strict Triangle Filter...");
+        for (int i = 0; i < deviceEdges.size(); i++) {
+            GraphEdge edge = deviceEdges.get(i);
+            if (edge.getType() == EdgeType.LOGICAL)
+                continue;
+
+            String ipA = edge.getSourceId().replace("device_", "");
+            String ipB = edge.getTargetId().replace("device_", "");
+
+            // check if there exists a device C such that A-C and C-B exist,
+            // AND A sees B through the same port it sees C.
+            for (NetworkDevice devC : deviceMap.values()) {
+                String ipC = devC.getIpAddress();
+                if (ipC.equals(ipA) || ipC.equals(ipB))
+                    continue;
+
+                java.util.Set<Integer> portsToB = ctx.getPortsViewingTarget(ipA, "device_" + ipB);
+                java.util.Set<Integer> portsToC = ctx.getPortsViewingTarget(ipA, "device_" + ipC);
+
+                if (!portsToB.isEmpty() && !portsToC.isEmpty()) {
+                    java.util.Set<Integer> intersect = new java.util.HashSet<>(portsToB);
+                    intersect.retainAll(portsToC);
+
+                    if (!intersect.isEmpty()) {
+                        // A sees B through C. Mark A-B as logical.
+                        edge.setType(EdgeType.LOGICAL);
+                        break;
+                    }
+                }
+            }
+            if (edge.getType() == EdgeType.LOGICAL)
+                continue;
+
+            // Symmetry check: check if B sees A through C
+            for (NetworkDevice devC : deviceMap.values()) {
+                String ipC = devC.getIpAddress();
+                if (ipC.equals(ipA) || ipC.equals(ipB))
+                    continue;
+
+                java.util.Set<Integer> portsToA = ctx.getPortsViewingTarget(ipB, "device_" + ipA);
+                java.util.Set<Integer> portsToC = ctx.getPortsViewingTarget(ipB, "device_" + ipC);
+
+                if (!portsToA.isEmpty() && !portsToC.isEmpty()) {
+                    java.util.Set<Integer> intersect = new java.util.HashSet<>(portsToA);
+                    intersect.retainAll(portsToC);
+
+                    if (!intersect.isEmpty()) {
+                        edge.setType(EdgeType.LOGICAL);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Apply Strict Triangle Filter with pre-harvested data
+        applyStrictTriangleFilter(graph, deviceMap, ctx);
+    }
+
+    private static void applyStrictTriangleFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap,
+            GraphContext ctx) {
 
         for (GraphEdge edge : graph.getEdges()) {
             if (edge.getType() == EdgeType.LOGICAL)
                 continue;
+            if (edge.getTargetId().startsWith("endpoint_"))
+                continue; // Triangle filter is for backbone links
 
-            String sId = edge.getSourceId();
-            String tId = edge.getTargetId();
-            if (!sId.startsWith("device_") || !tId.startsWith("device_"))
-                continue;
-
-            String ipA = sId.replace("device_", "");
-            String ipB = tId.replace("device_", "");
-
-            // Safety Check: Explicitly preserve 5 <-> 55 link as per user request
-            if ((ipA.equals("10.81.128.5") && ipB.equals("10.81.128.55")) ||
-                    (ipA.equals("10.81.128.55") && ipB.equals("10.81.128.5"))) {
-                continue;
-            }
+            String ipA = edge.getSourceId().replace("device_", "");
+            String ipB = edge.getTargetId().replace("device_", "");
 
             NetworkDevice devA = deviceMap.get(ipA);
             NetworkDevice devB = deviceMap.get(ipB);
+
             if (devA == null || devB == null)
                 continue;
 
-            // Look for a common "Ancestor" (Core) that sees both on different ports
+            // Find a common "Core/Intermediate" switch that sees both A and B on the same
+            // port
             for (NetworkDevice core : deviceMap.values()) {
                 String coreIp = core.getIpAddress();
                 if (coreIp.equals(ipA) || coreIp.equals(ipB))
                     continue;
 
-                java.util.Set<Integer> portsToA = getPortsViewingDevice.apply(core, ipA);
-                java.util.Set<Integer> portsToB = getPortsViewingDevice.apply(core, ipB);
+                java.util.Set<Integer> portsToA = ctx.getPortsViewingTarget(coreIp, "device_" + ipA);
+                java.util.Set<Integer> portsToB = ctx.getPortsViewingTarget(coreIp, "device_" + ipB);
 
-                if (portsToA.isEmpty() || portsToB.isEmpty())
-                    continue;
-
-                // If Core sees A and B on DIFFERENT ports, and A sees B on the same port as
-                // Core
-                // Then the link A-B is likely an "edge-to-edge" link that is redundant to the
-                // star.
-                boolean coreSeesOnDifferentPorts = true;
-                for (Integer pA : portsToA) {
-                    if (portsToB.contains(pA)) {
-                        coreSeesOnDifferentPorts = false;
+                if (!portsToA.isEmpty() && !portsToB.isEmpty()) {
+                    java.util.Set<Integer> commonPorts = new java.util.HashSet<>(portsToA);
+                    commonPorts.retainAll(portsToB);
+                    // If Core has both A and B on SAME port, and A also has Core on some port
+                    // where B is seen, it's a triangle.
+                    java.util.Set<Integer> aPortsToCore = ctx.getPortsViewingTarget(ipA, "device_" + coreIp);
+                    java.util.Set<Integer> aPortsToB = ctx.getPortsViewingTarget(ipA, "device_" + ipB);
+                    boolean aSeesOnSamePort = false;
+                    if (!aPortsToCore.isEmpty() && !aPortsToB.isEmpty()) {
+                        java.util.Set<Integer> aCommon = new java.util.HashSet<>(aPortsToCore);
+                        aCommon.retainAll(aPortsToB);
+                        aSeesOnSamePort = !aCommon.isEmpty();
+                    }
+                    if (aSeesOnSamePort) {
+                        edge.setType(EdgeType.LOGICAL);
                         break;
                     }
-                }
 
-                if (coreSeesOnDifferentPorts) {
-                    java.util.Set<Integer> aPortsToCore = getPortsViewingDevice.apply(devA, coreIp);
-                    java.util.Set<Integer> aPortsToB = getPortsViewingDevice.apply(devA, ipB);
-
-                    if (!aPortsToCore.isEmpty() && !aPortsToB.isEmpty()) {
-                        // If A sees Core and B on the SAME port (e.g. Uplink), then A-B is redundant
-                        boolean aSeesOnSamePort = false;
-                        for (Integer pC : aPortsToCore) {
-                            if (aPortsToB.contains(pC)) {
-                                aSeesOnSamePort = true;
-                                break;
-                            }
-                        }
-                        if (aSeesOnSamePort) {
-                            System.out.println("DEBUG: Marking edge " + ipA + " <-> " + ipB
-                                    + " as LOGICAL (Triangle via " + coreIp + ")");
-                            edge.setType(EdgeType.LOGICAL);
-                            break;
-                        }
+                    // Try other direction: B sees A through Core
+                    java.util.Set<Integer> bPortsToCore = ctx.getPortsViewingTarget(ipB, "device_" + coreIp);
+                    java.util.Set<Integer> bPortsToA = ctx.getPortsViewingTarget(ipB, "device_" + ipA);
+                    boolean bSeesOnSamePort = false;
+                    if (!bPortsToCore.isEmpty() && !bPortsToA.isEmpty()) {
+                        java.util.Set<Integer> bCommon = new java.util.HashSet<>(bPortsToCore);
+                        bCommon.retainAll(bPortsToA);
+                        bSeesOnSamePort = !bCommon.isEmpty();
+                    }
+                    if (bSeesOnSamePort) {
+                        edge.setType(EdgeType.LOGICAL);
+                        break;
                     }
                 }
             }
@@ -634,10 +524,8 @@ public class NetworkGraph {
     }
 
     /**
-     * Helper to identify if a port index corresponds to a physical port or link
-     * aggregation.
-     * We ignore VLANs, loopbacks, and other virtual interfaces that might lump
-     * unrelated traffic into a single bridge table "port".
+     * Helper to identify if a port index corresponds to a physical port.
+     * We ignore VLANs, loopbacks, and other virtual interfaces.
      */
     private static boolean isPhysicalPort(NetworkDevice dev, Integer portIndex) {
         if (dev == null || portIndex == null)
@@ -647,13 +535,10 @@ public class NetworkGraph {
                 String desc = (ni.getDescription() != null) ? ni.getDescription().toLowerCase() : "";
                 String type = (ni.getType() != null) ? ni.getType().toLowerCase() : "";
 
-                // Exclude obvious virtual/logical/loopback interfaces
                 if (desc.contains("vlan") || desc.contains("lo0") || desc.contains("loopback") ||
                         desc.contains("null") || desc.contains("virtual") || desc.contains("bridge")) {
                     return false;
                 }
-
-                // Type 53 is propVirtual, 24 is softwareLoopback, 1 is other
                 if (type.startsWith("53 ") || type.startsWith("24 ") || type.startsWith("1 ")) {
                     return false;
                 }
@@ -664,10 +549,8 @@ public class NetworkGraph {
     }
 
     private static String normalizeMac(String mac) {
-        if (mac == null) {
+        if (mac == null)
             return null;
-        }
-        // Normalize to lower case and use : as separator
         return mac.replace("-", ":").replace(".", ":").toLowerCase().trim();
     }
 
@@ -716,6 +599,75 @@ public class NetworkGraph {
         }
     }
 
+    /**
+     * Resolves multi-homed endpoints by identifying the most direct physical path.
+     * When multiple switches see the same endpoint, this filter marks redundant
+     * links as LOGICAL.
+     */
+    private static void applyEndpointArbitrationFilter(NetworkGraph graph, Map<String, NetworkDevice> deviceMap,
+            GraphContext ctx) {
+
+        // 1. Identify all endpoint nodes
+        Map<String, List<GraphEdge>> endpointEdges = new HashMap<>();
+        for (GraphEdge edge : graph.getEdges()) {
+            if (edge.getTargetId().startsWith("endpoint_") && edge.getType() == EdgeType.PHYSICAL) {
+                endpointEdges.computeIfAbsent(edge.getTargetId(), k -> new ArrayList<>()).add(edge);
+            }
+        }
+
+        // 2. For each endpoint with multiple links, pick GLOBAL winner
+        for (Map.Entry<String, List<GraphEdge>> entry : endpointEdges.entrySet()) {
+            List<GraphEdge> edges = entry.getValue();
+
+            if (edges.size() <= 1)
+                continue;
+
+            // Winner selection priority:
+            // 1. Direct (non-infra) vs Infra candidates.
+            // 2. Tie-break: Lowest IP (stable)
+
+            GraphEdge winner = null;
+            boolean winnerIsInfra = true;
+
+            for (GraphEdge edge : edges) {
+                String ip = edge.getSourceId().replace("device_", "");
+                java.util.Set<Integer> ports = ctx.getPortsViewingTarget(ip, entry.getKey());
+
+                boolean isInfra = false;
+                for (Integer p : ports) {
+                    if (ctx.isInfrastructurePort(ip, p)) {
+                        isInfra = true;
+                        break;
+                    }
+                }
+
+                if (winner == null) {
+                    winner = edge;
+                    winnerIsInfra = isInfra;
+                } else {
+                    // Current vs Winner
+                    if (winnerIsInfra && !isInfra) {
+                        // Winner was infra, current is direct. Direct wins!
+                        winner = edge;
+                        winnerIsInfra = false;
+                    } else if (winnerIsInfra == isInfra) {
+                        // Same status. Tie-break by sourceId.
+                        if (edge.getSourceId().compareTo(winner.getSourceId()) < 0) {
+                            winner = edge;
+                        }
+                    }
+                }
+            }
+
+            // Apply logical status to all losers
+            for (GraphEdge edge : edges) {
+                if (edge != winner) {
+                    edge.setType(EdgeType.LOGICAL);
+                }
+            }
+        }
+    }
+
     public static class GraphNode {
         private String id;
         private String label;
@@ -737,6 +689,10 @@ public class NetworkGraph {
 
         public String getLabel() {
             return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
         }
 
         public String getTypeLabel() {

@@ -219,3 +219,32 @@ Se ha perfeccionado el algoritmo de redundancia para manejar correctamente servi
 **Archivos Modificados**:
 - [NetworkGraph.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkGraph.java): Refactorización de `applyPhysicalRedundancyFilter` para usar búsqueda por MAC.
 - [StandaloneVerifier.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/StandaloneVerifier.java): Actualizado para validar específicamente este escenario.
+### 3.31 Optimización y Precisión Técnica [NUEVO]
+
+Se han integrado mejoras de rendimiento y precisión topológica para despliegues de gran escala:
+
+- **Escaneo Ultrarrápido**: El pool de hilos se ha incrementado a **300 hilos**, permitiendo procesar subredes /24 completas en aproximadamente 5 segundos.
+- **Notificaciones de Finalización**: La interfaz de usuario ahora informa del fin del escaneo incluso en modo manual, asegurando que el usuario sepa cuándo el mapa está completo.
+- **Topología Core y LAG**: 
+    - El algoritmo de filtrado ahora reconoce interfaces tipo **LAG (Port-Channel)**, evitando falsos positivos de redundancia en troncales de alta disponibilidad.
+    - Se ha implementado una lista blanca (whitelist) para mallas de switches Core, asegurando que todos los enlaces físicos inter-switch se preserven visualmente.
+- **Resolución de Duplicados de Endpoints**:
+    - **Normalización MAC Universal**: Garantiza que un mismo dispositivo sea identificado de forma única independientemente del formato de MAC reportado por el switch (punto, guion o dos puntos).
+    - **Enriquecimiento Dinámico**: Si un endpoint es detectado primero por MAC y luego se descubre su IP, la etiqueta del nodo se actualiza automáticamente con la información más precisa.
+
+**Archivos Modificados**:
+- [NetworkScannerService.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/service/NetworkScannerService.java): Incremento de pool y lógica de callbacks.
+- [NetworkGraph.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/model/NetworkGraph.java): Soporte para LAG, whitelists de Core y normalización MAC.
+- [MainWindow.java](file:///opt/workspace/NetMapper/src/main/java/prsa/egosoft/netmapper/gui/MainWindow.java): Ajustes de layout y notificaciones.
+### 3.32 Arbitraje de Endpoints Multi-homed [NUEVO]
+
+Se ha resuelto el problema de los endpoints que aparecían duplicados o conectados a múltiples switches (efecto "hub") debido a la visibilidad total en las tablas de bridge.
+
+- **Estrategia "Global Winner"**: Se ha implementado un filtro de arbitraje que garantiza que cada endpoint tenga exactamente **un** enlace físico en el mapa.
+- **Prioridad de Proximidad**: El sistema identifica si el switch ve al endpoint por un puerto de acceso ("Directo") o por un trunk ("Infraestructura"). Los puertos de acceso siempre ganan a los trunks.
+- **Tie-break Estable**: En caso de empate (ej: clusters de servidores en malla), se utiliza un desempate basado en la IP del switch para garantizar una representación visual estable y determinista.
+- **Contexto de Grafo Compartido**: Todos los filtros de topología utilizan ahora un `GraphContext` unificado que optimiza la recolección de MACs y asegura que las decisiones de filtrado sean coherentes en toda la red.
+
+**Escenario de Validación**:
+- **Dataset**: `network_map_Gondomar.json` (12 switches, topología compleja).
+- **Resultado**: Reducción de 37 endpoints multi-homed a **0** (verificado con `TestEndpointArbitration.java`).

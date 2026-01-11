@@ -82,8 +82,8 @@ public class NetworkScannerService {
                     ArpScanner scanner = new PcapArpScanner();
                     activeArpMap = scanner.scan(ips, interfaceName);
                     logger.info("Active ARP Scan detected {} devices.", activeArpMap.size());
-                } catch (Throwable t) {
-                    logger.warn("Could not perform active ARP scan (Pcap4J): {}", t.getMessage());
+                } catch (Exception e) {
+                    logger.warn("Could not perform active ARP scan (Pcap4J): {}", e.getMessage());
                 }
             }
 
@@ -106,7 +106,9 @@ public class NetworkScannerService {
 
             try {
                 // Wait for all devices to be processed
-                latch.await(30, java.util.concurrent.TimeUnit.SECONDS);
+                if (!latch.await(30, java.util.concurrent.TimeUnit.SECONDS)) {
+                    logger.warn("Scan timed out before all devices were processed");
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.error("Scan interrupted", e);
@@ -140,7 +142,7 @@ public class NetworkScannerService {
                 if (knownMac != null) {
                     device.setVendor(prsa.egosoft.netmapper.util.MacVendorUtils.getVendor(knownMac));
                     prsa.egosoft.netmapper.model.NetworkInterface ni = new prsa.egosoft.netmapper.model.NetworkInterface(
-                            0, "Active ARP");
+                            0, prsa.egosoft.netmapper.i18n.Messages.getString("technical.active_arp"));
                     ni.setMacAddress(knownMac);
                     ni.setIpAddress(ip);
                     device.addInterface(ni);
@@ -151,10 +153,8 @@ public class NetworkScannerService {
                 DiscoveryStrategy snmpStrategy = new StandardMibStrategy();
 
                 // 1. ARP Discovery (rápido)
-                if (Main.IS_ADMIN) {
-                    if (arpStrategy.isApplicable(null, null)) {
-                        arpStrategy.discover(client, device);
-                    }
+                if (Main.IS_ADMIN && arpStrategy.isApplicable(null, null)) {
+                    arpStrategy.discover(client, device);
                 }
 
                 // 2. SNMP Discovery (detallado)

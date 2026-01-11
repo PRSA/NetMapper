@@ -244,6 +244,17 @@ Se ha implementado una optimización en `NetworkGraph.java` para deducir la topo
     - Si $I$ ve a $A$ y a $B$ en **puertos diferentes**, se confirma que $I$ es un nodo intermedio físico.
     - En caso positivo, el enlace directo $A \leftrightarrow B$ se elimina por ser redundante.
 - **Persistencia Jackson**: Se han añadido constructores sin argumentos a las clases `NetworkDevice`, `NetworkInterface` y `DetectedEndpoint` para permitir la serialización y deserialización JSON sin errores, facilitando herramientas de verificación y auditoría.
+### 3.24 Optimizaciones de Alto Rendimiento y Precisión [NUEVO]
+
+Se han refinado los componentes centrales para soportar despliegues de infraestructura crítica:
+
+- **Efectividad del Paralelismo**: El pool de hilos de `NetworkScannerService` se ha escalado a **300 hilos**. Esta arquitectura permite que un escaneo de una red Clase C (/24) se realice de forma casi instantánea, procesando cada IP en hilos independientes sin bloqueos de UI.
+- **Topología en Mallas Core y LAG**:
+    - **Reconocimiento de LAG**: El sistema identifica interfaces tipo **LAG/Port-Channel** (basado en `ifType` y patrones de nombre). Esto es crucial para el algoritmo de simplificación, ya que los LAGs agrupan múltiples interfaces físicas y deben tratarse como un único canal transparente.
+    - **Whitelist de Core**: Se ha implementado un mecanismo de exclusión para evitar la simplificación errónea de enlaces en la "malla" de switches Core (Full Mesh), preservando todas las interconexiones físicas entre nodos de alta disponibilidad.
+- **Normalización MAC Universal y Enriquecimiento Dinámico**:
+    - **Estandarización**: `normalizeMac()` aplica un formato canónico (lowercase + `:`) a todas las MACs, eliminando duplicados causados por diferencias de sintaxis entre fabricantes (que pueden usar `.`, `-` o `:`).
+    - **State Upgrade**: La lógica de construcción del grafo ahora permite actualizar el estado de un nodo existente. Si se encuentra una dirección IP para un dispositivo que previamente solo se conocía por su MAC, el nodo se "enriquece" dinámicamente con la nueva información sin generar duplicados.
 
 ## 4. Estructura del Proyecto
 
@@ -267,3 +278,13 @@ Se ha implementado una optimización en `NetworkGraph.java` para deducir la topo
 -   Soporte para SNMP v3 (Autenticación y Cifrado).
 -   Persistencia de datos del historial de escaneos en base de datos local (SQLite).
 -   Detección de tipología de red más allá de SNMP (ej. LLDP/CDP si están disponibles).
+### 3.25 Arbitraje de Endpoints Multi-homed [NUEVO]
+
+Se ha implementado una capa de arbitraje en `NetworkGraph` para resolver la redundancia de links en endpoints (que a menudo se ven en múltiples switches debido a la inundación de tablas MAC).
+
+- **GraphContext Unificado**: Refactorización de todos los filtros (`applyPhysicalRedundancyFilter`, `applyStrictTriangleFilter`, `applyEndpointArbitrationFilter`) para usar un contexto compartido que pre-calcula la visibilidad de MACs y puertos de infraestructura.
+- **Algoritmo Global Winner**:
+    1.  **Categorización de Puertos**: Cada enlace se marca como `DIRECT` (puerto de acceso) o `INFRA` (trunk) basándose en si se ven otros switches por ese puerto.
+    2.  **Selección del Ganador**: Para cada endpoint, se elige exactamente un switch "ganador". Los enlaces directos tienen prioridad absoluta sobre los trunks.
+    3.  **Tie-breaking**: Si existen múltiples candidatos del mismo tipo, se realiza un desempate estable comparando los IDs (IPs) de los dispositivos, garantizando coherencia en la visualización.
+- **Normalización de MACs**: Se ha estandarizado el uso de `normalizeMac()` en todas las búsquedas de bridge table para evitar fallos por discrepancias de formato (case-sensitivity o separadores).

@@ -15,6 +15,10 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Descubrimiento ARP Multiplataforma**: Identificación inmediata de dispositivos locales mediante tabla ARP (compatible con Linux/Windows).
 - **Detección de Servicios (sysServices)**: Visualización detallada de las capas de red activas (L1-L7) según el estándar RFC 1213.
 - **Escaneo por Interfaz Específica (ARP/SNMP)**: El autodescubrimiento utiliza la interfaz de red correcta para escanear cada red local. El tráfico SNMP se vincula (bind) a la IP local de la interfaz para mayor precisión.
+- **Escaneo de Alta Velocidad**: Pool de hilos optimizado (300 hilos) para procesar redes /24 en segundos con notificaciones de finalización en tiempo real.
+- **Precisión en Topologías de Centro de Datos**: Soporte para interfaces **LAG (Link Aggregation)** y preservación inteligente de mallas de switches Core mediante listas blancas de topología.
+- **Unicidad de Endpoints**: Normalización universal de MACs y enriquecimiento dinámico de etiquetas para evitar duplicados.
+- **Arbitraje de Endpoints Multi-homed**: Algoritmo "Global Winner" que reduce links redundantes en endpoints, priorizando puertos de acceso sobre trunks.
 
 ### Escaneo Avanzado
 - **Escaneo de Redes**: Soporte para múltiples formatos de entrada:

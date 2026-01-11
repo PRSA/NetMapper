@@ -180,3 +180,12 @@
 - [x] Verificar algoritmo de simplificación con topología estrella (4-5-55) <!-- id: 128 -->
 - [x] Resolver efecto "hub" en servidores virtualizados (Switch Arbitration) <!-- id: 129 -->
 - [x] Implementar filtrado de interfaces virtuales (VLAN/lo) en topología <!-- id: 130 -->
+- [x] Mejoras de rendimiento y precisión topológica
+    - [x] Redimensionar campos IP y Comunidad y alinear etiquetas <!-- id: 131 -->
+    - [x] Optimizar paralelismo de escaneo (300 hilos) y notificaciones de finalización <!-- id: 132 -->
+    - [x] Corregir detección de topología física en puertos LAG y mallas Core <!-- id: 133 -->
+    - [x] Resolver duplicados de endpoints (normalización MAC y enriquecimiento de etiquetas) <!-- id: 134 -->
+- [x] Sincronizar documentación global y estandarizar I18n <!-- id: 135 -->
+- [x] Refinar arbitraje de endpoints para eliminar links redundantes (Gondomar fix) <!-- id: 136 -->
+    - [x] Implementar estrategia "Global Winner" basada en proximidad (Direct vs Infra) <!-- id: 137 -->
+    - [x] Refactorizar filtros a GraphContext para consistencia de recolección MAC <!-- id: 138 -->

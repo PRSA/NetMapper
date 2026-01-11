@@ -180,7 +180,8 @@ public class DeviceTreePanel extends JPanel {
 		if (ni.getMacAddress() != null) {
 			String macDisplay = Messages.getString("interface.mac") + ": " + ni.getMacAddress();
 			String vendor = prsa.egosoft.netmapper.util.MacVendorUtils.getVendor(ni.getMacAddress());
-			if (vendor != null && !vendor.isEmpty() && !"Unknown".equals(vendor)) {
+			if (vendor != null && !vendor.isEmpty()
+					&& !prsa.egosoft.netmapper.i18n.Messages.getString("vendor.unknown").equals(vendor)) {
 				macDisplay += " (" + vendor + ")";
 			}
 			parent.add(new DefaultMutableTreeNode(macDisplay));

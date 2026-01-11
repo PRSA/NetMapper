@@ -47,7 +47,8 @@ public class DetectedEndpoint {
         // Formato para UI: MAC (Vendor) - IP: x.x.x.x
         StringBuilder sb = new StringBuilder();
         sb.append(macAddress);
-        if (vendor != null && !vendor.isEmpty() && !"Unknown".equals(vendor)) {
+        if (vendor != null && !vendor.isEmpty()
+                && !prsa.egosoft.netmapper.i18n.Messages.getString("vendor.unknown").equals(vendor)) {
             sb.append(" (").append(vendor).append(")");
         }
         if (ipAddress != null && !ipAddress.isEmpty()) {

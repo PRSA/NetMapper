@@ -1,0 +1,130 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------------< [0;36mprsa.egosoft.netmapper:netmapper[0;1m >------------------[m
+[[1;34mINFO[m] [1mBuilding netmapper 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mexec-maven-plugin:3.6.2:java[m [1m(default-cli)[m @ [36mnetmapper[0;1m ---[m
+[Thread-1] INFO prsa.egosoft.netmapper.service.NetworkController - Loaded 12 devices from network_map_Gondomar.json
+DEBUG: Applying Physical Redundancy Filter...
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.10
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.10
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.10
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.10
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.10 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.6 and 10.47.10.10
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.10 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.7 and 10.47.10.10
+DEBUG: Marking edge 10.47.10.7 <-> 10.47.10.10 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.8 and 10.47.10.10
+DEBUG: Marking edge 10.47.10.8 <-> 10.47.10.10 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.4 and 10.47.10.14
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.14 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.6 and 10.47.10.14
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.6 and 10.47.10.14
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.14 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.6 and 10.47.10.11
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Testing if 10.47.10.6 is between 10.47.10.4 and 10.47.10.11
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.11 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.6 and 10.47.10.13
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.6 and 10.47.10.13
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Testing if 10.47.10.6 is between 10.47.10.4 and 10.47.10.13
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.13 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.12
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.12
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.12
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.12 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.6 and 10.47.10.12
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.12 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.8
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.8 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.9
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.9 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Testing if 10.47.10.6 is between 10.47.10.4 and 10.47.10.5
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.5 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.8 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.5 is between 10.47.10.4 and 10.47.10.6
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.13 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Testing if 10.47.10.6 is between 10.47.10.4 and 10.47.10.7
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.7 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.6 and 10.47.10.7
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.6 and 10.47.10.7
+DEBUG: Testing if 10.47.10.8 is between 10.47.10.6 and 10.47.10.7
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.6 and 10.47.10.9
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.6 and 10.47.10.9
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.9 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.6 and 10.47.10.8
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.6 and 10.47.10.8
+DEBUG: Testing if 10.47.10.7 is between 10.47.10.6 and 10.47.10.8
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.8 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.8 and 10.47.10.9
+DEBUG: Testing if 10.47.10.15 is between 10.47.10.13 and 10.47.10.14
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.13 and 10.47.10.15
+DEBUG: Marking edge 10.47.10.13 <-> 10.47.10.15 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.7 and 10.47.10.9
+DEBUG: Testing if 10.47.10.8 is between 10.47.10.7 and 10.47.10.9
+DEBUG: Marking edge 10.47.10.7 <-> 10.47.10.9 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.7 and 10.47.10.8
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.7 and 10.47.10.8
+DEBUG: Testing if 10.47.10.10 is between 10.47.10.4 and 10.47.10.15
+DEBUG: Testing if 10.47.10.12 is between 10.47.10.4 and 10.47.10.15
+DEBUG: Testing if 10.47.10.11 is between 10.47.10.4 and 10.47.10.15
+DEBUG: Testing if 10.47.10.9 is between 10.47.10.4 and 10.47.10.15
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.4 and 10.47.10.15
+DEBUG: Marking edge 10.47.10.4 <-> 10.47.10.15 as LOGICAL (Redundancy A->B)
+DEBUG: Testing if 10.47.10.14 is between 10.47.10.6 and 10.47.10.15
+DEBUG: Marking edge 10.47.10.6 <-> 10.47.10.15 as LOGICAL (Redundancy A->B)
+DEBUG: Applying Strict Triangle Filter...

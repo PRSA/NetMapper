@@ -1,0 +1,36 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------------< [0;36mprsa.egosoft.netmapper:netmapper[0;1m >------------------[m
+[[1;34mINFO[m] [1mBuilding netmapper 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mexec-maven-plugin:3.6.2:java[m [1m(default-cli)[m @ [36mnetmapper[0;1m ---[m
+[Thread-1] INFO prsa.egosoft.netmapper.service.NetworkController - Loaded 12 devices from network_map_Gondomar.json
+[[1;33mWARNING[m] 
+[1;31mjava.lang.Error[m: [1;31mUnresolved compilation problems: 
+	dev cannot be resolved
+	entry cannot be resolved
+	dev cannot be resolved to a variable
+	entry cannot be resolved
+	ep cannot be resolved
+	ep cannot be resolved
+	Syntax error on token(s), misplaced construct(s)
+	Syntax error on token "}", delete this token
+[m
+    [1mat[m prsa.egosoft.netmapper.model.NetworkGraph.applyPhysicalRedundancyFilter ([1mNetworkGraph.java:326[m)
+    [1mat[m prsa.egosoft.netmapper.model.NetworkGraph.buildFromDevices ([1mNetworkGraph.java:287[m)
+    [1mat[m prsa.egosoft.netmapper.gui.NetworkMapPanel.updateMap ([1mNetworkMapPanel.java:164[m)
+    [1mat[m prsa.egosoft.netmapper.gui.MainWindow.lambda$loadMap$15 ([1mMainWindow.java:340[m)
+    [1mat[m java.awt.event.InvocationEvent.dispatch ([1mInvocationEvent.java:318[m)
+    [1mat[m java.awt.EventQueue.dispatchEventImpl ([1mEventQueue.java:773[m)
+    [1mat[m java.awt.EventQueue$4.run ([1mEventQueue.java:720[m)
+    [1mat[m java.awt.EventQueue$4.run ([1mEventQueue.java:714[m)
+    [1mat[m java.security.AccessController.doPrivileged ([1mAccessController.java:400[m)
+    [1mat[m java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege ([1mProtectionDomain.java:87[m)
+    [1mat[m java.awt.EventQueue.dispatchEvent ([1mEventQueue.java:742[m)
+    [1mat[m java.awt.EventDispatchThread.pumpOneEventForFilters ([1mEventDispatchThread.java:203[m)
+    [1mat[m java.awt.EventDispatchThread.pumpEventsForFilter ([1mEventDispatchThread.java:124[m)
+    [1mat[m java.awt.EventDispatchThread.pumpEventsForHierarchy ([1mEventDispatchThread.java:113[m)
+    [1mat[m java.awt.EventDispatchThread.pumpEvents ([1mEventDispatchThread.java:109[m)
+    [1mat[m java.awt.EventDispatchThread.pumpEvents ([1mEventDispatchThread.java:101[m)
+    [1mat[m java.awt.EventDispatchThread.run ([1mEventDispatchThread.java:90[m)
