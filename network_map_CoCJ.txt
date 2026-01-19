@@ -1,0 +1,4 @@
+La conectividad real (equipos detectados) es:
+-) x.4: x.1 (puede que sea sólo un endpoint al no responder a consultas SNMP), x.5, x.11-x.54
+-) x.5: x.55, x.120 (SAN), x.121 (SAN)
+-) x.55: x.135 (servidor DELL), x.254 (servidor virtualizado LanMan)

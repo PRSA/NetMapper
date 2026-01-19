@@ -96,12 +96,21 @@ public class StandaloneVerifier {
         }
 
         for (Map.Entry<String, Integer> entry : deviceDegree.entrySet()) {
-            if (entry.getValue() > 2) {
+            boolean isHighDegree = entry.getValue() > 2;
+            boolean isTarget = entry.getKey().contains("10.47.12.38") || entry.getKey().contains("10.47.12.52")
+                    || entry.getKey().contains("10.47.12.53");
+
+            if (isHighDegree || isTarget) {
                 String id = entry.getKey();
-                System.out.println(" - " + id.replace("device_", "") + " (" + entry.getValue() + " links): "
-                        + adj.getOrDefault(id, new ArrayList<>()).stream().map(s -> s.replace("device_", ""))
-                                .collect(java.util.stream.Collectors.joining(", ")));
-                switchesWithManyLinks++;
+                String neighbors = adj.getOrDefault(id, new ArrayList<>()).stream()
+                        .map(s -> s.replace("device_", ""))
+                        .collect(java.util.stream.Collectors.joining(", "));
+
+                System.out
+                        .println(" - " + id.replace("device_", "") + " (" + entry.getValue() + " links): " + neighbors);
+
+                if (isHighDegree)
+                    switchesWithManyLinks++;
             }
         }
 

@@ -1,0 +1,15 @@
+target/classes:[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------------< [0;36mprsa.egosoft.netmapper:netmapper[0;1m >------------------[m
+[[1;34mINFO[m] [1mBuilding netmapper 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:3.9.0:build-classpath[m [1m(default-cli)[m @ [36mnetmapper[0;1m ---[m
+[[1;34mINFO[m] Dependencies classpath:
+/home/prsa/.m2/repository/org/snmp4j/snmp4j/3.9.6/snmp4j-3.9.6.jar:/home/prsa/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/home/prsa/.m2/repository/org/slf4j/slf4j-simple/2.0.17/slf4j-simple-2.0.17.jar:/home/prsa/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/home/prsa/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/prsa/.m2/repository/org/mockito/mockito-core/5.21.0/mockito-core-5.21.0.jar:/home/prsa/.m2/repository/net/bytebuddy/byte-buddy/1.17.7/byte-buddy-1.17.7.jar:/home/prsa/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.7/byte-buddy-agent-1.17.7.jar:/home/prsa/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/home/prsa/.m2/repository/org/apache/pdfbox/pdfbox/3.0.3/pdfbox-3.0.3.jar:/home/prsa/.m2/repository/org/apache/pdfbox/pdfbox-io/3.0.3/pdfbox-io-3.0.3.jar:/home/prsa/.m2/repository/org/apache/pdfbox/fontbox/3.0.3/fontbox-3.0.3.jar:/home/prsa/.m2/repository/commons-logging/commons-logging/1.3.3/commons-logging-1.3.3.jar:/home/prsa/.m2/repository/de/rototor/pdfbox/graphics2d/3.0.1/graphics2d-3.0.1.jar:/home/prsa/.m2/repository/org/pcap4j/pcap4j-core/1.8.2/pcap4j-core-1.8.2.jar:/home/prsa/.m2/repository/net/java/dev/jna/jna/5.3.1/jna-5.3.1.jar:/home/prsa/.m2/repository/org/pcap4j/pcap4j-packetfactory-static/1.8.2/pcap4j-packetfactory-static-1.8.2.jar:/home/prsa/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.20.1/jackson-databind-2.20.1.jar:/home/prsa/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.20/jackson-annotations-2.20.jar:/home/prsa/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.20.1/jackson-core-2.20.1.jar
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  3.067 s
+[[1;34mINFO[m] Finished at: 2026-01-19T18:52:51+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
