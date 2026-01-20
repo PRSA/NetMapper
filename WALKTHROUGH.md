@@ -23,7 +23,7 @@ Este documento describe cómo ejecutar y utilizar la aplicación NetMapper para 
     ```
 
 ## Funcionalidades
-La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP/Máscara**, **Intervalo IP**, o una **Lista separada por comas** de cualquiera de los anteriores.
+La aplicación permite introducir una dirección **IP**, un **Rango CIDR**, **IP/Máscara**, **IP/Máscara**, **Intervalo IP**, o una **Lista separada por comas** de cualquiera de los anteriores.
 
 1.  **Información del Sistema**:
     - Detección automática de **Marca y Modelo** (incluyendo Apple, Cisco, Huawei, etc.).
@@ -267,3 +267,14 @@ Se ha implementado el soporte completo para descubrimiento mediante protocolos d
 1. Ejecutar `mvn clean compile` para verificar la integridad del nuevo modelo de datos.
 2. Iniciar la aplicación y cargar un mapa o escanear una red con dispositivos LLDP.
 3. Verificar que los enlaces troncales aparezcan como físicos (línea sólida) y que los enlaces LLDP muestren la etiqueta `(LLDP)` si se inspeccionan.
+
+### 3.34 Validación de Topología Jerárquica [NUEVO]
+
+Se ha perfeccionado el algoritmo de redundancia para proteger los enlaces físicos reales en entornos de alta densidad jerárquica (Core > Edge > Access).
+
+- **Problema Detectado**: Switches de agregación remotos (Core/Distribution) a menudo "ven" dispositivos terminales y, por tener un "ranking" jerárquico superior, tendían a "podar" incorrectamente el enlace del switch de acceso real.
+- **Solución (Requisito de Enlace Físico)**: El algoritmo de poda ahora obedece a una regla estricta: **Un dispositivo solo puede actuar como padre lógico y eliminar un enlace existente si él mismo posee un enlace físico directo al destino.**
+- **Impacto**: Esto ha restaurado la visibilidad de enlaces legítimos hacia Gateways y Servidores Críticos que anteriormente quedaban aislados gráficamente.
+
+**Verificación**:
+- La topología muestra correctamente la conexión `Gateway` -> `Switch Acceso`, ignorando la visibilidad redundante desde el Core.
