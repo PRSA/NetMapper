@@ -1,7 +1,0 @@
-Loading JSON from: network_map_CoCJ.json
-Successfully loaded 46 devices.
-Building NetworkGraph with redundancy filter...
-Exception in thread "main" java.lang.NullPointerException: Cannot invoke "prsa.egosoft.netmapper.model.NetworkDevice.getDeviceType()" because "devB" is null
-	at prsa.egosoft.netmapper.model.NetworkGraph.applyPhysicalRedundancyFilter(NetworkGraph.java:857)
-	at prsa.egosoft.netmapper.model.NetworkGraph.buildFromDevices(NetworkGraph.java:403)
-	at prsa.egosoft.netmapper.StandaloneVerifier.main(StandaloneVerifier.java:44)

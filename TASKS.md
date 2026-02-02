@@ -195,3 +195,10 @@
     - [x] Implementar recolección SNMP de LLDP, STP y Duplex <!-- id: 142 -->
     - [x] Refactorizar NetworkGraph para priorizar "Direct Discovery" (LLDP) <!-- id: 143 -->
     - [x] Implementar validación estricta de atributos físicos (STP blocking, Duplex mismatch) <!-- id: 144 -->
+- [x] Consolidar Metodología 11-Fases y Filtros de Interfaz <!-- id: 145 -->
+    - [x] Implementar captura de Roles STP y contadores de errores/descartes <!-- id: 146 -->
+    - [x] Implementar captura de protocolos de enrutamiento (OSPF, BGP, etc.) <!-- id: 147 -->
+    - [x] Corregir lógica de filtros para enlaces "Inciertos" y "Redundantes" <!-- id: 148 -->
+    - [x] Eliminar 100% de la lógica de IPs hardcodeadas en el motor de topología <!-- id: 149 -->
+    - [x] Actualizar vista de dispositivos con nuevos metadatos de metodología <!-- id: 150 -->
+- [x] Sincronizar documentación global y validación final <!-- id: 151 -->

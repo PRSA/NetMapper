@@ -249,6 +249,24 @@ Se ha resuelto el problema de los endpoints que aparecían duplicados o conectad
 - **Dataset**: `network_map_Gondomar.json` (12 switches, topología compleja).
 - **Resultado**: Reducción de 37 endpoints multi-homed a **0** (verificado con `TestEndpointArbitration.java`).
 
+### 3.35 Cumplimiento de Metodología (11 Fases) [NUEVO]
+
+Se ha completado la integración de todos los datos requeridos por la metodología de 11 fases:
+
+- **Fase 5 (STP)**: Captura completa de **Roles STP** (Root, Designated, Alternate) visible en el árbol de interfaces.
+- **Fase 6 (Validación Física)**: Recolección de **Contadores de Errores e In/Out Discards** para detección temprana de fallos físicos.
+- **Fase 8 (Enlaces Lógicos)**: Identificación del **Protocolo de Enrutamiento** (OSPF, BGP, RIP, etc.) en la tabla de rutas.
+- **Fase 11 (Poda)**:
+    - **Agnosticismo de IP**: Eliminación de toda lógica dependiente de direcciones IP fijas.
+    - **Filtros UI Corregidos**: Los enlaces redundantes detectados por el *Triangle Filter* ahora se visualizan correctamente al activar el filtro "Enlace físico redundante".
+    - **Etiquetado de Roles**: Todos los enlaces podados reciben automáticamente el rol `redundant` y una confianza de `0.3`.
+
+**Verificación**:
+1. Ejecutar un escaneo completo.
+2. Abrir la pestaña **Dispositivos** y verificar el campo "STP Role" y los contadores en las interfaces.
+3. Verificar los nombres de los protocolos en la tabla de rutas.
+4. En la pestaña **Mapa**, validar que al marcar "Filtros -> Enlace físico redundante" aparezcan los enlaces simplificados.
+
 ### 3.33 Motor de Topología Avanzada [NUEVO]
 
 Se ha implementado el soporte completo para descubrimiento mediante protocolos de capa 2 y validación física estricta.

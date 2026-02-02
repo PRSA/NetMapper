@@ -9,6 +9,10 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Detección de Fabricante/Modelo**: Identificación automática de marca y modelo del dispositivo
 - **Soporte de VLANs**: Detecta VLANs configuradas mediante Q-BRIDGE-MIB y fallback para sistemas Linux (detección por nomenclatura de interfaces)
 - **Mapeo de Puertos**: Identifica qué dispositivos están conectados a cada puerto mediante la tabla de direcciones MAC (BRIDGE-MIB)
+- **Metodología de 11 Fases (100% Cumplimiento)**:
+    - **Fase 5 (STP)**: Captura de Estados y Roles (Root, Designated, Alternate).
+    - **Fase 6 (Validación Física)**: Monitorización de errores de interfaz e In/Out Discards.
+    - **Fase 8 (Protocolos)**: Identificación de protocolos de enrutamiento (OSPF, BGP, RIP, etc.).
 - **Detección Avanzada de Topología**: Infiere conexiones físicas utilizando:
     *   **LLDP (Direct Discovery)**: Descubrimiento directo de vecinos para máxima precisión.
     *   **Tablas MAC (FDB)**: Correlación heurística donde LLDP no está disponible, con validación estricta.

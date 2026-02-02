@@ -1,3 +1,0 @@
-Loading JSON from: network_map_CoCJ.json
-Successfully loaded 46 devices.
-Building NetworkGraph with redundancy filter...

@@ -49,6 +49,8 @@ public class NetworkMapPanel extends JPanel
     private Map<String, Boolean> nodeTypeFilters = new HashMap<>();
     private java.util.EnumMap<NetworkGraph.EdgeType, Boolean> edgeTypeFilters = new java.util.EnumMap<>(
             NetworkGraph.EdgeType.class);
+    private boolean showUncertainLinks = false;
+    private boolean showRedundantLinks = false;
     private JPopupMenu filterMenu;
     
     public NetworkMapPanel()
@@ -198,7 +200,7 @@ public class NetworkMapPanel extends JPanel
         if(edgeTypeFilters.isEmpty())
         {
             edgeTypeFilters.put(NetworkGraph.EdgeType.PHYSICAL, true);
-            edgeTypeFilters.put(NetworkGraph.EdgeType.LOGICAL, false);
+            edgeTypeFilters.put(NetworkGraph.EdgeType.LOGICAL_DIRECT, false);
         }
         if(nodeTypeFilters.isEmpty())
         {
@@ -209,8 +211,25 @@ public class NetworkMapPanel extends JPanel
         // Link Types Section
         filterMenu.add(new JLabel(" " + Messages.getString("filter.link_types")));
         addFilterItem(filterMenu, Messages.getString("filter.links_physical"), NetworkGraph.EdgeType.PHYSICAL);
-        addFilterItem(filterMenu, Messages.getString("filter.links_logical"), NetworkGraph.EdgeType.LOGICAL);
+        addFilterItem(filterMenu, Messages.getString("filter.links_logical"), NetworkGraph.EdgeType.LOGICAL_DIRECT);
         
+        JCheckBoxMenuItem uncertainItem = new JCheckBoxMenuItem(Messages.getString("filter.links_uncertain"));
+        uncertainItem.setSelected(showUncertainLinks);
+        uncertainItem.addActionListener(e ->
+        {
+            showUncertainLinks = uncertainItem.isSelected();
+            graphPanel.repaint();
+        });
+        filterMenu.add(uncertainItem);
+        
+        JCheckBoxMenuItem redundantItem = new JCheckBoxMenuItem(Messages.getString("filter.links_redundant"));
+        redundantItem.setSelected(showRedundantLinks);
+        redundantItem.addActionListener(e ->
+        {
+            showRedundantLinks = redundantItem.isSelected();
+            graphPanel.repaint();
+        });
+        filterMenu.add(redundantItem);
         filterMenu.addSeparator();
         
         // Node Types Section
@@ -287,7 +306,25 @@ public class NetworkMapPanel extends JPanel
     
     private java.util.function.Predicate<NetworkGraph.GraphEdge> getEdgeFilter()
     {
-        return edge -> edgeTypeFilters.getOrDefault(edge.getType(), edge.getType() == NetworkGraph.EdgeType.PHYSICAL);
+        return edge ->
+        {
+            // Basic type filter
+            if(!edgeTypeFilters.getOrDefault(edge.getType(), edge.getType() == NetworkGraph.EdgeType.PHYSICAL))
+                return false;
+            
+            // Redundant Link Logic
+            boolean isRedundant = "redundant".equalsIgnoreCase(edge.getRole());
+            if(isRedundant)
+                return showRedundantLinks;
+            
+            // Uncertain Link Logic
+            boolean isUncertain = edge.getConfidence() < 1.0;
+            if(isUncertain)
+                return showUncertainLinks;
+            
+            // Normal visible link
+            return edge.isVisible();
+        };
     }
     
     private void exportToPNG()
@@ -702,7 +739,7 @@ public class NetworkMapPanel extends JPanel
         g2.setFont(new Font("Arial", Font.PLAIN, 9));
         for(NetworkGraph.GraphEdge edge : graph.getEdges())
         {
-            // Apply edge type filter
+            // Apply custom edge filter
             if(!edgeFilter.test(edge))
                 continue;
             
@@ -713,19 +750,31 @@ public class NetworkMapPanel extends JPanel
                 NetworkGraph.GraphNode target = findNodeInList(graph.getNodes(), edge.getTargetId());
                 if(source != null && target != null)
                 {
-                    if(edge.getType() == NetworkGraph.EdgeType.LOGICAL)
+                    if("redundant".equals(edge.getRole()))
                     {
-                        // Draw logical links as dashed lines or different color?
-                        float[] dash =
-                        {5, 5};
-                        g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dash, 0));
+                        g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, new float[]
+                        {5, 5}, 0));
+                        g2.setColor(new Color(180, 180, 180, 120)); // Subtle grey
+                    }
+                    else if(edge.getConfidence() < 0.6)
+                    {
+                        g2.setStroke(new BasicStroke(1));
+                        g2.setColor(Color.ORANGE);
+                    }
+                    else if(edge.getType() == NetworkGraph.EdgeType.LOGICAL_DIRECT)
+                    {
+                        g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, new float[]
+                        {2, 2}, 0));
+                        g2.setColor(Color.BLUE);
                     }
                     else
                     {
                         g2.setStroke(new BasicStroke(2));
+                        g2.setColor(new Color(0, 150, 0)); // Physical green
                     }
                     
                     g2.drawLine((int) source.getX(), (int) source.getY(), (int) target.getX(), (int) target.getY());
+                    g2.setStroke(new BasicStroke(1)); // Reset
                     
                     if(edge.getLabel() != null && !edge.getLabel().isEmpty())
                     {

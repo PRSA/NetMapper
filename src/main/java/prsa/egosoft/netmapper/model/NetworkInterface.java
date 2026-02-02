@@ -19,11 +19,20 @@ public class NetworkInterface
     private String type;
     private String duplexMode; // Full, Half, Unknown
     private String stpState; // Forwarding, Blocking, etc.
+    private String stpRole; // Designated, Root, Alternate, etc.
     private String neighborInfo; // Descriptions of connected neighbors (LLDP/CDP)
+    private boolean physicalValid; // Phase 6: physical_valid
+    private String mismatchReason; // speed_mismatch, duplex_mismatch, mtu_mismatch, none
+    private long inErrors; // ifInErrors
+    private long outErrors; // ifOutErrors
+    private long inDiscards; // ifInDiscards
+    private long outDiscards; // ifOutDiscards
     
     public NetworkInterface()
     {
         this.taggedVlans = new java.util.ArrayList<>();
+        this.physicalValid = true;
+        this.mismatchReason = "none";
     }
     
     public NetworkInterface(int index, String description)
@@ -184,6 +193,76 @@ public class NetworkInterface
     public void setNeighborInfo(String neighborInfo)
     {
         this.neighborInfo = neighborInfo;
+    }
+    
+    public String getStpRole()
+    {
+        return stpRole;
+    }
+    
+    public void setStpRole(String stpRole)
+    {
+        this.stpRole = stpRole;
+    }
+    
+    public boolean isPhysicalValid()
+    {
+        return physicalValid;
+    }
+    
+    public void setPhysicalValid(boolean physicalValid)
+    {
+        this.physicalValid = physicalValid;
+    }
+    
+    public String getMismatchReason()
+    {
+        return mismatchReason;
+    }
+    
+    public void setMismatchReason(String mismatchReason)
+    {
+        this.mismatchReason = mismatchReason;
+    }
+    
+    public long getInErrors()
+    {
+        return inErrors;
+    }
+    
+    public void setInErrors(long inErrors)
+    {
+        this.inErrors = inErrors;
+    }
+    
+    public long getOutErrors()
+    {
+        return outErrors;
+    }
+    
+    public void setOutErrors(long outErrors)
+    {
+        this.outErrors = outErrors;
+    }
+    
+    public long getInDiscards()
+    {
+        return inDiscards;
+    }
+    
+    public void setInDiscards(long inDiscards)
+    {
+        this.inDiscards = inDiscards;
+    }
+    
+    public long getOutDiscards()
+    {
+        return outDiscards;
+    }
+    
+    public void setOutDiscards(long outDiscards)
+    {
+        this.outDiscards = outDiscards;
     }
     
     @Override

@@ -1,6 +1,0 @@
-import json
-
-# This would ideally be a Java check, but I can simulate it by looking for commonalities.
-# Actually, I'll just look at the JSON and the code logic.
-
-# But wait, I can run the StandaloneVerifier and capture its full output of links!

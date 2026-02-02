@@ -37,15 +37,16 @@ public class StandardMibStrategy implements DiscoveryStrategy
     private static final String OID_IF_PHYS_ADDRESS = "1.3.6.1.2.1.2.2.1.6";
     private static final String OID_IF_ADMIN_STATUS = "1.3.6.1.2.1.2.2.1.7";
     private static final String OID_IF_OPER_STATUS = "1.3.6.1.2.1.2.2.1.8";
+    private static final String OID_IF_IN_ERRORS = "1.3.6.1.2.1.2.2.1.14";
+    private static final String OID_IF_OUT_ERRORS = "1.3.6.1.2.1.2.2.1.20";
     
     // OIDs IP Address Table
-    private static final String OID_IP_AD_ENT_ADDR = "1.3.6.1.2.1.4.20.1.1";
     private static final String OID_IP_AD_ENT_IF_INDEX = "1.3.6.1.2.1.4.20.1.2";
     private static final String OID_IP_AD_ENT_NET_MASK = "1.3.6.1.2.1.4.20.1.3";
     
     // OID Routing Table (ipRouteDest, ipRouteNextHop, ipRouteMask)
-    private static final String OID_IP_ROUTE_DEST = "1.3.6.1.2.1.4.21.1.1";
     private static final String OID_IP_ROUTE_NEXT_HOP = "1.3.6.1.2.1.4.21.1.7";
+    private static final String OID_IP_ROUTE_PROTO = "1.3.6.1.2.1.4.21.1.9";
     
     @Override
     public boolean isApplicable(String sysDescr, String sysObjectId)
@@ -66,6 +67,8 @@ public class StandardMibStrategy implements DiscoveryStrategy
         {
             return; // Early departure: Device is not responding to SNMP
         }
+        device.addDiscoverySource("SNMP");
+        device.setConfidence(1.0); // Base confidence for responding SNMP device
         device.setSysDescr(sysDescr);
         device.setSysName(snmp.get(ip, OID_SYS_NAME));
         device.setSysLocation(snmp.get(ip, OID_SYS_LOCATION));
@@ -102,6 +105,8 @@ public class StandardMibStrategy implements DiscoveryStrategy
         Map<String, String> ifPhysAddr = snmp.walk(ip, OID_IF_PHYS_ADDRESS);
         Map<String, String> ifAdminStatus = snmp.walk(ip, OID_IF_ADMIN_STATUS);
         Map<String, String> ifOperStatus = snmp.walk(ip, OID_IF_OPER_STATUS);
+        Map<String, String> ifInErr = snmp.walk(ip, OID_IF_IN_ERRORS);
+        Map<String, String> ifOutErr = snmp.walk(ip, OID_IF_OUT_ERRORS);
         
         // 3. IP Address Mapping to Interface Index
         Map<String, String> ipIfIndex = snmp.walk(ip, OID_IP_AD_ENT_IF_INDEX);
@@ -189,6 +194,13 @@ public class StandardMibStrategy implements DiscoveryStrategy
                 netIf.setAdminStatus(mapStatus(ifAdminStatus.get(OID_IF_ADMIN_STATUS + "." + index)));
                 netIf.setOperStatus(mapStatus(ifOperStatus.get(OID_IF_OPER_STATUS + "." + index)));
                 
+                String inErrStr = ifInErr.get(OID_IF_IN_ERRORS + "." + index);
+                if(inErrStr != null)
+                    netIf.setInErrors(Long.parseLong(inErrStr));
+                String outErrStr = ifOutErr.get(OID_IF_OUT_ERRORS + "." + index);
+                if(outErrStr != null)
+                    netIf.setOutErrors(Long.parseLong(outErrStr));
+                
                 // Buscar IP asociada a esta interfaz
                 for(Map.Entry<String, String> ipEntry : ipIfIndex.entrySet())
                 {
@@ -210,15 +222,22 @@ public class StandardMibStrategy implements DiscoveryStrategy
             }
         }
         
-        // 4. Tabla de Rutas (Básico)
-        Map<String, String> routes = snmp.walk(ip, OID_IP_ROUTE_NEXT_HOP);
-        for(Map.Entry<String, String> route : routes.entrySet())
+        // 4. Routing Table (ipRouteTable)
+        Map<String, String> routeNextHops = snmp.walk(ip, OID_IP_ROUTE_NEXT_HOP);
+        Map<String, String> routeProtos = snmp.walk(ip, OID_IP_ROUTE_PROTO);
+        for(Map.Entry<String, String> routeEntry : routeNextHops.entrySet())
         {
             try
             {
-                String destIp = route.getKey().substring(OID_IP_ROUTE_NEXT_HOP.length() + 1);
-                String nextHop = route.getValue();
-                device.getRoutingTable().put(destIp, nextHop);
+                String destPrefix = routeEntry.getKey().substring(OID_IP_ROUTE_NEXT_HOP.length() + 1);
+                device.getRoutingTable().put(destPrefix, routeEntry.getValue());
+                
+                // Map Protocol
+                String protoVal = routeProtos.get(OID_IP_ROUTE_PROTO + "." + destPrefix);
+                if(protoVal != null)
+                {
+                    device.getRouteProtocols().put(destPrefix, mapRouteProto(Integer.parseInt(protoVal)));
+                }
             }
             catch(Exception e)
             {
@@ -270,10 +289,24 @@ public class StandardMibStrategy implements DiscoveryStrategy
         try
         {
             fetchLldpTable(snmp, ip, device);
+            if(!device.getLldpNeighbors().isEmpty())
+            {
+                device.addDiscoverySource("LLDP");
+            }
         }
         catch(Exception e)
         {
             System.err.println("Error fetching LLDP Table: " + e.getMessage());
+        }
+        
+        // 8b. CDP Neighbors (cdpCacheTable)
+        try
+        {
+            fetchCdpTable(snmp, ip, device);
+        }
+        catch(Exception e)
+        {
+            System.err.println("Error fetching CDP Table: " + e.getMessage());
         }
         
         // 9. STP Status (dot1dStpPortTable)
@@ -294,6 +327,59 @@ public class StandardMibStrategy implements DiscoveryStrategy
         catch(Exception e)
         {
             System.err.println("Error fetching Duplex Status: " + e.getMessage());
+        }
+        
+        // 11. Layer Detection (Phase 10)
+        detectLayer(device);
+    }
+    
+    private void fetchCdpTable(SnmpClient snmp, String ip, NetworkDevice device)
+    {
+        // cdpCacheDeviceId: 1.3.6.1.4.1.9.9.23.1.2.1.1.6
+        String oidCdpDeviceId = "1.3.6.1.4.1.9.9.23.1.2.1.1.6";
+        // cdpCacheDevicePort: 1.3.6.1.4.1.9.9.23.1.2.1.1.7
+        String oidCdpDevicePort = "1.3.6.1.4.1.9.9.23.1.2.1.1.7";
+        
+        Map<String, String> deviceIds = snmp.walk(ip, oidCdpDeviceId);
+        Map<String, String> devicePorts = snmp.walk(ip, oidCdpDevicePort);
+        
+        if(!deviceIds.isEmpty())
+        {
+            device.addDiscoverySource("CDP");
+        }
+        
+        for(Map.Entry<String, String> entry : deviceIds.entrySet())
+        {
+            try
+            {
+                String oidSuffix = entry.getKey().substring(oidCdpDeviceId.length() + 1);
+                // Suffix is usually <ifIndex>.<cacheIndex>
+                String[] parts = oidSuffix.split("\\.");
+                if(parts.length < 2)
+                    continue;
+                int ifIndex = Integer.parseInt(parts[0]);
+                
+                String neighborName = entry.getValue();
+                String remotePort = devicePorts.get(oidCdpDevicePort + "." + oidSuffix);
+                
+                String info = neighborName + (remotePort != null ? " on " + remotePort : "") + " (CDP)";
+                
+                // Reuse LLDP neighbors map for graph building (Unified Direct Discovery)
+                device.getLldpNeighbors().put(ifIndex, info);
+                
+                for(NetworkInterface ni : device.getInterfaces())
+                {
+                    if(ni.getIndex() == ifIndex)
+                    {
+                        ni.setNeighborInfo(info);
+                        break;
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                // Skip
+            }
         }
     }
     
@@ -369,7 +455,11 @@ public class StandardMibStrategy implements DiscoveryStrategy
     {
         // dot1dStpPortState: 1.3.6.1.2.1.17.2.15.1.3
         String oidStpState = "1.3.6.1.2.1.17.2.15.1.3";
+        // dot1dStpPortRole (Rapid STP): 1.3.6.1.2.1.17.2.15.1.4
+        String oidStpRole = "1.3.6.1.2.1.17.2.15.1.4";
+        
         Map<String, String> states = snmp.walk(ip, oidStpState);
+        Map<String, String> roles = snmp.walk(ip, oidStpRole);
         
         // Map Bridge Port -> IfIndex
         Map<Integer, Integer> bridgeMap = getBridgePortToIfIndexMap(snmp, ip);
@@ -394,6 +484,11 @@ public class StandardMibStrategy implements DiscoveryStrategy
                         if(ni.getIndex() == ifIndex)
                         {
                             ni.setStpState(stateStr);
+                            String roleValStr = roles.get(oidStpRole + "." + bridgePort);
+                            if(roleValStr != null)
+                            {
+                                ni.setStpRole(mapStpRole(Integer.parseInt(roleValStr)));
+                            }
                             break;
                         }
                     }
@@ -403,6 +498,25 @@ public class StandardMibStrategy implements DiscoveryStrategy
             {
                 // Ignore
             }
+        }
+    }
+    
+    private String mapStpRole(int role)
+    {
+        switch(role)
+        {
+            case 1:
+                return "disabled";
+            case 2:
+                return "root";
+            case 3:
+                return "designated";
+            case 4:
+                return "alternate";
+            case 5:
+                return "backup";
+            default:
+                return "unknown(" + role + ")";
         }
     }
     
@@ -1153,5 +1267,87 @@ public class StandardMibStrategy implements DiscoveryStrategy
         }
         
         return String.join(", ", services);
+    }
+    
+    private void detectLayer(NetworkDevice device)
+    {
+        String type = device.getDeviceType() != null ? device.getDeviceType().toLowerCase() : "";
+        String descr = device.getSysDescr() != null ? device.getSysDescr().toLowerCase() : "";
+        String name = device.getSysName() != null ? device.getSysName().toLowerCase() : "";
+        
+        if(type.contains("firewall") || descr.contains("firewall") || descr.contains("asa ") || name.contains("fw-"))
+        {
+            device.setLayer("edge");
+            return;
+        }
+        
+        if(type.contains("switch") || type.contains("router"))
+        {
+            // Improved heuristic: count interfaces that look like physical ports (Ethernet)
+            long physicalPorts = device.getInterfaces().stream()
+                    .filter(ni -> ni.getDescription() != null && (ni.getDescription().toLowerCase().contains("ethernet")
+                            || ni.getDescription().toLowerCase().contains("gi")
+                            || ni.getDescription().toLowerCase().contains("fa")
+                            || ni.getDescription().toLowerCase().contains("te")))
+                    .count();
+            
+            if(name.contains("core") || descr.contains("core") || physicalPorts > 100)
+            {
+                device.setLayer("core");
+            }
+            else if(name.contains("dist") || name.contains("vss") || physicalPorts > 48)
+            {
+                device.setLayer("distribution");
+            }
+            else
+            {
+                device.setLayer("access");
+            }
+        }
+        else if(type.contains("server") || type.contains("storage") || type.contains("msa") || descr.contains("esxi"))
+        {
+            device.setLayer("edge"); // Critical infrastructure at the edge
+        }
+        else
+        {
+            device.setLayer("endpoint");
+        }
+    }
+    
+    private String mapRouteProto(int proto)
+    {
+        switch(proto)
+        {
+            case 1:
+                return "other";
+            case 2:
+                return "local";
+            case 3:
+                return "netmgmt";
+            case 4:
+                return "icmp";
+            case 5:
+                return "egp";
+            case 6:
+                return "ggp";
+            case 7:
+                return "hello";
+            case 8:
+                return "rip";
+            case 9:
+                return "is-is";
+            case 10:
+                return "es-is";
+            case 11:
+                return "ciscoIgrp";
+            case 12:
+                return "bbnSpfIgp";
+            case 13:
+                return "ospf";
+            case 14:
+                return "bgp";
+            default:
+                return "unknown(" + proto + ")";
+        }
     }
 }
