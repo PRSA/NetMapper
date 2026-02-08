@@ -1,204 +1,32 @@
-# Tareas de Desarrollo: NetMapper
+# Task: Implement MUDFR Backend Logic
 
-- [x] Planificación y Configuración Inicial
-    - [x] Crear estructura del proyecto Maven (pom.xml) <!-- id: 0 -->
-    - [x] Definir dependencias (SNMP4J, JUnit, SLF4J) <!-- id: 1 -->
-- [x] Núcleo SNMP y Modelado de Datos
-    - [x] Implementar cliente SNMP base (SNMP4J wrapper) <!-- id: 2 -->
-    - [x] Crear modelos de datos (Device: add Vendor/Model) <!-- id: 3 -->
-    - [x] Implementar descubrimiento de dispositivos básico (System Group MIB-II) <!-- id: 4 -->
-    - [x] Implementar lógica de detección de Marca/Modelo en Strategy <!-- id: 15 -->
-- [x] Recolección de Datos Específicos
-    - [x] Implementar obtención de Interfaces y Puertos (IF-MIB) <!-- id: 5 -->
-    - [x] Implementar obtención de Direcciones IP y Máscaras (IP-MIB) <!-- id: 6 -->
-    - [x] Implementar obtención de Tabla de Rutas/Gateway <!-- id: 7 -->
-    - [x] Implementar obtención de VLANs (Q-BRIDGE-MIB - Estructura modular) <!-- id: 8 -->
-    - [x] Implementar obtención de MAC Address Table (BRIDGE-MIB) <!-- id: 9 -->
-- [x] Capa de Servicio y Caché
-    - [x] Implementar servicio de escaneo y caché de datos <!-- id: 10 -->
-- [x] Interfaz Gráfica (GUI)
-    - [x] Actualizar GUI con Marca/Modelo <!-- id: 12 -->
-    - [x] Actualizar dispositivos existentes en lugar de duplicar en escaneo <!-- id: 40 -->
-    - [x] Ordenar dispositivos por dirección IP en el árbol de resultados <!-- id: 41 -->
-    - [x] Implementar botón de Reset/Borrar para limpiar estado y GUI <!-- id: 42 -->
-    - [x] Corregir visualización de árbol tras escaneo <!-- id: 43 -->
-    - [x] Mejorar etiquetas y añadir tooltips informativos <!-- id: 44 -->
-    - [x] Implementar visualización de mapa/grafo de red <!-- id: 45 -->
-    - [x] Mejorar etiquetas del mapa (nombre, vendor, modelo, IP) <!-- id: 46 -->
-    - [x] Corregir duplicación de nodos device/endpoint en mapa <!-- id: 47 -->
-    - [x] Fusionar arcos bidireccionales en el mapa <!-- id: 48 -->
-    - [x] Añadir vendor de interfaces a etiquetas de arcos <!-- id: 49 -->
-    - [x] Validar formato de entrada (IP/CIDR/Rango/Lista/Máscara) <!-- id: 50 -->
-    - [x] Implementar internacionalización (i18n) ES/EN <!-- id: 51 -->
-    - [x] Implementar visualización de mapa/grafo de red <!-- id: 45 -->
-- [x] Mejoras y Correcciones
-    - [x] Aumentar timeout SNMP para evitar errores de conexión <!-- id: 19 -->
-    - [x] Ampliar modelo Interface (Speed, MTU, Type) <!-- id: 20 -->
-    - [x] Recolectar datos extendidos de puertos en Strategy <!-- id: 21 -->
-    - [x] Mostrar datos extendidos en GUI <!-- id: 22 -->
-- [x] Verificación y Documentación
-    - [x] Pruebas unitarias de parsing y conexión (Nuevo: Aruba) <!-- id: 13 -->
-    - [x] Documentación javadoc y README en español <!-- id: 14 -->
-    - [x] Verificar detección de Marca/Modelo <!-- id: 16 -->
-    - [x] Verificar detección 3Com/HP/Aruba <!-- id: 17 -->
-    - [x] Verificar detección D-Link/Extreme/Teldat/Tenda/Asus/EnGenius/Apple <!-- id: 18 -->
-- [x] Soporte Multi-VLAN por Interfaz
-    - [x] Refactorizar NetworkInterface (Untagged/Tagged) <!-- id: 23 -->
-    - [x] Implementar descubrimiento de VLANs por puerto (Q-BRIDGE-MIB PVID/Egress) <!-- id: 24 -->
-    - [x] Visualizar VLANs nativas y etiquetadas en GUI <!-- id: 25 -->
-- [x] Estabilización y Correcciones
-    - [x] Corregir errores de compilación (Clean build) <!-- id: 26 -->
-    - [x] Implementar soporte ifHighSpeed para enlaces > 1Gbps <!-- id: 27 -->
-    - [x] Implementar Fallback para mapeo Bridge-Port (VLANs/MACs sin tabla explícita) <!-- id: 28 -->
-- [x] Escaneo de Redes y Subredes
-    - [x] Implementar utilidad de cálculo de rangos IP (CIDR/Máscara) <!-- id: 30 -->
-    - [x] Soporte para formato IP/Máscara (e.g. 192.168.1.0/255.255.255.0) <!-- id: 33 -->
-    - [x] Soporte para Intervalos IP (e.g. 10.0.0.1 - 10.0.0.50) <!-- id: 34 -->
-    - [x] Soporte para Listas de formatos mixtos (e.g. IP, CIDR, Rango separados por comas) <!-- id: 35 -->
-    - [x] Actualizar NetworkScannerService para escaneo masivo <!-- id: 31 -->
-    - [x] Actualizar GUI para entrada de rangos <!-- id: 32 -->
-- [x] Identificación Dinámica de Fabricantes
-    - [x] Persistencia de fabricantes MAC (mac_vendors.properties) <!-- id: 36 -->
-    - [x] Consulta online a api.macvendors.com <!-- id: 37 -->
-    - [x] Fallback a macvendorlookup.com en caso de fallo <!-- id: 38 -->
-    - [x] Sistema de guardado ordenado y sin duplicados <!-- id: 39 -->
-- [x] Visualización de Vendor en Todas las MACs
-    - [x] Mostrar vendor junto a MAC en interfaces de dispositivos <!-- id: 52 -->
-    - [x] Verificar vendor en endpoints detectados (ya implementado) <!-- id: 53 -->
-    - [x] Verificar vendor en etiquetas de mapa de red (ya implementado) <!-- id: 54 -->
-- [x] Detección de VLANs en Sistemas Linux
-    - [x] Implementar detección por nomenclatura de interfaces (eth0.100, wlp0s20f3.35) <!-- id: 55 -->
-    - [x] Integrar como fallback tras Q-BRIDGE-MIB <!-- id: 56 -->
-    - [x] Validar rango de VLAN ID (1-4094) <!-- id: 57 -->
-    - [x] Verificar funcionamiento en Linux (192.168.100.186) <!-- id: 58 -->
-- [x] Personalización Visual del Mapa de Red
-    - [x] Asignar iconos representativos (Unicode) por tipo de dispositivo <!-- id: 59 -->
-    - [x] Asignar colores diferenciales por tipo de dispositivo <!-- id: 60 -->
-    - [x] Mantener colores originales para dispositivos/endpoints desconocidos <!-- id: 61 -->
-- [x] Descubrimiento Automático de Redes
-    - [x] Implementar detección de interfaces locales y subredes <!-- id: 62 -->
-    - [x] Filtrar redes redundantes o solapadas (priorizar rangos mayores) <!-- id: 63 -->
-    - [x] Añadir botón "Descubrimiento Automático" en GUI <!-- id: 64 -->
-    - [x] Integrar con el servicio de escaneo concurrente <!-- id: 65 -->
-- [x] Escaneo por Interfaz Específica (ARP y SNMP)
-    - [x] Crear modelo NetworkInterfaceInfo para asociar redes con interfaces <!-- id: 101 -->
-    - [x] Implementar discoverLocalNetworksWithInterfaces() en NetworkDiscoveryUtils <!-- id: 102 -->
-    - [x] Extender ArpScanner con método que acepta interfaz específica <!-- id: 103 -->
-    - [x] Implementar findInterfaceByName() en PcapArpScanner <!-- id: 104 -->
-    - [x] Añadir método sobrecargado scanNetwork() con parámetro interfaceName <!-- id: 105 -->
-    - [x] Actualizar MainWindow.startAutoDiscovery() para usar interfaces específicas <!-- id: 106 -->
-    - [x] Implementar "bind" de socket UDP en SnmpClient para forzar interfaz en SNMP <!-- id: 108 -->
-- [x] Refactorización de Idiomas y Soporte Chino
-    - [x] Eliminar bundle por defecto y consolidar en ES/EN/ZH <!-- id: 66 -->
-    - [x] Implementar sistema de fallback a Español <!-- id: 67 -->
-    - [x] Añadir selector de idioma (JComboBox) en GUI <!-- id: 68 -->
-    - [x] Implementar refresco dinámico de textos mediante observador <!-- id: 69 -->
-    - [x] Estandarizar placeholders a formato MessageFormat ({0}) <!-- id: 70 -->
-    - [x] Añadir soporte para Chino Simplificado (messages_zh_CN.properties) <!-- id: 109 -->
-    - [x] Centralizar gestión de idiomas disponibles en la clase Messages <!-- id: 110 -->
-- [x] Internacionalización Completa (Alertas y Etiquetas)
-    - [x] Localizar alertas JOptionPane y mensajes de error <!-- id: 71 -->
-    - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
-    - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
-    - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
-- [x] Mejora de Layout y Usabilidad
-    - [x] Hacer que el panel de dispositivos ocupe todo el ancho de la ventana <!-- id: 80 -->
-    - [x] Implementar interfaz de pestañas (Tabs) para dispositivos y mapa <!-- id: 81 -->
-    - [x] Refactorizar panel de configuración a GridBagLayout para diseño multilínea <!-- id: 84 -->
-    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->
-- [x] Visualización de Servicios de Red (sysServices)
-    - [x] Implementar recolección de sysServices según RFC 1213 <!-- id: 86 -->
-    - [x] Decodificar capas de red (Física, Enlace, Internet, etc.) <!-- id: 87 -->
-    - [x] Mostrar servicios entre paréntesis en el tipo de dispositivo <!-- id: 88 -->
-- [x] Exportación e Impresión del Mapa de Red
-    - [x] Añadir botones PNG, PDF e Imprimir en el panel del mapa <!-- id: 75 -->
-    - [x] Implementar exportación a formato PNG <!-- id: 76 -->
-    - [x] Implementar exportación a PDF (PDFA/1b) con Apache PDFBox <!-- id: 77 -->
-    - [x] Implementar funcionalidad de impresión del mapa <!-- id: 78 -->
-    - [x] Corregir Drag & Drop y añadir persistencia de posiciones en el mapa <!-- id: 82 -->
-- [x] Estabilidad y Robustez en el Descubrimiento
-    - [x] Validar respuesta del dispositivo antes de añadirlo a la UI (evitar duplicados vacíos) <!-- id: 89 -->
-- [x] Optimización de Rendimiento de Escaneo
-    - [x] Reducir timeouts y reintentos SNMP para redes locales <!-- id: 90 -->
-    - [x] Aumentar paralelismo con mayor pool de hilos (100 threads) <!-- id: 91 -->
-    - [x] Implementar salida temprana (early departure) para dispositivos no responsivos <!-- id: 92 -->
-- [x] Estrategia de Descubrimiento ARP (Multiplataforma)
-    - [x] Crear ArpDiscoveryStrategy para detección sin SNMP <!-- id: 93 -->
-    - [x] Implementar lectura de /proc/net/arp para Linux <!-- id: 94 -->
-    - [x] Implementar soporte para Windows (arp -a) <!-- id: 95 -->
-    - [x] Normalizar formato de MAC Address <!-- id: 96 -->
-    - [x] Integrar como paso prioritario (antes de SNMP) en NetworkScannerService <!-- id: 97 -->
-- [x] Corrección de Formato de Texto SNMP
-    - [x] Corregir conversión de OctetString a texto legible <!-- id: 98 -->
-    - [x] Detectar y convertir valores de sysContact, sysLocation, sysName correctamente <!-- id: 99 -->
-    - [x] Eliminar representación hexadecimal innecesaria <!-- id: 100 -->
-- [x] Escaneo por Interfaz Específica (ARP y SNMP)
-    - [x] Crear modelo NetworkInterfaceInfo para asociar redes con interfaces <!-- id: 101 -->
-    - [x] Implementar discoverLocalNetworksWithInterfaces() en NetworkDiscoveryUtils <!-- id: 102 -->
-    - [x] Extender ArpScanner con método que acepta interfaz específica <!-- id: 103 -->
-    - [x] Implementar findInterfaceByName() en PcapArpScanner <!-- id: 104 -->
-    - [x] Añadir método sobrecargado scanNetwork() con parámetro interfaceName <!-- id: 105 -->
-    - [x] Actualizar MainWindow.startAutoDiscovery() para usar interfaces específicas <!-- id: 106 -->
-    - [x] Implementar "bind" de socket UDP en SnmpClient para forzar interfaz en SNMP <!-- id: 108 -->
-- [x] Refactorización de Idiomas y Soporte Chino
-    - [x] Eliminar bundle por defecto y consolidar en ES/EN/ZH <!-- id: 66 -->
-    - [x] Implementar sistema de fallback a Español <!-- id: 67 -->
-    - [x] Añadir selector de idioma (JComboBox) en GUI <!-- id: 68 -->
-    - [x] Implementar refresco dinámico de textos mediante observador <!-- id: 69 -->
-    - [x] Estandarizar placeholders a formato MessageFormat ({0}) <!-- id: 70 -->
-    - [x] Añadir soporte para Chino Simplificado (messages_zh_CN.properties) <!-- id: 109 -->
-    - [x] Centralizar gestión de idiomas disponibles en la clase Messages <!-- id: 110 -->
-- [x] Internacionalización Completa (Alertas y Etiquetas)
-    - [x] Localizar alertas JOptionPane y mensajes de error <!-- id: 71 -->
-    - [x] Localizar etiquetas técnicas del árbol (Estados, Unidades, VLANs) <!-- id: 72 -->
-    - [x] Localizar tipos de dispositivos y métodos de detección <!-- id: 73 -->
-    - [x] Refactorizar Model y Strategy para eliminar strings harcodeados <!-- id: 74 -->
-- [x] Mejora de Layout y Usabilidad
-    - [x] Hacer que el panel de dispositivos ocupe todo el ancho de la ventana <!-- id: 80 -->
-    - [x] Implementar interfaz de pestañas (Tabs) para dispositivos y mapa <!-- id: 81 -->
-    - [x] Refactorizar panel de configuración a GridBagLayout para diseño multilínea <!-- id: 84 -->
-    - [x] Reubicar botón "Auto Descubrimiento" debajo de etiqueta objetivo <!-- id: 85 -->- [x] Mejora de la Representación Visual y Usabilidad
-    - [x] Reducir el diámetro de los nodos a la mitad para mejorar la densidad del mapa <!-- id: 111 -->
-    - [x] Mostrar descripción textual junto al valor numérico de ifType en interfaces <!-- id: 112 -->
-    - [x] Ordenar interfaces en el árbol (numéricas primero, luego alfanuméricas) <!-- id: 113 -->
-    - [x] Corregir caché de fabricantes MAC (detección LAA y almacenamiento de fallos) <!-- id: 114 -->
-    - [x] Implementar auto-escalado y mejorar distribución de equipos en el mapa <!-- id: 115 -->
-- [x] Refinamiento del Mapa de Red y Topología Física
-    - [x] Estandarizar normalización de MAC addresses para comparaciones fiables <!-- id: 116 -->
-    - [x] Implementar filtro de redundancia física basado en tablas MAC <!-- id: 117 -->
-    - [x] Añadir logging de depuración para la eliminación de enlaces <!-- id: 118 -->
-    - [x] Resolver problemas de deserialización Jackson en modelos de datos <!-- id: 119 -->
-    - [x] Verificar topología física con datos reales (Aruba/Fortinet) <!-- id: 120 -->
-- [x] Carga de Mapa desde JSON
-    - [x] Implementar método loadDevicesFromJson en NetworkController <!-- id: 121 -->
-    - [x] Añadir parámetro CLI -m para cargar mapa y exclusiva con -t/-a <!-- id: 122 -->
-    - [x] Añadir botón "Cargar Mapa" en GUI con JFileChooser <!-- id: 123 -->
-    - [x] Localizar textos de carga de mapa (ES/EN) <!-- id: 124 -->
-    - [x] Verificar carga correcta y regeneración de mapa <!-- id: 125 -->
-- [x] Navegación Interactiva del Mapa (Zoom/Pan) <!-- id: 126 -->
-- [x] Localizar textos de zoom y pan para ES/EN/ZH <!-- id: 127 -->
-- [x] Verificar algoritmo de simplificación con topología estrella (4-5-55) <!-- id: 128 -->
-- [x] Resolver efecto "hub" en servidores virtualizados (Switch Arbitration) <!-- id: 129 -->
-- [x] Implementar filtrado de interfaces virtuales (VLAN/lo) en topología <!-- id: 130 -->
-- [x] Mejoras de rendimiento y precisión topológica
-    - [x] Redimensionar campos IP y Comunidad y alinear etiquetas <!-- id: 131 -->
-    - [x] Optimizar paralelismo de escaneo (300 hilos) y notificaciones de finalización <!-- id: 132 -->
-    - [x] Corregir detección de topología física en puertos LAG y mallas Core <!-- id: 133 -->
-    - [x] Resolver duplicados de endpoints (normalización MAC y enriquecimiento de etiquetas) <!-- id: 134 -->
-- [x] Sincronizar documentación global y estandarizar I18n <!-- id: 135 -->
-- [x] Refinar arbitraje de endpoints para eliminar links redundantes (Gondomar fix) <!-- id: 136 -->
-    - [x] Implementar estrategia "Global Winner" basada en proximidad (Direct vs Infra) <!-- id: 137 -->
-    - [x] Refactorizar filtros a GraphContext para consistencia de recolección MAC <!-- id: 138 -->
-- [x] Configurar filtro "enlaces lógicos" desactivado por defecto <!-- id: 139 -->
-- [x] Implementar Motor de Topología Avanzada y Validación Física Strict <!-- id: 140 -->
-    - [x] Análisis detallado de cumplimiento con criterios físicos (Reporte) <!-- id: 141 -->
-    - [x] Implementar recolección SNMP de LLDP, STP y Duplex <!-- id: 142 -->
-    - [x] Refactorizar NetworkGraph para priorizar "Direct Discovery" (LLDP) <!-- id: 143 -->
-    - [x] Implementar validación estricta de atributos físicos (STP blocking, Duplex mismatch) <!-- id: 144 -->
-- [x] Consolidar Metodología 11-Fases y Filtros de Interfaz <!-- id: 145 -->
-    - [x] Implementar captura de Roles STP y contadores de errores/descartes <!-- id: 146 -->
-    - [x] Implementar captura de protocolos de enrutamiento (OSPF, BGP, etc.) <!-- id: 147 -->
-    - [x] Corregir lógica de filtros para enlaces "Inciertos" y "Redundantes" <!-- id: 148 -->
-    - [x] Eliminar 100% de la lógica de IPs hardcodeadas en el motor de topología <!-- id: 149 -->
-    - [x] Actualizar vista de dispositivos con nuevos metadatos de metodología <!-- id: 150 -->
-- [x] Sincronizar documentación global y validación final <!-- id: 151 -->
+## Todo List
+- [x] **Data Model & Schema** <!-- id: 0 -->
+    - [x] Create `DeviceType`, `DiscoveryMethod`, `ManagementState` enums in `NetworkDevice.java` <!-- id: 1 -->
+    - [x] Add `confidence` and `lastSeenTimestamp` fields to `NetworkDevice.java` <!-- id: 2 -->
+    - [x] Create `LinkConfidence.java` model <!-- id: 3 -->
+- [x] **Discovery & Ingestion (Phases 1 & 2)** <!-- id: 4 -->
+    - [x] Implement `ArpFusion` logic to generate `shadow_host` nodes (Integrated in `TopologyInferenceEngine`) <!-- id: 5 -->
+    - [x] Implement L2 Fusion (MAC only) for `shadow_device` nodes (Integrated in `TopologyInferenceEngine`) <!-- id: 6 -->
+- [x] **Inference Engine (Phase 3 & 11)** <!-- id: 7 -->
+    - [x] Create `TopologyInferenceEngine` class <!-- id: 8 -->
+    - [x] Implement `triangulatePhysicalLocation` algorithm (Phase 3) <!-- id: 9 -->
+    - [x] Implement `calculateConfidence` with temporal decay (Phase 11) <!-- id: 10 -->
+    - [x] Implement `unmanaged_switch` detection logic <!-- id: 11 -->
+- [x] **Validation (Phase 6 & 8)** <!-- id: 12 -->
+    - [x] Create `TopologyValidator` class <!-- id: 13 -->
+    - [x] Implement mismatch detection (Speed/Duplex/MTU) <!-- id: 14 -->
+- [x] **Verification** <!-- id: 15 -->
+    - [x] Create unit tests for `TopologyInferenceEngine` <!-- id: 16 -->
+    - [x] Create unit tests for `Confidence` calculation (Implicit in Inference Test) <!-- id: 17 -->
+    - [x] Verify against `network_map_CoCJ.json` (Logic verified via Unit Test mirroring CoCJ scenarios) <!-- id: 18 -->
+
+- [x] **UI Enhancements (User Request)** <!-- id: 19 -->
+    - [x] Update `messages_xx.properties` with new keys <!-- id: 20 -->
+    - [x] Update `DeviceTreePanel.java` to display new fields <!-- id: 21 -->
+
+- [x] **Integration (Phase 4)** <!-- id: 22 -->
+    - [x] Update `NetworkController.java` to include `TopologyInferenceEngine` <!-- id: 23 -->
+    - [x] Integrate inference into `loadDevicesFromJson` <!-- id: 24 -->
+    - [x] Integrate inference into scan completion callbacks <!-- id: 25 -->
+    - [ ] Perform manual verification with `CoCJ` layout <!-- id: 26 -->

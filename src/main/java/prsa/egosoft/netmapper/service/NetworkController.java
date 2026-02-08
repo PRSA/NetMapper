@@ -3,6 +3,7 @@ package prsa.egosoft.netmapper.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import prsa.egosoft.netmapper.model.NetworkDevice;
+import prsa.egosoft.netmapper.core.TopologyInferenceEngine;
 import prsa.egosoft.netmapper.model.NetworkInterfaceInfo;
 import prsa.egosoft.netmapper.util.NetworkDiscoveryUtils;
 import prsa.egosoft.netmapper.util.SubnetUtils;
@@ -27,10 +28,12 @@ public class NetworkController {
     private static final Logger logger = LoggerFactory.getLogger(NetworkController.class);
     private final NetworkScannerService scannerService;
     private final Map<String, NetworkDevice> discoveredDevices;
+    private final TopologyInferenceEngine inferenceEngine;
 
     public NetworkController() {
         this.scannerService = new NetworkScannerService();
         this.discoveredDevices = new ConcurrentHashMap<>();
+        this.inferenceEngine = new TopologyInferenceEngine();
     }
 
     public Map<String, NetworkDevice> getDiscoveredDevices() {
@@ -55,7 +58,19 @@ public class NetworkController {
 
         discoveredDevices.clear();
         discoveredDevices.putAll(loadedMap);
-        logger.info("Loaded {} devices from {}", discoveredDevices.size(), jsonFile.getName());
+        processInference();
+        logger.info("Loaded {} devices (including shadow nodes) from {}", discoveredDevices.size(), jsonFile.getName());
+    }
+
+    /**
+     * Triggers the MUDFR inference engine to discover shadow nodes and build
+     * physical topology.
+     */
+    public void processInference() {
+        logger.info("Starting MUDFR topology inference...");
+        Map<String, NetworkDevice> inferredMap = inferenceEngine.inferShadowNodes(discoveredDevices);
+        discoveredDevices.putAll(inferredMap);
+        logger.info("Inference complete. Total devices tracked: {}", discoveredDevices.size());
     }
 
     /**
@@ -73,7 +88,12 @@ public class NetworkController {
             if (onSuccess != null) {
                 onSuccess.accept(device);
             }
-        }, onError, onComplete);
+        }, onError, () -> {
+            processInference();
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        });
     }
 
     /**
@@ -118,6 +138,7 @@ public class NetworkController {
             if (!latch.await(timeout, TimeUnit.SECONDS)) {
                 logger.warn("Scan timed out after {} seconds. Some devices might be missing.", timeout);
             }
+            processInference();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Scan interrupted", e);
