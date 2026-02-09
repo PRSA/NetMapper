@@ -3,8 +3,11 @@ package prsa.egosoft.netmapper.model;
 /**
  * Representa una interfaz de red de un dispositivo.
  */
-public class NetworkInterface
-{
+public class NetworkInterface {
+    public enum PortRole {
+        UPLINK, ACCESS, INTERCONNECT, VIRTUAL, UNKNOWN
+    }
+
     private int index;
     private String description; // ifDescr
     private String macAddress; // ifPhysAddress
@@ -27,247 +30,211 @@ public class NetworkInterface
     private long outErrors; // ifOutErrors
     private long inDiscards; // ifInDiscards
     private long outDiscards; // ifOutDiscards
-    
-    public NetworkInterface()
-    {
+
+    // GTR Attributes
+    private PortRole role;
+
+    public NetworkInterface() {
         this.taggedVlans = new java.util.ArrayList<>();
         this.physicalValid = true;
         this.mismatchReason = "none";
+        this.role = PortRole.UNKNOWN;
     }
-    
-    public NetworkInterface(int index, String description)
-    {
+
+    public NetworkInterface(int index, String description) {
         this();
         this.index = index;
         this.description = description;
     }
-    
-    public int getIndex()
-    {
+
+    public int getIndex() {
         return index;
     }
-    
-    public String getDescription()
-    {
+
+    public String getDescription() {
         return description;
     }
-    
-    public void setDescription(String description)
-    {
+
+    public void setDescription(String description) {
         this.description = description;
     }
-    
-    public String getMacAddress()
-    {
+
+    public String getMacAddress() {
         return macAddress;
     }
-    
-    public void setMacAddress(String macAddress)
-    {
+
+    public void setMacAddress(String macAddress) {
         this.macAddress = macAddress;
     }
-    
-    public String getAdminStatus()
-    {
+
+    public String getAdminStatus() {
         return adminStatus;
     }
-    
-    public void setAdminStatus(String adminStatus)
-    {
+
+    public void setAdminStatus(String adminStatus) {
         this.adminStatus = adminStatus;
     }
-    
-    public String getOperStatus()
-    {
+
+    public String getOperStatus() {
         return operStatus;
     }
-    
-    public void setOperStatus(String operStatus)
-    {
+
+    public void setOperStatus(String operStatus) {
         this.operStatus = operStatus;
     }
-    
-    public String getIpAddress()
-    {
+
+    public String getIpAddress() {
         return ipAddress;
     }
-    
-    public void setIpAddress(String ipAddress)
-    {
+
+    public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
-    
-    public String getSubnetMask()
-    {
+
+    public String getSubnetMask() {
         return subnetMask;
     }
-    
-    public void setSubnetMask(String subnetMask)
-    {
+
+    public void setSubnetMask(String subnetMask) {
         this.subnetMask = subnetMask;
     }
-    
-    public int getUntaggedVlanId()
-    {
+
+    public int getUntaggedVlanId() {
         return untaggedVlanId;
     }
-    
-    public void setUntaggedVlanId(int untaggedVlanId)
-    {
+
+    public void setUntaggedVlanId(int untaggedVlanId) {
         this.untaggedVlanId = untaggedVlanId;
     }
-    
-    public java.util.List<Integer> getTaggedVlans()
-    {
+
+    public java.util.List<Integer> getTaggedVlans() {
         return taggedVlans;
     }
-    
-    public void setTaggedVlans(java.util.List<Integer> taggedVlans)
-    {
+
+    public void setTaggedVlans(java.util.List<Integer> taggedVlans) {
         this.taggedVlans = taggedVlans;
     }
-    
-    public void addTaggedVlan(int vlanId)
-    {
-        if(!this.taggedVlans.contains(vlanId))
-        {
+
+    public void addTaggedVlan(int vlanId) {
+        if (!this.taggedVlans.contains(vlanId)) {
             this.taggedVlans.add(vlanId);
         }
     }
-    
-    public int getMtu()
-    {
+
+    public int getMtu() {
         return mtu;
     }
-    
-    public void setMtu(int mtu)
-    {
+
+    public void setMtu(int mtu) {
         this.mtu = mtu;
     }
-    
-    public String getSpeed()
-    {
+
+    public String getSpeed() {
         return speed;
     }
-    
-    public void setSpeed(String speed)
-    {
+
+    public void setSpeed(String speed) {
         this.speed = speed;
     }
-    
-    public String getType()
-    {
+
+    public String getType() {
         return type;
     }
-    
-    public void setType(String type)
-    {
+
+    public void setType(String type) {
         this.type = type;
     }
-    
-    public String getDuplexMode()
-    {
+
+    public String getDuplexMode() {
         return duplexMode;
     }
-    
-    public void setDuplexMode(String duplexMode)
-    {
+
+    public void setDuplexMode(String duplexMode) {
         this.duplexMode = duplexMode;
     }
-    
-    public String getStpState()
-    {
+
+    public String getStpState() {
         return stpState;
     }
-    
-    public void setStpState(String stpState)
-    {
+
+    public void setStpState(String stpState) {
         this.stpState = stpState;
     }
-    
-    public String getNeighborInfo()
-    {
+
+    public String getNeighborInfo() {
         return neighborInfo;
     }
-    
-    public void setNeighborInfo(String neighborInfo)
-    {
+
+    public void setNeighborInfo(String neighborInfo) {
         this.neighborInfo = neighborInfo;
     }
-    
-    public String getStpRole()
-    {
+
+    public String getStpRole() {
         return stpRole;
     }
-    
-    public void setStpRole(String stpRole)
-    {
+
+    public void setStpRole(String stpRole) {
         this.stpRole = stpRole;
     }
-    
-    public boolean isPhysicalValid()
-    {
+
+    public boolean isPhysicalValid() {
         return physicalValid;
     }
-    
-    public void setPhysicalValid(boolean physicalValid)
-    {
+
+    public void setPhysicalValid(boolean physicalValid) {
         this.physicalValid = physicalValid;
     }
-    
-    public String getMismatchReason()
-    {
+
+    public String getMismatchReason() {
         return mismatchReason;
     }
-    
-    public void setMismatchReason(String mismatchReason)
-    {
+
+    public void setMismatchReason(String mismatchReason) {
         this.mismatchReason = mismatchReason;
     }
-    
-    public long getInErrors()
-    {
+
+    public long getInErrors() {
         return inErrors;
     }
-    
-    public void setInErrors(long inErrors)
-    {
+
+    public void setInErrors(long inErrors) {
         this.inErrors = inErrors;
     }
-    
-    public long getOutErrors()
-    {
+
+    public long getOutErrors() {
         return outErrors;
     }
-    
-    public void setOutErrors(long outErrors)
-    {
+
+    public void setOutErrors(long outErrors) {
         this.outErrors = outErrors;
     }
-    
-    public long getInDiscards()
-    {
+
+    public long getInDiscards() {
         return inDiscards;
     }
-    
-    public void setInDiscards(long inDiscards)
-    {
+
+    public void setInDiscards(long inDiscards) {
         this.inDiscards = inDiscards;
     }
-    
-    public long getOutDiscards()
-    {
+
+    public long getOutDiscards() {
         return outDiscards;
     }
-    
-    public void setOutDiscards(long outDiscards)
-    {
+
+    public void setOutDiscards(long outDiscards) {
         this.outDiscards = outDiscards;
     }
-    
+
+    public PortRole getRole() {
+        return role;
+    }
+
+    public void setRole(PortRole role) {
+        this.role = role;
+    }
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return description + " ["
                 + (ipAddress != null ? ipAddress : prsa.egosoft.netmapper.i18n.Messages.getString("interface.no_ip"))
                 + "]";

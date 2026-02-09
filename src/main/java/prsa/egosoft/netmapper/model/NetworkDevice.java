@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class NetworkDevice {
     public enum DeviceType {
-        SWITCH, ROUTER, FIREWALL, MANAGED_HOST, SHADOW_HOST, SHADOW_DEVICE, UNMANAGED_SWITCH, UNKNOWN
+        SWITCH, ROUTER, FIREWALL, MANAGED_HOST, SHADOW_HOST, SHADOW_DEVICE, UNMANAGED_SWITCH, CLUSTER, UNKNOWN
     }
 
     public enum DiscoveryMethod {
@@ -47,6 +47,10 @@ public class NetworkDevice {
     private ManagementState mgmtState;
     private long lastSeenTimestamp;
 
+    // Stacking Attributes
+    private boolean isStack;
+    private List<String> memberChassis; // List of Serial Numbers or Chassis IDs
+
     private List<NetworkInterface> interfaces;
     private Map<String, String> routingTable; // Destino -> NextHop
     private List<String> vlans;
@@ -74,6 +78,8 @@ public class NetworkDevice {
         this.discoveryMethod = DiscoveryMethod.MANUAL;
         this.mgmtState = ManagementState.UNKNOWN;
         this.lastSeenTimestamp = System.currentTimeMillis();
+        this.isStack = false;
+        this.memberChassis = new ArrayList<>();
     }
 
     public NetworkDevice(String ipAddress) {
@@ -291,6 +297,24 @@ public class NetworkDevice {
 
     public void setLastSeenTimestamp(long lastSeenTimestamp) {
         this.lastSeenTimestamp = lastSeenTimestamp;
+    }
+
+    public boolean isStack() {
+        return isStack;
+    }
+
+    public void setStack(boolean isStack) {
+        this.isStack = isStack;
+    }
+
+    public List<String> getMemberChassis() {
+        return memberChassis;
+    }
+
+    public void addMemberChassis(String chassisId) {
+        if (!this.memberChassis.contains(chassisId)) {
+            this.memberChassis.add(chassisId);
+        }
     }
 
     @Override

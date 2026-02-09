@@ -29,4 +29,12 @@
     - [x] Update `NetworkController.java` to include `TopologyInferenceEngine` <!-- id: 23 -->
     - [x] Integrate inference into `loadDevicesFromJson` <!-- id: 24 -->
     - [x] Integrate inference into scan completion callbacks <!-- id: 25 -->
-    - [ ] Perform manual verification with `CoCJ` layout <!-- id: 26 -->
+    - [x] Perform manual verification with `CoCJ` layout <!-- id: 26 -->
+ 
+- [x] **CLI & Forensic Visualization (User Request)** <!-- id: 27 -->
+    - [x] Implement CLI flags (`-v`, `--forensics`, `--min-confidence`) <!-- id: 28 -->
+    - [x] Enhance JSON export with summary statistics <!-- id: 29 -->
+    - [x] Implement confidence-based edge filtering in CLI/Export <!-- id: 30 -->
+    - [x] Add selection-driven Forensic Details Panel <!-- id: 31 -->
+    - [x] Implement advanced map styling (transparency, dashed links) <!-- id: 32 -->
+    - [x] Synchronize global documentation and style <!-- id: 33 -->

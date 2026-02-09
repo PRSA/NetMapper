@@ -162,3 +162,9 @@ private float calculateDecay(long timeDiff, long halfLife) {
 - Add `TopologyInferenceEngine` instance.
 - Add `processInference()` method to trigger shadow node discovery.
 - Update `scanNetworkAsync`, `scanNetworkBlocking`, and `loadDevicesFromJson` to call `processInference()`.
+ 
+### Forensic Visibility Phase (Completed)
+- **CLI Flags**: Implementation of `-v`, `--forensics`, `--min-confidence` in `Main.java`.
+- **JSON Statistics**: Addition of `summary` object in `ExportService.java`.
+- **GUI Selection**: Selection listener wiring between `NetworkMapPanel`, `DeviceTreePanel`, and `DetailsPanel`.
+- **Visual Styles**: Implementation of dashed strokes and transparency in `NetworkMapPanel.java`.

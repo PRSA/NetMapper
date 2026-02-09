@@ -42,12 +42,14 @@ NetMapper es una aplicación Java diseñada para descubrir y visualizar informac
 - **Internacionalización (i18n)**: Soporte completo para Español, Inglés y Chino Simplificado con cambio dinámico de idioma en la interfaz.
 - **Interfaz mediante Pestañas**: Organización del árbol de dispositivos y el mapa de red en pestañas siempre accesibles.
 - **Interfaz Adaptativa**: Panel de dispositivos optimizado para ocupar todo el ancho disponible y visualización clara de jerarquías de red.
-- **Soporte CLI (Headless)**: Permite ejecutar escaneos y auto-descubrimiento sin interfaz gráfica, con soporte para múltiples formatos de exportación.
+- **Soporte CLI (Headless)**: Permite ejecutar escaneos y auto-descubrimiento sin interfaz gráfica, con soporte para múltiples formatos de exportación, filtrado por confianza y logging forense.
   - Lista separada por comas de cualquiera de los anteriores
 - **Validación de Entrada**: Verificación automática del formato antes de iniciar el escaneo
 - **Análisis de Duplicados**: Actualización inteligente de dispositivos re-escaneados sin crear duplicados
 - **Ordenamiento Lógico**: Dispositivos ordenados por IP e interfaces ordenadas (numéricas primero) en el árbol.
-- **Visualización de Mapa Topológico**: Grafo interactivo con **zoom (rueda/botones)**, **panorámica (arrastrar)** y **filtros de visibilidad**. Permite alternar entre enlaces físicos y lógicos (desactivados por defecto), y filtrar por tipo de dispositivo (Router, Switch, PC, etc.) o por categoría (Dispositivo, Endpoint). Distribución optimizada para máxima legibilidad.
+- **Visualización de Mapa Topológico**: Grafo interactivo con **zoom (rueda/botones)**, **panorámica (arrastrar)** y **filtros de visibilidad**. Permite alternar entre enlaces físicos y lógicos (desactivados por defecto), y filtrar por tipo de dispositivo o por categoría.
+    *   **Visualización MUDFR**: Nodos sombra con transparencia, enlaces físicos inferidos con estilo punteado y opacidad dinámica basada en la confianza.
+- **Panel de Detalles Forenses**: Panel dinámico que muestra la justificación técnica de las inferencias (evidencia FDB, fuentes de descubrimiento, confianza) al seleccionar nodos o enlaces.
 - **Descubrimiento de Redes Locales**: Botón para detectar automáticamente todas las interfaces locales e iniciar su escaneo.
 
 ### Visualización
@@ -119,7 +121,10 @@ mvn exec:java -Dexec.mainClass="prsa.egosoft.netmapper.Main" -Duser.language=en
 - `-a`: Descubrimiento automático de redes locales. Mutuamente exclusivo con `-t`.
 - `-png <path>`: Exportar mapa a imagen PNG.
 - `-pdf <path>`: Exportar mapa a documento PDF.
-- `-json <path>`: Exportar inventario a fichero JSON.
+- `-json <path>`: Exportar inventario a fichero JSON (incluye resumen de estadísticas).
+- `-v`: Modo verboso (detalles de la inferencia de topología).
+- `--forensics`: Log de tablas FDB/ARP para análisis forense.
+- `--min-confidence <0.0-1.0>`: Filtrar enlaces en la exportación según nivel de confianza.
 - `-h`: Mostrar ayuda.
 
 ## Estructura del Proyecto
@@ -131,7 +136,7 @@ src/main/java/prsa/egosoft/netmapper/
 ├── strategy/       # Estrategias de recolección (MIB-II, Bridge, Q-Bridge)
 ├── service/        # Servicios de escaneo
 ├── util/           # Utilidades (SubnetUtils, MacVendorUtils)
-├── gui/            # Interfaz Swing (MainWindow, NetworkMapDialog)
+├── gui/            # Interfaz Swing (MainWindow, NetworkMapPanel, DetailsPanel)
 └── i18n/           # Internacionalización (Messages, resource bundles)
 
 src/main/resources/

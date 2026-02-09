@@ -74,3 +74,21 @@ We created `src/test/java/prsa/egosoft/netmapper/core/TopologyInferenceEngineTes
     - Upon completion of an asynchronous network scan.
     - After a blocking (synchronous) network scan finishes.
 - This ensures that "Shadow Reality" is always up-to-date with the latest discovered infrastructure data.
+ 
+## New: CLI & Forensic Visualization
+ 
+### 1. Advanced CLI Options
+The application now supports advanced forensic flags:
+- `-v`: Verbose mode (shows inference logic).
+- `--forensics`: Dumps ARP/FDB tables to console.
+- `--min-confidence [VALUE]`: Filters exported links.
+ 
+### 2. Forensic Details Panel
+The GUI includes a new **Forensic Details** tab/panel that provides:
+- **Inference Justification**: Explanation of why shadow nodes were created.
+- **Dynamic Selection**: Selecting a node or edge in the map/tree updates this panel.
+- **Discovery Evidence**: Lists discovery sources and MAC table insights.
+ 
+### 3. Visual Visual Refinements
+- **Shadow Nodes**: Semi-transparent (50% opacity).
+- **Inferred Links**: Dashed lines with confidence-based opacity.

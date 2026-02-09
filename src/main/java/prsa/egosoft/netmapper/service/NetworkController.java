@@ -36,6 +36,14 @@ public class NetworkController {
         this.inferenceEngine = new TopologyInferenceEngine();
     }
 
+    public void setVerbose(boolean verbose) {
+        inferenceEngine.setVerbose(verbose);
+    }
+
+    public void setForensics(boolean forensics) {
+        inferenceEngine.setForensics(forensics);
+    }
+
     public Map<String, NetworkDevice> getDiscoveredDevices() {
         return discoveredDevices;
     }
@@ -67,9 +75,21 @@ public class NetworkController {
      * physical topology.
      */
     public void processInference() {
-        logger.info("Starting MUDFR topology inference...");
+        logger.info("Starting MUDFR topology inference (3-Motor Architecture)...");
+
+        // Motor 0: Shadow Node Inference (Discovery Enrichment)
         Map<String, NetworkDevice> inferredMap = inferenceEngine.inferShadowNodes(discoveredDevices);
         discoveredDevices.putAll(inferredMap);
+
+        // Motor 1: Backbone Engine (Deterministic Topology)
+        inferenceEngine.processBackbone(discoveredDevices);
+
+        // Motor 2: Edge Engine (Negative Triangulation)
+        inferenceEngine.processEdge(discoveredDevices);
+
+        // Motor 3: Logical Layer (L3 Adjacencies)
+        inferenceEngine.processLogicalLayer(discoveredDevices);
+
         logger.info("Inference complete. Total devices tracked: {}", discoveredDevices.size());
     }
 

@@ -82,11 +82,10 @@ public class TopologyInferenceEngineTest {
         fdb.put(10, fdbEntries); // Port 10 has target MAC
         sw.setMacAddressTable(fdb);
 
-        Set<String> uplinks = new HashSet<>();
         // No uplinks
 
         TopologyInferenceEngine.LocationResult result = engine.triangulatePhysicalLocation(
-                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw), uplinks);
+                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw));
 
         Assert.assertEquals(TopologyInferenceEngine.LocationResult.Type.EDGE_PORT_FOUND, result.type);
         Assert.assertEquals(10, result.candidates.get(0).portIndex);
@@ -102,12 +101,17 @@ public class TopologyInferenceEngineTest {
         fdb.put(48, fdbEntries); // Port 48 has target MAC
         sw.setMacAddressTable(fdb);
 
-        Set<String> uplinks = new HashSet<>();
-        uplinks.add("10.0.0.2:48"); // Mark Port 48 as Uplink
+        // Mark Port 48 as Uplink in the model
+        prsa.egosoft.netmapper.model.NetworkInterface iface = new prsa.egosoft.netmapper.model.NetworkInterface(48,
+                "Port 48");
+        iface.setRole(prsa.egosoft.netmapper.model.NetworkInterface.PortRole.UPLINK);
+        sw.addInterface(iface);
 
         TopologyInferenceEngine.LocationResult result = engine.triangulatePhysicalLocation(
-                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw), uplinks);
+                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw));
 
+        // Result should be UNKNOWN because it was on an UPLINK port (logic inside
+        // triangulate now checks role)
         Assert.assertEquals(TopologyInferenceEngine.LocationResult.Type.UNKNOWN, result.type);
     }
 
@@ -116,16 +120,18 @@ public class TopologyInferenceEngineTest {
         NetworkDevice sw = new NetworkDevice("10.0.0.2");
         List<DetectedEndpoint> fdbEntries = new ArrayList<>();
         fdbEntries.add(new DetectedEndpoint("AA:AA:AA:AA:AA:AA", null, null)); // Target
-        fdbEntries.add(new DetectedEndpoint("BB:BB:BB:BB:BB:BB", null, null)); // Neighbor 1
+        fdbEntries.add(new DetectedEndpoint("BB:BB:BB:BB:BB:BB", null, null));
+        fdbEntries.add(new DetectedEndpoint("CC:CC:CC:CC:CC:CC", null, null));
+        fdbEntries.add(new DetectedEndpoint("DD:DD:DD:DD:DD:DD", null, null));
 
         Map<Integer, List<DetectedEndpoint>> fdb = new HashMap<>();
-        fdb.put(5, fdbEntries); // Port 5 has 2 MACs
+        fdb.put(5, fdbEntries); // Port 5 has 4 MACs (> 3)
         sw.setMacAddressTable(fdb);
 
-        Set<String> uplinks = new HashSet<>();
+        // Result should be SHARED because of > 3 MACs on port 5
 
         TopologyInferenceEngine.LocationResult result = engine.triangulatePhysicalLocation(
-                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw), uplinks);
+                "AA:AA:AA:AA:AA:AA", Collections.singletonList(sw));
 
         Assert.assertEquals(TopologyInferenceEngine.LocationResult.Type.SHARED_SEGMENT_FOUND, result.type);
         Assert.assertTrue(result.candidates.get(0).isSharedSegment);

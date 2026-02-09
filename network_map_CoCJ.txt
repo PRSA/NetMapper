@@ -2,9 +2,9 @@ Contexto de Red: Actúa como un experto en administración de redes y topología
 
 Mapa de Conectividad:
 
-    x.4 conecta con: x.5 y el rango x.11 a x.54.
+    x.4 conecta con: x.5 y el rango x.11 a x.55.
 
-    x.5 conecta con: x.55, x.120 (SAN) y x.121 (SAN).
+    x.5 conecta con: x.120 (SAN) y x.121 (SAN).
 
     x.55 conecta con: x.135 (Servidor DELL) y x.254 (Servidor virtualizado LanMan).
 
@@ -12,6 +12,6 @@ Lógica de Dispositivos (Regla z.1):
 
     Para este caso, cualquier IP terminada en .1 (de cualquier red z) debe ser tratada estrictamente como un endpoint.
 
-Propiedades del endpoint: No responde a SNMP y solo permite enlaces unidireccionales (no bidireccionales).
+Propiedades del endpoint: No responde a SNMP y sólo permite enlaces unidireccionales (no bidireccionales).
 
 Utiliza esta estructura para responder consultas sobre rutas, dependencias de equipos o resolución de problemas en esta red específica.

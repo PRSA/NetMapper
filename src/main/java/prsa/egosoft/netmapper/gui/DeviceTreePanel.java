@@ -11,6 +11,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +24,14 @@ public class DeviceTreePanel extends JPanel {
 	private DefaultTreeModel treeModel;
 	private DefaultMutableTreeNode rootNode;
 	private Map<String, DefaultMutableTreeNode> deviceNodeMap;
+	private java.util.function.Consumer<NetworkDevice> selectionListener;
 
 	public DeviceTreePanel() {
 		setLayout(new BorderLayout());
 		deviceNodeMap = new HashMap<>();
 
 		initComponents();
+		resultsTree.setCellRenderer(new DeviceTreeCellRenderer());
 		updateUITexts();
 	}
 
@@ -38,6 +41,20 @@ public class DeviceTreePanel extends JPanel {
 		resultsTree = new JTree(treeModel);
 
 		add(new JScrollPane(resultsTree), BorderLayout.CENTER);
+
+		resultsTree.addTreeSelectionListener(e -> {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) resultsTree.getLastSelectedPathComponent();
+			if (node != null && selectionListener != null) {
+				Object userObject = node.getUserObject();
+				if (userObject instanceof NetworkDevice) {
+					selectionListener.accept((NetworkDevice) userObject);
+				}
+			}
+		});
+	}
+
+	public void setSelectionListener(java.util.function.Consumer<NetworkDevice> selectionListener) {
+		this.selectionListener = selectionListener;
 	}
 
 	public void updateUITexts() {
@@ -123,6 +140,12 @@ public class DeviceTreePanel extends JPanel {
 		if (device.getMgmtState() != null) {
 			node.add(new DefaultMutableTreeNode(Messages.getString("info.mgmt_state") + ": " + device.getMgmtState()));
 		}
+
+		if (device.getDiscoverySources() != null && !device.getDiscoverySources().isEmpty()) {
+			String sources = String.join(", ", device.getDiscoverySources());
+			node.add(new DefaultMutableTreeNode(Messages.getString("info.discovery_sources") + ": [" + sources + "]"));
+		}
+
 		node.add(new DefaultMutableTreeNode(
 				Messages.getString("info.confidence") + ": " + String.format("%.0f%%", device.getConfidence() * 100)));
 
@@ -316,5 +339,61 @@ public class DeviceTreePanel extends JPanel {
 			}
 		}
 		return count;
+	}
+
+	private class DeviceTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
+		@Override
+		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+				boolean leaf, int row, boolean hasFocus) {
+			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+
+			if (value instanceof DefaultMutableTreeNode) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+				Object userObject = node.getUserObject();
+
+				if (userObject instanceof NetworkDevice) {
+					NetworkDevice device = (NetworkDevice) userObject;
+					setIcon(getStatusIcon(device.getMgmtState()));
+				}
+			}
+			return this;
+		}
+
+		private Icon getStatusIcon(NetworkDevice.ManagementState state) {
+			int size = 12;
+			BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2 = img.createGraphics();
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			Color color;
+			if (state == null) {
+				color = Color.GRAY;
+			} else {
+				switch (state) {
+					case REACHABLE:
+						color = new Color(40, 167, 69); // Green
+						break;
+					case AUTH_FAILED:
+						color = new Color(255, 193, 7); // Yellow/Orange
+						break;
+					case UNREACHABLE:
+						color = new Color(220, 53, 69); // Red
+						break;
+					case POLICIED_SILENCE:
+						color = new Color(108, 117, 125); // Gray/Muted
+						break;
+					default:
+						color = Color.LIGHT_GRAY;
+				}
+			}
+
+			g2.setColor(color);
+			g2.fillOval(1, 1, size - 2, size - 2);
+			g2.setColor(color.darker());
+			g2.drawOval(1, 1, size - 2, size - 2);
+			g2.dispose();
+
+			return new ImageIcon(img);
+		}
 	}
 }
