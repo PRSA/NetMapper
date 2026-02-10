@@ -92,3 +92,14 @@ The GUI includes a new **Forensic Details** tab/panel that provides:
 ### 3. Visual Visual Refinements
 - **Shadow Nodes**: Semi-transparent (50% opacity).
 - **Inferred Links**: Dashed lines with confidence-based opacity.
+
+## Robustness & Stability Fixes
+
+### 1. Fix for NullPointerException (Large Maps)
+- **Problem**: Inferred shadow devices lacked an IP address, causing null keys in UI components.
+- **Solution**: Shadow devices now use their MAC address as an internal identifier (`ipAddress` field), ensuring consistency.
+- **Defensive guards**: Added null checks in `NetworkGraph.buildGraphContext` to handle incomplete device data gracefully.
+
+### 2. UI Synchronization Fix
+- **Problem**: Inferred nodes (MUDFR) didn't appear in the Tree/Map immediately after a scan.
+- **Solution**: Implemented `refreshUI()` in `MainWindow` to rebuild the device tree and map panel upon scan completion, ensuring all backend-inferred data is visualized.

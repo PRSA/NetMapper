@@ -32,9 +32,8 @@ public class ExportService {
 	}
 
 	public void exportToJSON(File file, Map<String, NetworkDevice> deviceMap) throws IOException {
-		// Add summary stats
-		Map<String, Object> output = new java.util.HashMap<>();
-		output.put("devices", deviceMap);
+		prsa.egosoft.netmapper.model.NetworkMapDTO output = new prsa.egosoft.netmapper.model.NetworkMapDTO();
+		output.setDevices(deviceMap);
 
 		Map<String, Object> summary = new java.util.HashMap<>();
 		summary.put("total_devices", deviceMap.size());
@@ -50,7 +49,7 @@ public class ExportService {
 				.average().orElse(0.0);
 		summary.put("average_confidence", avgConfidence);
 
-		output.put("summary", summary);
+		output.setSummary(summary);
 
 		objectMapper.writeValue(file, output);
 	}

@@ -38,3 +38,10 @@
     - [x] Add selection-driven Forensic Details Panel <!-- id: 31 -->
     - [x] Implement advanced map styling (transparency, dashed links) <!-- id: 32 -->
     - [x] Synchronize global documentation and style <!-- id: 33 -->
+
+- [x] **Robustness & Stability (Maintenance)** <!-- id: 34 -->
+    - [x] Fix `NullPointerException` when loading large maps (Gondomar) <!-- id: 35 -->
+    - [x] Ensure all inferred shadow nodes have unique identifiers (IP=MAC) <!-- id: 36 -->
+    - [x] Fix UI discrepancy between real-time scan and map load <!-- id: 37 -->
+    - [x] Implement `refreshUI` logic in `MainWindow` <!-- id: 38 -->
+    - [x] Final i18n cleanup for inferred elements <!-- id: 39 -->

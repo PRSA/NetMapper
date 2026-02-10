@@ -81,15 +81,18 @@ public class TopologyInferenceEngine {
 
                     if (!isKnown) {
                         NetworkDevice shadowDevice = new NetworkDevice();
-                        shadowDevice.setSysName("L2-" + mac);
+                        shadowDevice.setSysName(
+                                prsa.egosoft.netmapper.i18n.Messages.getString("device.name.l2_prefix") + mac);
                         shadowDevice.setTypeEnum(DeviceType.SHADOW_DEVICE);
                         shadowDevice.setDiscoveryMethod(DiscoveryMethod.FDB_SNOOP);
                         shadowDevice.setMgmtState(ManagementState.UNREACHABLE);
                         shadowDevice.setConfidence(0.6);
                         shadowDevice.setVendor(endpoint.getVendor());
 
-                        NetworkInterface iface = new NetworkInterface(0, "eth0 (Inferred)");
+                        NetworkInterface iface = new NetworkInterface(0,
+                                prsa.egosoft.netmapper.i18n.Messages.getString("interface.description.inferred"));
                         iface.setMacAddress(mac);
+                        shadowDevice.setIpAddress(mac); // Ensure it has an identifier
                         shadowDevice.addInterface(iface);
                         allDevices.put(mac, shadowDevice);
                     }

@@ -230,7 +230,10 @@ public class MainWindow extends JFrame {
 		new Thread(() -> {
 			networkController.autoDiscoverBlocking(community,
 					device -> SwingUtilities.invokeLater(() -> displayDevice(device)));
-			SwingUtilities.invokeLater(() -> logArea.append(Messages.getString("message.scan_complete_all") + "\n"));
+			SwingUtilities.invokeLater(() -> {
+				refreshUI();
+				logArea.append(Messages.getString("message.scan_complete_all") + "\n");
+			});
 		}).start();
 	}
 
@@ -258,7 +261,10 @@ public class MainWindow extends JFrame {
 				device -> SwingUtilities.invokeLater(() -> displayDevice(device)),
 				error -> SwingUtilities.invokeLater(() -> logArea.append(error + "\n")),
 				() -> SwingUtilities
-						.invokeLater(() -> logArea.append(Messages.getString("message.scan_complete_all") + "\n")));
+						.invokeLater(() -> {
+							refreshUI();
+							logArea.append(Messages.getString("message.scan_complete_all") + "\n");
+						}));
 	}
 
 	private boolean isValidTargetInput(String input) {
@@ -317,6 +323,17 @@ public class MainWindow extends JFrame {
 
 		// Single IP address
 		return isValidIpAddress(target);
+	}
+
+	private void refreshUI() {
+		java.util.Map<String, NetworkDevice> devices = networkController.getDiscoveredDevices();
+		treePanel.clear();
+		mapPanel.clear();
+		for (NetworkDevice device : devices.values()) {
+			treePanel.addOrUpdateDevice(device);
+			mapPanel.addOrUpdateDevice(device);
+		}
+		mapPanel.updateMap();
 	}
 
 	private boolean isValidIpAddress(String ip) {

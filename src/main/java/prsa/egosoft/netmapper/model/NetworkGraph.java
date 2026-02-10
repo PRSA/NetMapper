@@ -374,8 +374,10 @@ public class NetworkGraph {
                         // Phase 4: Unmanaged Switch detection (Threshold increased to 10)
                         String usId = "device_us_" + device.getIpAddress() + "_" + interfaceIndex;
                         if (!nodeMap.containsKey(usId)) {
-                            GraphNode usNode = new GraphNode(usId, "Unmanaged Switch\n(Inferred)", "Switch",
-                                    NodeType.DEVICE);
+                            GraphNode usNode = new GraphNode(usId,
+                                    prsa.egosoft.netmapper.i18n.Messages
+                                            .getString("device.type.unmanaged_switch_inferred"),
+                                    "Switch", NodeType.DEVICE);
                             usNode.setLayer("access");
                             graph.addNode(usNode);
                             nodeMap.put(usId, usNode);
@@ -684,7 +686,9 @@ public class NetworkGraph {
                     ctx.macToIp.put(mac, dev.getIpAddress());
                 }
             }
-            ctx.deviceToMacs.put(dev.getIpAddress(), macs);
+            if (dev.getIpAddress() != null) {
+                ctx.deviceToMacs.put(dev.getIpAddress(), macs);
+            }
         }
 
         // Pass 1.5: Discover gateways from routing tables
@@ -767,7 +771,7 @@ public class NetworkGraph {
                 String otherIp = otherEntry.getKey();
                 NetworkDevice otherDev = otherEntry.getValue();
 
-                if (otherIp.equals(dev.getIpAddress()))
+                if (otherIp == null || otherIp.equals(dev.getIpAddress()))
                     continue;
 
                 // Any infrastructure device contributes to port classification

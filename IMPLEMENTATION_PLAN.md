@@ -168,3 +168,8 @@ private float calculateDecay(long timeDiff, long halfLife) {
 - **JSON Statistics**: Addition of `summary` object in `ExportService.java`.
 - **GUI Selection**: Selection listener wiring between `NetworkMapPanel`, `DeviceTreePanel`, and `DetailsPanel`.
 - **Visual Styles**: Implementation of dashed strokes and transparency in `NetworkMapPanel.java`.
+
+### Robustness & UI Synchronization Phase (Completed)
+- **NPE Prevention**: Defensive null checks in `NetworkGraph` and ID assignment for shadow devices.
+- **UI Refresh**: Centralized `refreshUI()` method in `MainWindow` to synchronize discoveredDevices with the GUI.
+- **i18n Cleanup**: Final externalization of all MUDFR-related technical labels.

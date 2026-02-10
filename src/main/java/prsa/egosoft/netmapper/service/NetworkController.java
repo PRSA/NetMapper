@@ -15,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -60,12 +59,13 @@ public class NetworkController {
      */
     public void loadDevicesFromJson(File jsonFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, NetworkDevice> loadedMap = mapper.readValue(jsonFile,
-                new TypeReference<Map<String, NetworkDevice>>() {
-                });
+        prsa.egosoft.netmapper.model.NetworkMapDTO mapDto = mapper.readValue(jsonFile,
+                prsa.egosoft.netmapper.model.NetworkMapDTO.class);
 
         discoveredDevices.clear();
-        discoveredDevices.putAll(loadedMap);
+        if (mapDto.getDevices() != null) {
+            discoveredDevices.putAll(mapDto.getDevices());
+        }
         processInference();
         logger.info("Loaded {} devices (including shadow nodes) from {}", discoveredDevices.size(), jsonFile.getName());
     }
